@@ -1,0 +1,256 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}
+Dashboard
+{% endblock %}
+
+{% block content %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+      <!-- Quick Actions -->
+      <div class="lg:col-span-2 bg-[#111] border border-white/10 rounded-sm p-5">
+        <div class="flex items-center gap-2 mb-5">
+          <span class="text-yellow-400">⚡</span>
+          <span class="mono text-sm tracking-wider">Quick Actions</span>
+        </div>
+        <div class="flex gap-3 flex-wrap">
+          <button class="flex items-center gap-2 px-4 py-2.5 bg-white/10 border border-white/20 hover:bg-white/20 rounded-sm text-sm transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Product
+          </button>
+          <button class="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/15 hover:bg-white/10 rounded-sm text-sm text-white/70 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/></svg>
+            Create Offer
+          </button>
+        </div>
+      </div>
+
+      <!-- Products Running Low -->
+      <div class="bg-[#1a0a0a] border border-red-900/50 rounded-sm p-5">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-red-500 text-sm">⚠</span>
+          <span class="mono text-sm tracking-wider text-red-400">Products Running Low</span>
+        </div>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="mono text-xs text-white/60">VOID TEE [BLK/M]</span>
+            <span class="mono text-xs text-white/40">2 in stock</span>
+          </div>
+          <div class="w-full h-px bg-white/5"></div>
+          <div class="flex items-center justify-between">
+            <span class="mono text-xs text-white/60">CARGO JOGGER [L]</span>
+            <span class="mono text-xs text-red-400">0 in stock</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Time filter -->
+    <div class="flex items-center gap-2">
+      <select class="mono bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-2 rounded-sm outline-none cursor-pointer">
+        <option>Last week</option>
+        <option>Last month</option>
+        <option>Last year</option>
+      </select>
+    </div>
+
+    <!-- ── STAT CARDS ── -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+
+      <div class="stat-card bg-[#111] border border-white/10 rounded-sm p-5">
+        <p class="text-white/40 text-xs mb-3">Total Revenue</p>
+        <p class="text-2xl font-bold">$128,430</p>
+        <p class="text-green-400 text-xs mt-2 mono">+12.5%</p>
+      </div>
+
+      <div class="stat-card bg-[#111] border border-white/10 rounded-sm p-5">
+        <p class="text-white/40 text-xs mb-3">Orders</p>
+        <p class="text-2xl font-bold">1,240</p>
+        <p class="text-red-400 text-xs mt-2 mono">-2.1%</p>
+      </div>
+
+      <div class="stat-card bg-[#111] border border-white/10 rounded-sm p-5">
+        <p class="text-white/40 text-xs mb-3">Average order value</p>
+        <p class="text-2xl font-bold">$103.50</p>
+        <p class="text-green-400 text-xs mt-2 mono">+5.4%</p>
+      </div>
+
+      <div class="stat-card bg-[#111] border border-white/10 rounded-sm p-5">
+        <p class="text-white/40 text-xs mb-3">Orders pending</p>
+        <p class="text-2xl font-bold">42</p>
+        <p class="text-green-400 text-xs mt-2 mono">+8%</p>
+      </div>
+
+      <div class="stat-card bg-[#111] border border-white/10 rounded-sm p-5">
+        <p class="text-white/40 text-xs mb-3">New Customers</p>
+        <p class="text-2xl font-bold">842</p>
+        <p class="text-green-400 text-xs mt-2 mono">+18.2%</p>
+      </div>
+
+      <div class="stat-card bg-[#111] border border-white/10 rounded-sm p-5">
+        <p class="text-white/40 text-xs mb-3">Active Customers</p>
+        <p class="text-2xl font-bold">12,403</p>
+        <p class="text-green-400 text-xs mt-2 mono">+4.5%</p>
+      </div>
+
+      <div class="stat-card bg-[#111] border border-white/10 rounded-sm p-5">
+        <p class="text-white/40 text-xs mb-3">Active Offers</p>
+        <p class="text-2xl font-bold">12</p>
+        <p class="text-white/40 text-xs mt-2 mono">0%</p>
+      </div>
+
+      <div class="stat-card bg-[#111] border border-white/10 rounded-sm p-5">
+        <p class="text-white/40 text-xs mb-3">Active Coupons</p>
+        <p class="text-2xl font-bold">24</p>
+        <p class="text-green-400 text-xs mt-2 mono">+15%</p>
+      </div>
+    </div>
+
+    <!-- ── SALES CHART + BEST SELLING ── -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+      <!-- Sales Overview Chart -->
+      <div class="lg:col-span-2 bg-[#111] border border-white/10 rounded-sm p-6">
+        <div class="flex items-center justify-between mb-1">
+          <span class="mono text-sm tracking-wider">Sales Overview</span>
+          <span class="mono text-xs text-green-400">+12.5% compared to last month</span>
+        </div>
+        <p class="text-3xl font-bold mb-6">$128,430.00</p>
+        <div class="relative h-48">
+          <canvas id="salesChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Best Selling Categories -->
+      <div class="bg-[#111] border border-white/10 rounded-sm p-6">
+        <p class="mono text-sm tracking-wider mb-6">Best Selling Categories</p>
+        <div class="space-y-6">
+          <div>
+            <div class="flex justify-between mb-2">
+              <span class="mono text-xs text-white/70">T-SHIRTS</span>
+              <span class="mono text-xs text-green-400">42% (+8%)</span>
+            </div>
+            <div class="w-full bg-white/10 progress-bar">
+              <div class="bg-white progress-bar" style="width:42%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between mb-2">
+              <span class="mono text-xs text-white/70">TANK TOPS</span>
+              <span class="mono text-xs text-green-400">12% (+5%)</span>
+            </div>
+            <div class="w-full bg-white/10 progress-bar">
+              <div class="bg-white/60 progress-bar" style="width:12%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RECENT ORDERS ── -->
+    <div class="bg-[#111] border border-white/10 rounded-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-white/10">
+        <span class="mono text-sm tracking-wider">Recent Orders</span>
+      </div>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-white/10">
+            <th class="text-left px-6 py-3 text-white/40 text-xs font-normal mono">Order ID</th>
+            <th class="text-left px-6 py-3 text-white/40 text-xs font-normal mono">Customer</th>
+            <th class="text-left px-6 py-3 text-white/40 text-xs font-normal mono">Order Date</th>
+            <th class="text-left px-6 py-3 text-white/40 text-xs font-normal mono">Status</th>
+            <th class="text-left px-6 py-3 text-white/40 text-xs font-normal mono">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b border-white/5 hover:bg-white/3 transition-colors">
+            <td class="px-6 py-4 mono text-xs text-white/70">#ORD-9021-X</td>
+            <td class="px-6 py-4 mono text-xs font-semibold">Xander.Kage</td>
+            <td class="px-6 py-4 mono text-xs text-white/50">2023.10.24 // 14:32</td>
+            <td class="px-6 py-4"><span class="mono text-xs px-2.5 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-sm">Shipped</span></td>
+            <td class="px-6 py-4 mono text-xs">$299.00</td>
+          </tr>
+          <tr class="border-b border-white/5 hover:bg-white/3 transition-colors">
+            <td class="px-6 py-4 mono text-xs text-white/70">#ORD-9022-X</td>
+            <td class="px-6 py-4 mono text-xs font-semibold">S.Conner</td>
+            <td class="px-6 py-4 mono text-xs text-white/50">2023.10.24 // 12:15</td>
+            <td class="px-6 py-4"><span class="mono text-xs px-2.5 py-1 bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded-sm">Processing</span></td>
+            <td class="px-6 py-4 mono text-xs">$142.50</td>
+          </tr>
+          <tr class="border-b border-white/5 hover:bg-white/3 transition-colors">
+            <td class="px-6 py-4 mono text-xs text-white/70">#ORD-9023-Y</td>
+            <td class="px-6 py-4 mono text-xs font-semibold">M.Pritchard</td>
+            <td class="px-6 py-4 mono text-xs text-white/50">2023.10.23 // 09:44</td>
+            <td class="px-6 py-4"><span class="mono text-xs px-2.5 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-sm">Delivered</span></td>
+            <td class="px-6 py-4 mono text-xs">$840.00</td>
+          </tr>
+          <tr class="hover:bg-white/3 transition-colors">
+            <td class="px-6 py-4 mono text-xs text-white/70">#ORD-9024-X</td>
+            <td class="px-6 py-4 mono text-xs font-semibold">Nova_Prime</td>
+            <td class="px-6 py-4 mono text-xs text-white/50">2023.10.23 // 18:22</td>
+            <td class="px-6 py-4"><span class="mono text-xs px-2.5 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-sm">Shipped</span></td>
+            <td class="px-6 py-4 mono text-xs">$125.00</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+  // Sales Chart
+  const ctx = document.getElementById('salesChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['JAN','FEB','MAR','APR','MAY','JUN','JUL'],
+      datasets: [{
+        data: [42000, 38000, 55000, 50000, 72000, 68000, 128430],
+        borderColor: 'rgba(255,255,255,0.7)',
+        borderWidth: 1.5,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        pointHoverBackgroundColor: '#fff',
+        fill: true,
+        backgroundColor: (ctx) => {
+          const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 200);
+          gradient.addColorStop(0, 'rgba(255,255,255,0.08)');
+          gradient.addColorStop(1, 'rgba(255,255,255,0)');
+          return gradient;
+        },
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        backgroundColor: '#1a1a1a',
+        borderColor: 'rgba(255,255,255,0.1)',
+        borderWidth: 1,
+        titleColor: '#fff',
+        bodyColor: 'rgba(255,255,255,0.6)',
+        titleFont: { family: 'Share Tech Mono' },
+        bodyFont: { family: 'Share Tech Mono' },
+        callbacks: { label: ctx => ' $' + ctx.raw.toLocaleString() }
+      }},
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
+          ticks: { color: 'rgba(255,255,255,0.3)', font: { family: 'Share Tech Mono', size: 10 } }
+        },
+        y: {
+          display: false,
+          grid: { display: false }
+        }
+      }
+    }
+  });
+
+{% endblock %}
+  
+</script>
