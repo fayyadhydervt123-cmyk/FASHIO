@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Admin{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    body { font-family: 'DM Sans', sans-serif; background: #0d0d0d; }
+    .mono { font-family: 'Space Mono', monospace; }
+    .sidebar-item { transition: background 0.15s, border-color 0.15s; }
+    .sidebar-item:hover { background: rgba(255,255,255,0.06); }
+    .stat-card { transition: transform 0.2s, box-shadow 0.2s; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+    .progress-bar { height: 6px; border-radius: 3px; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #111; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+  </style>
+
+  {% block extra_css %}
+  {% endblock %}
+
+</head>
+<body class="text-white min-h-screen">
+
+<!-- ── TOP NAV ── -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-black border-b border-white/10 flex items-center justify-between px-5 h-14">
+  <div class="flex items-center gap-4">
+    <!-- X logo -->
+    <div class="w-8 h-8 bg-white flex items-center justify-center rounded-sm">
+      <span class="text-black font-black text-sm leading-none">✕</span>
+    </div>
+    <span class="mono text-white text-lg font-bold tracking-widest">FASHIO</span>
+    <span class="text-white/30 text-sm hidden sm:block">|</span>
+    <span class="mono text-white/70 text-sm hidden sm:block tracking-wider">Store Overview</span>
+  </div>
+  <!-- Avatar -->
+  <div class="w-9 h-9 rounded-sm bg-[#2a2a2a] border border-white/20 overflow-hidden flex items-center justify-center">
+    <svg class="w-5 h-5 text-white/50" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+  </div>
+</header>
+
+<!-- ── LAYOUT ── -->
+<div class="flex pt-14 min-h-screen">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="fixed left-0 top-14 bottom-0 w-52 bg-[#0d0d0d] border-r border-white/10 flex flex-col justify-between overflow-y-auto z-40">
+    <nav class="p-4 space-y-0.5">
+      <!-- Main Menu -->
+      <p class="mono text-white/30 text-[10px] tracking-widest mb-3 mt-1">MAIN MENU</p>
+
+      <a href="{% url 'admin_dashboard' %}" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded {% if request.resolver_match.url_name == 'admin_dashboard' %}bg-white/10 border-l-2 border-white{% else %}text-white/60 hover:text-white border-l-2 border-transparent{% endif %}">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span class="text-sm font-semibold">Dashboard</span>
+      </a>
+
+      <a href="#" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded border-l-2 border-transparent text-white/60 hover:text-white">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M20 7H4a1 1 0 00-1 1v11a1 1 0 001 1h16a1 1 0 001-1V8a1 1 0 00-1-1z"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+        <span class="text-sm">Products</span>
+      </a>
+
+      <a href="#" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded border-l-2 border-transparent text-white/60 hover:text-white">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+        <span class="text-sm">Orders</span>
+      </a>
+
+      <a href="{% url 'admin_customerlist' %}" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded 
+        {% if request.resolver_match.url_name == 'admin_customerlist' or request.resolver_match.url_name == 'admin_user_details' %}
+          bg-white/10 border-l-2 border-white
+        {% else %}
+          text-white/60 hover:text-white border-l-2 border-transparent
+        {% endif %}">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        <span class="text-sm">Customers</span>
+      </a>
+
+      <a href="#" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded border-l-2 border-transparent text-white/60 hover:text-white">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span class="text-sm">Analytics</span>
+      </a>
+
+      <!-- Marketing -->
+      <p class="mono text-white/30 text-[10px] tracking-widest mb-3 mt-5">MARKETING</p>
+
+      <a href="#" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded border-l-2 border-transparent text-white/60 hover:text-white">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        <span class="text-sm">Coupons</span>
+      </a>
+
+      <a href="#" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded border-l-2 border-transparent text-white/60 hover:text-white">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        <span class="text-sm">Offers</span>
+      </a>
+
+      <!-- Support -->
+      <p class="mono text-white/30 text-[10px] tracking-widest mb-3 mt-5">SUPPORT</p>
+
+      <a href="#" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded border-l-2 border-transparent text-white/60 hover:text-white">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="text-sm">Returns</span>
+      </a>
+
+      <a href="#" class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded border-l-2 border-transparent text-white/60 hover:text-white">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+        <span class="text-sm">Settings</span>
+      </a>
+    </nav>
+
+    <!-- Logout -->
+    <div class="p-4 border-t border-white/10">
+      <button onclick="openLogoutModal()" class="sidebar-item w-full flex items-center gap-3 px-3 py-2.5 rounded text-white/50 hover:text-white">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span class="mono text-sm tracking-wider">LOGOUT</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── LOGOUT MODAL ── -->
+  <div id="logoutModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black opacity-0 pointer-events-none transition-opacity duration-300">
+    <div id="logoutModalBox" class="w-full max-w-xl px-6 flex flex-col items-center gap-5 scale-95 transition-transform duration-300">
+      <!-- Question -->
+      <p class="mono text-white text-xl md:text-2xl text-center tracking-wide mb-4">Are you sure you want to Logout?</p>
+      <!-- Logout btn -->
+      <button onclick="confirmLogout()" class="w-full bg-white text-black mono font-bold text-base tracking-widest py-5 hover:bg-gray-100 active:scale-[0.99] transition-all">
+        Logout
+      </button>
+      <!-- Cancel btn -->
+      <button onclick="closeLogoutModal()" class="w-full bg-black text-white mono font-bold text-base tracking-widest py-5 border border-white/30 hover:bg-white/5 active:scale-[0.99] transition-all">
+        Cancel
+      </button>
+    </div>
+  </div>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="ml-52 flex-1 p-6 space-y-6">
+    {% block content %}
+    {% endblock %}
+  </main>
+</div>
+
+<script>
+
+  function openLogoutModal() {
+    const modal = document.getElementById('logoutModal');
+    const box = document.getElementById('logoutModalBox');
+    modal.classList.remove('opacity-0', 'pointer-events-none');
+    modal.classList.add('opacity-100');
+    setTimeout(() => box.classList.remove('scale-95'), 10);
+    box.classList.add('scale-100');
+  }
+
+  function closeLogoutModal() {
+    const modal = document.getElementById('logoutModal');
+    const box = document.getElementById('logoutModalBox');
+    box.classList.remove('scale-100');
+    box.classList.add('scale-95');
+    modal.classList.remove('opacity-100');
+    modal.classList.add('opacity-0', 'pointer-events-none');
+  }
+
+  const logoutUrl = "{% url 'admin_logout' %}";
+
+  function confirmLogout() {
+    window.location.href = logoutUrl;
+  }
+
+  // Close on backdrop click
+  document.getElementById('logoutModal').addEventListener('click', function(e) {
+    if (e.target === this) closeLogoutModal();
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeLogoutModal();
+  });
+</script>
+
+{% block scripts %}
+{% endblock %}
+
+</body>
+</html>
