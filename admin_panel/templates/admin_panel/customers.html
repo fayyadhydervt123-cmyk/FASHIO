@@ -1,0 +1,146 @@
+{% extends 'admin_base/base.html' %}
+
+{% block title %}
+Customers
+{% endblock %}
+
+{% block content %}
+<!-- ── CUSTOMERS PAGE (main content only) ── -->
+  <!-- Page Title -->
+  <h1 class="mono text-white text-4xl font-bold tracking-tight mb-8">User Management</h1>
+
+  <!-- Search Bar -->
+  <div class="relative mb-6">
+    <div class="relative">
+      {% comment %} <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+      </svg> {% endcomment %}
+      <form method="GET" class="mb-4">
+          <input 
+              type="text" 
+              name="q" 
+              value="{{ search_query }}"
+              placeholder="Search by Name, Email, or Phone"
+              class="w-full bg-black border border-white/10 px-4 py-2 text-sm"
+          >
+
+          {% if search_query %}
+            <a href="{% url 'admin_customerlist' %}"
+              class="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-sm">
+              ✕
+            </a>
+          {% endif %}
+        </div>
+
+        <!-- Filters Row -->
+        <div class="flex items-center gap-4 mb-6 bg-[#111] border border-white/10 rounded-sm px-5 py-3.5">
+
+          <!-- Status -->
+          <div class="flex items-center gap-3">
+            <span class="mono text-xs text-white/50">Status:</span>
+            <select name="status"
+                class="bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-1.5">
+            
+                <option value="">All</option>
+                <option value="active" {% if status_filter == "active" %}selected{% endif %}>Active</option>
+                <option value="inactive" {% if status_filter == "inactive" %}selected{% endif %}>Inactive</option>
+            </select>
+          </div>
+
+          <!-- Date -->
+          <div class="flex items-center gap-3">
+            <span class="mono text-xs text-white/50">Registration Date:</span>
+            <select name="date"
+                class="bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-1.5">
+
+                <option value="">All</option>
+                <option value="today" {% if date_filter == "today" %}selected{% endif %}>Today</option>
+                <option value="last_7_days" {% if date_filter == "last_7_days" %}selected{% endif %}>Last 7 Days</option>
+                <option value="last_30_days" {% if date_filter == "last_30_days" %}selected{% endif %}>Last 30 Days</option>
+            </select>
+          </div>
+
+          <div class="flex-1"></div>
+
+          <!-- Buttons -->
+          <button type="submit"
+            class="mono text-xs px-4 py-1.5 bg-white text-black font-bold">
+            Apply Filter
+          </button>
+
+          <a href="{% url 'admin_customerlist' %}"
+          class="mono text-xs px-4 py-1.5 border border-white/20 text-white/60">
+          Reset
+          </a>
+
+        </div>
+
+    </form>
+  </div>
+
+  <!-- Table -->
+  <div class="border border-white/10 rounded-sm overflow-hidden">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="bg-[#141414] border-b border-white/10">
+          <th class="text-left px-5 py-4 mono text-xs text-white font-semibold">Full Name</th>
+          <th class="text-left px-5 py-4 mono text-xs text-white font-semibold">Email</th>
+          <th class="text-left px-5 py-4 mono text-xs text-white font-semibold">Phone</th>
+          <th class="text-left px-5 py-4 mono text-xs text-white font-semibold">Orders</th>
+          <th class="text-left px-5 py-4 mono text-xs text-white font-semibold">Status</th>
+          <th class="text-left px-5 py-4 mono text-xs text-white font-semibold">Joined Date</th>
+          <th class="text-left px-5 py-4 mono text-xs text-white font-semibold">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for user in userlist %}
+      <tr class="border-t border-white/10">
+        <td class="p-3">{{ user.fullname }}</td>
+        <td class="p-3">{{ user.email }}</td>
+        <td class="p-3">{{ user.phone }}</td>
+        <td class="p-3">--</td> <!-- Orders (optional later) -->
+
+        <td class="p-3">
+          {% if user.is_active %}
+            <span class="bg-green-900 text-green-400 px-2 py-1 text-xs">Active</span>
+          {% else %}
+            <span class="bg-yellow-900 text-yellow-400 px-2 py-1 text-xs">Inactive</span>
+          {% endif %}
+        </td>
+
+        <td class="p-3">{{ user.date_joined|date:"d-m-Y" }}</td>
+
+        <td class="p-3">
+            <a href="{% url 'admin_user_details' user.id %}" class="underline">View</a>
+        </td>
+
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="text-center p-4 text-white/40">
+            No users found
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="flex justify-center gap-4 mt-6">
+
+    {% if userlist.has_previous %}
+        <a href="?page={{ userlist.previous_page_number }}&q={{ search_query }}&status={{ status_filter }}&date={{ date_filter }}">Prev</a>
+    {% endif %}
+
+    <span class="px-4 py-2">
+        {{ userlist.number }} / {{ userlist.paginator.num_pages }}
+    </span>
+
+    {% if userlist.has_next %}
+        <a href="?page={{ userlist.next_page_number }}&q={{ search_query }}&status={{ status_filter }}&date={{ date_filter }}">Next</a>
+    {% endif %}
+
+  </div>
+
+{% endblock %}

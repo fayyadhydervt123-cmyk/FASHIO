@@ -1,0 +1,284 @@
+{% extends 'admin_base/base.html' %}
+
+{% block title %}
+Customer – {{ user_obj.fullname }}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Modal backdrop */
+#modal-backdrop {
+display: none;
+position: fixed; inset: 0;
+background: rgba(0,0,0,0.85);
+z-index: 50;
+backdrop-filter: blur(2px);
+}
+#modal-backdrop.show { display: flex; }
+</style>
+
+{% endblock %}
+
+{% block content %}
+    <div class="px-8 py-8 max-w-6xl">
+      <!-- Back -->
+      <a href="{% url 'admin_customerlist' %}" >
+        <button class="mb-6 text-white/40 hover:text-white transition-colors flex items-center gap-1 text-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+      </a>
+
+      <!-- User header -->
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-5">
+          {% if user_obj.image %}
+            <img src="{{ user_obj.image.url }}" class="w-20 h-20 rounded-sm object-cover">
+          {% else %}
+            <div class="w-20 h-20 bg-white/10 flex items-center justify-center">
+              {{ user_obj.fullname|first }}
+            </div>
+          {% endif %}
+          <div>
+            <h1 class="text-2xl font-semibold tracking-tight">{{ user_obj.fullname }}</h1>
+            <div class="flex items-center gap-4 mt-1.5 text-sm text-white/40">
+              <span class="flex items-center gap-1.5">
+                {% comment %} <span class="w-1.5 h-1.5 rounded-full bg-green-400 inline-block"></span> {% endcomment %}
+                {% if user_obj.is_active %}
+                  <span class="border border-green-500/30 text-green-400 px-2 py-0.5 text-[10px] mono uppercase tracking-widest">Active</span>
+                {% else %}
+                  <span class="border border-red-500/30 text-red-500 px-2 py-0.5 text-[10px] mono uppercase tracking-widest">Blocked</span>
+                {% endif %}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex items-center justify-between mb-8">
+        {% if user_obj.is_active %}
+          <button onclick="openModal()" class="bg-red-600 hover:bg-red-500 active:scale-95 transition-all px-6 py-2.5 text-sm font-semibold rounded-sm tracking-wide">
+            Block User
+          </button>
+        {% else %}
+          <button onclick="openModal()" class="bg-green-600 hover:bg-green-500 active:scale-95 transition-all px-6 py-2.5 text-sm font-semibold rounded-sm tracking-wide">
+            Unblock User
+          </button>
+        {% endif %}
+        </div>
+      </div>
+
+      <!-- Grid row 1 -->
+      <div class="grid grid-cols-3 gap-5 mb-5">
+
+        <!-- Contact info -->
+        <div class="bg-[#141414] border border-white/10 rounded-sm p-5">
+          <div class="flex items-center gap-2 mb-4 text-white/50 text-xs mono tracking-wider uppercase">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            Contact Information
+          </div>
+          <div class="space-y-4">
+            <div>
+              <p class="text-white/30 text-xs mb-1">Email Address</p>
+              <p class="text-sm">{{ user_obj.email }}</p>
+            </div>
+            <div>
+              <p class="text-white/30 text-xs mb-1">Phone</p>
+              <p class="text-sm mono">{{ user_obj.phone }}</p>
+            </div>
+            <div>
+              <p class="text-white/30 text-xs mb-1">Addresses</p>
+                  {% for address in addresses %}
+                    <p class="text-sm">
+                      {{ address.line1 }}, {{ address.city }}, {{ address.country }}
+                    </p>
+                  {% empty %}
+                    <p class="text-sm text-white/40">No address found</p>
+                  {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent orders -->
+        <div class="col-span-2 bg-[#141414] border border-white/10 rounded-sm p-5">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2 text-white/50 text-xs mono tracking-wider uppercase">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              Recent Orders
+            </div>
+            <a href="#" class="text-white/40 hover:text-white text-xs transition-colors">View all</a>
+          </div>
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-white/10 text-white/30 text-xs">
+                <th class="text-left pb-3 font-normal">Order ID</th>
+                <th class="text-left pb-3 font-normal">Date</th>
+                <th class="text-left pb-3 font-normal">Status</th>
+                <th class="text-right pb-3 font-normal">Amount</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5">
+              <tr class="hover:bg-white/[0.02] transition-colors">
+                <td class="py-3 mono text-xs text-white/70">#ORD-9012-X</td>
+                <td class="py-3 text-white/50 text-xs">2024-05-12</td>
+                <td class="py-3"><span class="badge-delivered text-xs px-2.5 py-1 rounded-sm font-medium">Delivered</span></td>
+                <td class="py-3 text-right font-medium">$450.00</td>
+              </tr>
+              <tr class="hover:bg-white/[0.02] transition-colors">
+                <td class="py-3 mono text-xs text-white/70">#ORD-8821-Y</td>
+                <td class="py-3 text-white/50 text-xs">2024-05-10</td>
+                <td class="py-3"><span class="badge-shipped text-xs px-2.5 py-1 rounded-sm font-medium">Shipped</span></td>
+                <td class="py-3 text-right font-medium">$1,200.00</td>
+              </tr>
+              <tr class="hover:bg-white/[0.02] transition-colors">
+                <td class="py-3 mono text-xs text-white/70">#ORD-7742-Z</td>
+                <td class="py-3 text-white/50 text-xs">2024-05-08</td>
+                <td class="py-3"><span class="badge-pending text-xs px-2.5 py-1 rounded-sm font-medium">Pending</span></td>
+                <td class="py-3 text-right font-medium">$89.00</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Grid row 2 -->
+      <div class="grid grid-cols-3 gap-5 mb-5">
+
+        <!-- Activity -->
+        <div class="bg-[#141414] border border-white/10 rounded-sm p-5">
+          <div class="flex items-center gap-2 mb-5 text-white/50 text-xs mono tracking-wider uppercase">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Activity
+          </div>
+          <div class="grid grid-cols-2 gap-4 mb-5">
+            <div>
+              <p class="text-white/30 text-xs mb-1">Total Orders</p>
+              <p class="text-3xl font-semibold mono">142</p>
+            </div>
+            <div>
+              <p class="text-white/30 text-xs mb-1">Total Spend</p>
+              <p class="text-3xl font-semibold mono">$12.4K</p>
+            </div>
+          </div>
+          <div class="border-t border-white/10 pt-4">
+            <p class="text-white/30 text-xs mb-1">Last Login</p>
+            <div class="flex items-center justify-between">
+              <p class="text-sm mono text-white/70">2024-10-24 14:32</p>
+              <p class="text-xs mono text-white/30">192.168.0.1</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Wallet -->
+        <div class="bg-[#141414] border border-white/10 rounded-sm p-5 flex flex-col justify-between">
+          <div class="flex items-center gap-2 text-white/50 text-xs mono tracking-wider uppercase mb-4">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+            User Wallet
+          </div>
+          <p class="text-4xl font-bold mono tracking-tight">$1,240.00</p>
+        </div>
+
+        <!-- Placeholder / extra col filler -->
+        <div></div>
+      </div>
+
+      <!-- Recent Transactions -->
+      <div class="bg-[#141414] border border-white/10 rounded-sm p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2 text-white/50 text-xs mono tracking-wider uppercase">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+            Recent Transactions
+          </div>
+          <a href="#" class="text-white/40 hover:text-white text-xs transition-colors">View all</a>
+        </div>
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-white/10 text-white/30 text-xs">
+              <th class="text-left pb-3 font-normal">Transaction ID</th>
+              <th class="text-left pb-3 font-normal">Date</th>
+              <th class="text-left pb-3 font-normal">Type</th>
+              <th class="text-left pb-3 font-normal">Method</th>
+              <th class="text-right pb-3 font-normal">Amount</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5">
+            <tr class="hover:bg-white/[0.02] transition-colors">
+              <td class="py-3 mono text-xs text-white/70">0XBE...FF32</td>
+              <td class="py-3 text-white/50 text-xs">2024-10-23</td>
+              <td class="py-3 text-sm">Order Payment</td>
+              <td class="py-3 text-white/40 text-xs">Wallet</td>
+              <td class="py-3 text-right font-medium">$142.00</td>
+            </tr>
+            <tr class="hover:bg-white/[0.02] transition-colors">
+              <td class="py-3 mono text-xs text-white/70">0XAF...0112</td>
+              <td class="py-3 text-white/50 text-xs">2024-10-21</td>
+              <td class="py-3 text-sm">Wallet Top-up</td>
+              <td class="py-3 text-white/40 text-xs">UPI</td>
+              <td class="py-3 text-right font-medium">$500.00</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- ░░ BLOCK USER MODAL ░░ -->
+  <div id="modal-backdrop" class="items-center justify-center">
+    <div class="bg-black border border-white/15 p-12 rounded-sm w-full max-w-lg text-center relative">
+      <!-- Close (optional) -->
+      <button
+        onclick="document.getElementById('modal-backdrop').classList.remove('show')"
+        class="absolute top-4 right-4 text-white/30 hover:text-white transition-colors"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <p class="mono text-xl font-bold leading-snug mb-10 tracking-tight">
+        Are you sure you want to
+        {% if user_obj.is_active %}block{% else %}unblock{% endif %} this user?
+      </p>
+
+      <div class="flex items-center justify-center gap-6">
+        <button
+          onclick="confirmAction()"
+          class="bg-white text-black mono font-bold text-sm px-12 py-3 hover:bg-white/90 active:scale-95 transition-all"
+        >Yes</button>
+        <button
+          onclick="document.getElementById('modal-backdrop').classList.remove('show')"
+          class="border border-white text-white mono font-bold text-sm px-10 py-3 hover:bg-white/10 active:scale-95 transition-all"
+        >Cancel</button>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+  
+
+{% block scripts %}
+  <script>
+    function handleBlock() {
+      document.getElementById('modal-backdrop').classList.remove('show');
+      // You can add block logic / API call here
+      alert('User has been blocked.');
+    }
+
+    // Close on backdrop click
+    document.getElementById('modal-backdrop').addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('show');
+    });
+
+    let actionUrl = "";
+
+    function openModal() {
+      actionUrl = "{% url 'toggle_user_status' user_obj.id %}";
+      document.getElementById('modal-backdrop').classList.add('show');
+
+      modal.style.display = 'flex'; 
+      modal.classList.add('show');
+    }
+
+    function confirmAction() {
+      window.location.href = actionUrl;
+    }
+
+  </script>
+{% endblock %}
+
