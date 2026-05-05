@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FASHIO – Enter OTP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: 'DM Sans', sans-serif; }
+    .mono { font-family: 'Share Tech Mono', monospace; }
+
+    .otp-input {
+      width: 80px;
+      height: 90px;
+      background: #1a1a1a;
+      border: 1.5px solid #2e2e2e;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 2rem;
+      font-family: 'Share Tech Mono', monospace;
+      text-align: center;
+      outline: none;
+      caret-color: transparent;
+      transition: border-color 0.15s;
+    }
+    .otp-input:focus  { border-color: #3b82f6; }
+    .otp-input.filled { border-color: #444; }
+    .otp-input.error  { border-color: #ef4444; }
+  </style>
+</head>
+<body class="bg-black text-white min-h-screen flex items-center justify-center p-6">
+
+  <!-- Outer card (matches the screenshot's bordered panel) -->
+  <div class="relative w-full max-w-3xl bg-black border border-white/10 rounded-sm px-14 py-14">
+
+    <!-- Red left accent bar -->
+    <div class="absolute left-0 top-10 bottom-10 w-1 bg-red-600 rounded-r-sm"></div>
+
+    <!-- Title -->
+    <h1 class="text-white text-4xl font-bold mb-3 pl-6">Enter the OTP</h1>
+    <p class="mono text-white/40 text-xs tracking-widest mb-12 pl-6">
+      Enter the 6-digit OTP sent to your email.
+    </p>
+
+    {% if messages %}
+      <div class="pl-6 mb-4">
+      {% for message in messages %}
+        <p class="text-sm text-red-400 mono">{{ message }}</p>
+      {% endfor %}
+      </div>
+    {% endif %}
+
+    <form method="POST" action="">
+        {% csrf_token %}
+
+        <p class="mono text-white/40 text-xs tracking-widest mb-12 pl-6">
+            {% if new_email %}
+                Enter the 6-digit OTP sent to {{ new_email }}
+            {% else %}
+                Enter the 6-digit OTP sent to your email.
+            {% endif %}
+        </p>
+
+        <!-- OTP inputs -->
+      <div class="flex items-center gap-3 pl-6 mb-12 flex-wrap">
+        <!-- Group 1 -->
+        <input class="otp-input" type="text" name="otp1" maxlength="1" inputmode="numeric" id="otp1" autofocus/>
+        <input class="otp-input" type="text" name="otp2" maxlength="1" inputmode="numeric" id="otp2"/>
+        <input class="otp-input" type="text" name="otp3" maxlength="1" inputmode="numeric" id="otp3"/>
+
+        <!-- Dash separator -->
+        <span class="mono text-white/30 text-xl px-1">—</span>
+
+        <!-- Group 2 -->
+        <input class="otp-input" type="text" name="otp4" maxlength="1" inputmode="numeric" id="otp4"/>
+        <input class="otp-input" type="text" name="otp5" maxlength="1" inputmode="numeric" id="otp5"/>
+        <input class="otp-input" type="text" name="otp6" maxlength="1" inputmode="numeric" id="otp6"/>
+      </div>
+
+        <!-- CONFIRM button -->
+        <button
+            class="w-full bg-white text-black mono font-bold text-sm tracking-widest py-5 flex items-center justify-center gap-4 hover:bg-gray-100 active:scale-[0.99] transition-all duration-150 mb-8 rounded-sm"
+        >
+            CONFIRM
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
+        </button>
+
+    </form>
+
+    <!-- Footer row -->
+    <div class="flex items-center gap-4 pl-1">
+      <a href="{% url 'user_resend_otp' %}" 
+        id="resendBtn"
+        class="mono text-white text-xs font-bold opacity-40 pointer-events-none">
+        Resend code
+      </a>
+      <span 
+        class="mono text-white text-xs font-bold" 
+        id="timerLabel"
+        data-seconds="{{ remaining_seconds|default:0 }}"
+      >
+      after {{ remaining_seconds|default:0 }}s
+      </span>
+      <span class="text-white/20 text-xs">•</span>
+      <a href="{% url 'user_change_email' %}" class="mono text-white text-xs font-bold hover:underline">Change email</a>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const resendBtn = document.getElementById('resendBtn');
+      const label = document.getElementById('timerLabel');
+
+      if (!label || !resendBtn) return;
+
+      // Ensure we get a valid number
+      let seconds = parseInt(label.getAttribute('data-seconds')) || 0;
+
+      function updateUI(s) {
+        if (s <= 0) {
+          label.textContent = "now";
+          resendBtn.classList.remove('opacity-40', 'pointer-events-none');
+          resendBtn.style.cursor = "pointer";
+          resendBtn.textContent = "Resend code";
+        } else {
+          label.textContent = `after ${s}s`;
+          // Ensure button is disabled while timer runs
+          resendBtn.classList.add('opacity-40', 'pointer-events-none');
+        }
+      }
+
+      // Initial check
+      updateUI(seconds);
+
+      if (seconds > 0) {
+        const timer = setInterval(() => {
+          seconds--;
+          updateUI(seconds);
+          if (seconds <= 0) clearInterval(timer);
+        }, 1000);
+      }
+    });
+
+    const otpIds = ['otp1','otp2','otp3','otp4','otp5','otp6'];
+
+    // ── Auto-advance & backspace ─────────────────────
+    otpIds.forEach((id, idx) => {
+      const el = document.getElementById(id);
+
+      el.addEventListener('input', () => {
+        el.value = el.value.replace(/\D/g, '').slice(-1);
+        el.classList.toggle('filled', !!el.value);
+        el.classList.remove('error');
+        if (el.value && idx < 5) document.getElementById(otpIds[idx + 1]).focus();
+      });
+
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Backspace' && !el.value && idx > 0)
+          document.getElementById(otpIds[idx - 1]).focus();
+      });
+
+      // Paste support
+      el.addEventListener('paste', e => {
+        e.preventDefault();
+        const digits = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6);
+        digits.split('').forEach((d, i) => {
+          if (otpIds[i]) {
+            const inp = document.getElementById(otpIds[i]);
+            inp.value = d;
+            inp.classList.add('filled');
+            inp.classList.remove('error');
+          }
+        });
+        const last = Math.min(digits.length, 5);
+        document.getElementById(otpIds[last]).focus();
+      });
+    });
+  </script>
+
+</body>
+</html>

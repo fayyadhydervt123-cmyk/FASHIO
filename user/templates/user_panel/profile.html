@@ -1,0 +1,872 @@
+{% extends 'user_base/base.html' %}
+
+{% block title %}FASHIO | Profile{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── PROFILE HEADER ── */
+  .profile-header{padding:32px 70px 28px;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;gap:24px;}
+  .avatar-wrapper{display:flex;align-items:stretch;gap:0;}
+  .avatar-bar{width:3px;background:#c0392b;margin-right:14px;}
+  .avatar-img{width:100px;height:100px;background:#1a1a1a;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+  .avatar-img svg{opacity:.55;}
+  .profile-info{display:flex;flex-direction:column;gap:16px;}
+  .profile-name{font-size:26px;font-weight:700;letter-spacing:.05em;}
+  .profile-btns{display:flex;gap:10px;flex-wrap:wrap;}
+  .btn-outline{border:1px solid #555;background:transparent;color:#fff;padding:9px 18px;font-size:11px;letter-spacing:.09em;cursor:pointer;font-family:'Space Mono',monospace;display:flex;align-items:center;gap:7px;}
+  .btn-outline:hover{background:#fff;background:rgba(255,255,255,0.08);}
+  .btn-logout{border:1px solid #555;background:transparent;color:#e05a2b;padding:9px 18px;font-size:11px;letter-spacing:.09em;cursor:pointer;font-family:'Space Mono',monospace;display:flex;align-items:center;gap:7px;}
+  .btn-logout:hover{background:rgba(224,90,43,0.12);color:#fff;border-color:#e05a2b;}
+
+  /* ── MAIN LAYOUT ── */
+  .main {display: grid;grid-template-columns: 500px minmax(600px, 900px);gap: 32px;justify-content: center;}
+  
+
+  /* ── LEFT SIDEBAR ── */
+  .sidebar{border-right:1px solid #1a1a1a;padding:28px 24px 40px;}
+  .sidebar-section{margin-bottom:24px;}
+  .sidebar-divider{border:none;border-top:1px solid #1a1a1a;margin:20px 0;}
+  .section-title{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;letter-spacing:.07em;margin-bottom:18px;}
+  .label-tiny{font-size:9px;letter-spacing:.15em;color:#555;margin-bottom:4px;}
+  .value-text{font-size:12px;color:#ccc;margin-bottom:14px;}
+
+  .referral-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .referral-text{font-size:12px;color:#999;}
+  .referral-text strong{color:#fff;}
+  .btn-copy{border:1px solid #444;background:transparent;color:#fff;font-size:9px;letter-spacing:.12em;padding:3px 8px;cursor:pointer;font-family:'Space Mono',monospace;}
+  .rewards-title{font-size:12px;font-weight:700;letter-spacing:.06em;margin-bottom:10px;}
+  .rewards-list{list-style:none;display:flex;flex-direction:column;gap:8px;}
+  .rewards-list li{font-size:10.5px;color:#777;line-height:1.6;}
+  .rewards-list li strong{color:#aaa;}
+
+  .address-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .address-title{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;letter-spacing:.07em;}
+  .btn-see-all{background:none;border:none;color:#666;font-size:10px;letter-spacing:.12em;cursor:pointer;font-family:'Space Mono',monospace;}
+  .btn-see-all:hover{color:#fff;}
+  .address-card{border:1px solid #222;padding:14px 16px;font-size:11px;color:#999;line-height:1.75;}
+  .address-card .name{color:#fff;font-weight:700;margin-bottom:2px;}
+  .address-card .phone{margin-bottom:10px;}
+
+  .sidebar-links{display:flex;flex-direction:column;gap:16px;}
+  .sidebar-links a{font-size:12px;color:#777;display:flex;align-items:center;gap:7px;}
+  .sidebar-links a:hover{color:#fff;}
+
+  /* ── RIGHT CONTENT ── */
+  .content{padding:28px 28px 48px 32px;}
+
+  /* orders */
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .section-header-title{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;letter-spacing:.07em;}
+
+  .orders-table{width:100%;border-collapse:collapse;border:1px solid #1e1e1e;margin-bottom:44px;}
+  .orders-table thead tr{border-bottom:1px solid #1e1e1e;}
+  .orders-table th{text-align:left;padding:11px 14px;font-size:9px;letter-spacing:.14em;color:#444;font-weight:400;}
+  .orders-table td{padding:14px 14px;font-size:11px;border-bottom:1px solid #111;}
+  .orders-table tbody tr:last-child td{border-bottom:none;}
+  .orders-table td.prod{font-weight:700;font-size:10.5px;letter-spacing:.03em;line-height:1.5;}
+  .orders-table td.date{color:#666;}
+  .badge{display:inline-block;font-size:9.5px;letter-spacing:.07em;padding:2px 9px;}
+  .badge-d{background:rgba(34,197,94,.12);color:#22c55e;border:1px solid rgba(34,197,94,.35);}
+  .badge-p{background:rgba(234,179,8,.12);color:#eab308;border:1px solid rgba(234,179,8,.35);}
+  .badge-c{background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.35);}
+  .btn-view{background:none;border:none;color:#fff;font-size:11px;font-weight:700;letter-spacing:.09em;cursor:pointer;font-family:'Space Mono',monospace;}
+
+  /* wishlist */
+  .wishlist-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .wish-card{border:1px solid #1e1e1e;}
+  .wish-img{position:relative;background:#0d0d0d;height:260px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .wish-close{position:absolute;top:8px;right:8px;width:22px;height:22px;background:rgba(0,0,0,.7);border:1px solid #444;color:#fff;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;}
+  .wish-footer{padding:11px 14px;display:flex;align-items:center;justify-content:space-between;}
+  .wish-name{font-size:12px;font-weight:700;}
+  .wish-price{font-size:12px;color:#888;}
+  .btn-cart{width:100%;border:none;border-top:1px solid #1e1e1e;background:transparent;color:#fff;padding:13px;font-size:10px;letter-spacing:.1em;cursor:pointer;font-family:'Space Mono',monospace;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .btn-cart:hover{background:rgba(255,255,255,0.08);}
+
+  /* ── MODALS ── */
+  .modal{display:none;position:fixed;inset:0;z-index:200;background:#000;align-items:center;justify-content:center;}
+  .modal.open{display:flex;}
+  .modal-box{width: 100%;max-width: 720px;   /* control width here */background:#000;border:1px solid #222;box-shadow:0 20px 60px rgba(0,0,0,0.6);}
+  .modal-header{padding:20px 24px;}
+
+  .modal-body{padding:20px 24px 28px;}
+
+  /* logout */
+  #m-logout{display:none;}
+  #m-logout.open{display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .logout-q{font-size:20px;letter-spacing:.06em;color:#fff;margin-bottom:72px;text-align:center;}
+  .logout-btns{width:100%;max-width:500px;display:flex;flex-direction:column;gap:14px;padding:0 20px;}
+  .btn-logout-confirm{width:100%;background:#fff;color:#000;border:none;padding:22px;font-size:14px;font-weight:700;letter-spacing:.09em;cursor:pointer;font-family:'Space Mono',monospace;}
+  .btn-cancel-outline{width:100%;background:transparent;color:#fff;border:1px solid #444;padding:22px;font-size:14px;font-weight:700;letter-spacing:.09em;cursor:pointer;font-family:'Space Mono',monospace;}
+
+  /* shared modal header */
+  .modal-header{display:flex;align-items:center;justify-content:space-between;padding:28px 32px 22px;border-bottom:1px solid #222;}
+  .modal-title{font-size:20px;font-weight:700;letter-spacing:.06em;}
+  .modal-title.bold-title{font-weight:700;}
+  .btn-close-modal{width:30px;height:30px;border:1px solid #444;background:transparent;color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;}
+  .modal-body{padding:24px 32px 40px;}
+
+  /* addresses list */
+  .addr-addnew{display:flex;justify-content:flex-end;padding:16px 0 6px;}
+  .btn-addnew{background:none;border:none;color:#fff;font-size:10.5px;font-weight:700;letter-spacing:.15em;cursor:pointer;font-family:'Space Mono',monospace;}
+  .addr-row{display:flex;align-items:center;justify-content:space-between;padding:32px 0;border-bottom:1px solid #111;}
+  .addr-row:last-child{border-bottom:none;}
+  .addr-block{border-left:2px solid #555;padding-left:18px;}
+  .addr-block p{font-size:12.5px;color:#ccc;line-height:1.9;margin:0;}
+  .addr-actions{display:flex;gap:22px;flex-shrink:0;padding-left:24px;}
+  .btn-addr-act{background:none;border:none;color:#fff;font-size:11px;font-weight:700;letter-spacing:.13em;cursor:pointer;font-family:'Space Mono',monospace;}
+  .btn-addr-act:hover{text-decoration:underline;}
+
+  /* new address form */
+  .form-wrap{display:flex;flex-direction:column;gap:26px;max-width:100%;}
+  .form-field label{display:block;font-size:11px;letter-spacing:.1em;color:#777;margin-bottom:9px;}
+  .form-field input{width:100%;background:#000;border:1px solid #333;color:#fff;padding:13px 14px;font-size:12px;font-family:'Space Mono',monospace;outline:none;}
+  .form-field input:focus{border-color:#666;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+  .form-save{display:flex;justify-content:flex-end;border-top:1px solid #222;padding-top:24px;margin-top:4px;}
+  .btn-save{background:#fff;color:#000;border:none;padding:15px 32px;font-size:11px;font-weight:700;letter-spacing:.14em;cursor:pointer;font-family:'Space Mono',monospace;display:flex;align-items:center;gap:8px;}
+  .btn-save:hover{background:#e5e5e5;}
+
+  /* delete address */
+  .delete-addr-preview{border-left:2px solid #555;padding-left:18px;margin:40px 0 48px;}
+  .delete-addr-preview p{font-size:12.5px;color:#ccc;line-height:1.9;margin:0;}
+  .delete-warning{font-size:12px;color:#666;line-height:1.85;margin-bottom:36px;}
+  .delete-btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .btn-cancel-del{border:1px solid #333;background:transparent;color:#fff;padding:19px 16px;font-size:11px;font-weight:700;letter-spacing:.13em;cursor:pointer;font-family:'Space Mono',monospace;display:flex;align-items:center;justify-content:center;gap:12px;}
+  .btn-cancel-del:hover{border-color:#fff;}
+  .btn-del-confirm{border:none;background:#fff;color:#000;padding:19px 16px;font-size:11px;font-weight:700;letter-spacing:.13em;cursor:pointer;font-family:'Space Mono',monospace;display:flex;align-items:center;justify-content:center;gap:12px;}
+  .btn-del-confirm:hover{background:#e5e5e5;}
+
+  /* Fix for fixed navbar in base.html */
+  .profile-page-wrapper {
+    padding-top: 56px; /* Matches h-14 navbar height */
+    background: #000;
+  }
+
+  /* ── PROFILE HEADER ── */
+  .profile-header{padding:48px 70px 32px;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;gap:24px;}
+  .avatar-bar{width:3px;background:#c0392b;margin-right:14px;}
+  .avatar-img{width:100px;height:100px;background:#1a1a1a;display:flex;align-items:center;justify-content:center;}
+  
+  @media (max-width: 1024px) {
+    .main { grid-template-columns: 1fr; }
+    .sidebar { border-right: none; border-bottom: 1px solid #1a1a1a; }
+  }
+
+  .btn-outline{border:1px solid #555;background:transparent;color:#fff;padding:9px 18px;font-size:11px;letter-spacing:.09em;cursor:pointer;font-family:'Space Mono',monospace;display:flex;align-items:center;gap:7px;}
+  .sidebar{border-right:1px solid #1a1a1a;padding:40px 24px;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-page-wrapper">
+    <div class="profile-header">
+    <div class="avatar-wrapper">
+        <div class="avatar-bar"></div>
+        <div class="avatar-img">
+        <!-- person silhouette matching original -->
+        {% if user.image %}
+            <img src="{{ user.image.url }}" class="avatar-img">
+        {% else %}
+            <svg width="70" height="85" viewBox="0 0 70 85" fill="none">
+                <circle cx="35" cy="26" r="18" fill="#bbb"/>
+                <ellipse cx="35" cy="72" rx="28" ry="18" fill="#bbb"/>
+            </svg>
+        {% endif %}
+        </div>
+    </div>
+    <div class="profile-info">
+        <div class="profile-name">{{ user.fullname }}</div>
+        <div class="profile-btns">
+        <a href="{% url 'user_edit_profile' %}" ><button class="btn-outline">✎ &nbsp;Edit Profile</button></a>
+        <button class="btn-outline">▣ &nbsp;Wallet</button>
+        <button class="btn-logout" onclick="openModal('logout')">↪ &nbsp;Logout</button>
+        </div>
+    </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════ MAIN GRID ═══════════════════════════════ -->
+<div class="container">
+    <div class="main">
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="sidebar">
+
+        <!-- Account details -->
+        <div class="sidebar-section">
+        <div class="section-title"><span>≡</span> Account details</div>
+        <div class="label-tiny">EMAIL ADDRESS</div>
+        <div class="value-text">{{ user.email }}</div>
+        <div class="label-tiny">PHONE</div>
+        <div class="value-text" style="margin-bottom:0;">{{ user.phone }}</div>
+        </div>
+
+        <hr class="sidebar-divider"/>
+
+        <!-- Referral -->
+        <div class="sidebar-section">
+        <div class="referral-row">
+            <span class="referral-text">Referral Code – <strong>FRIENDLY10</strong></span>
+            <button class="btn-copy">COPY</button>
+        </div>
+        <div class="rewards-title">How to Earn Rewards</div>
+        <ol class="rewards-list">
+            <li>1. <strong>Copy Your Code:</strong> Click the "Copy" button next to your unique referral code below.</li>
+            <li>2. <strong>Share with Friends:</strong> Send your code to friends via WhatsApp, Instagram, or SMS.</li>
+            <li>3. <strong>Friend Shops:</strong> Your friend enters your code at checkout on their first order to get 20% Off.</li>
+            <li>4. <strong>Get Rewarded:</strong> Once their order is delivered, a ₹500 coupon will be added automatically to your profile!</li>
+        </ol>
+        </div>
+
+        <hr class="sidebar-divider"/>
+
+        <!-- Address -->
+        <div class="sidebar-section">
+        <div class="address-header">
+            <div class="address-title"><span style="font-size:11px;">⊙</span> Address</div>
+            <button class="btn-see-all" onclick="openModal('addresses')">SEE ALL</button>
+        </div>
+        {% if latest_address %}
+            <div class="address-card">
+                <div class="name">{{ latest_address.name }}</div>
+                <div class="phone">{{ latest_address.phone }}</div>
+                {{ latest_address.line1 }}<br>
+                {{ latest_address.city }}<br>
+                {{ latest_address.postal_code }}<br>
+                {{ latest_address.state }}
+            </div>
+            {% else %}
+            <p>No address found</p>
+            {% endif %}
+        </div>
+
+        <hr class="sidebar-divider"/>
+
+        <!-- Links -->
+        <div class="sidebar-links">
+        <a href="#"><span style="font-size:11px;">ℹ</span> About us</a>
+        <a href="#"><span style="font-size:11px;">✆</span> Contact us</a>
+        </div>
+
+    </aside>
+
+    <!-- ── RIGHT CONTENT ── -->
+    <div class="content">
+
+        <!-- My Orders -->
+        <div class="section-header">
+        <div class="section-header-title"><span>≡</span> My orders</div>
+        <button class="btn-see-all">SEE ALL</button>
+        </div>
+        <table class="orders-table">
+        <thead>
+            <tr>
+            <th>PRODUCT DETAILS</th>
+            <th>DELIVERY DATE</th>
+            <th>AMOUNT</th>
+            <th>STATUS</th>
+            <th>ACTION</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+            <td class="prod">CARGO UNIT<br>GREY</td>
+            <td class="date">2024.10.12</td>
+            <td>£450.00</td>
+            <td><span class="badge badge-d">DELIVERED</span></td>
+            <td><button class="btn-view">VIEW</button></td>
+            </tr>
+            <tr>
+            <td class="prod">VOID TEK<br>JACKET</td>
+            <td class="date">2024.11.05</td>
+            <td>£1,290.00</td>
+            <td><span class="badge badge-p">PROCESSING</span></td>
+            <td><button class="btn-view">VIEW</button></td>
+            </tr>
+            <tr>
+            <td class="prod">TECH CARGO<br>V2</td>
+            <td class="date">2024.08.30</td>
+            <td>£85.00</td>
+            <td><span class="badge badge-c">CANCELLED</span></td>
+            <td><button class="btn-view">VIEW</button></td>
+            </tr>
+        </tbody>
+        </table>
+
+        <!-- Wishlist -->
+        <div class="section-header">
+        <div class="section-header-title"><span>♡</span> Wishlist</div>
+        <button class="btn-see-all">SEE ALL</button>
+        </div>
+        <div class="wishlist-grid">
+
+        <!-- Card 1 – Cargo Shirt (dark grey shirt image recreation) -->
+        <div class="wish-card">
+            <div class="wish-img">
+            <button class="wish-close">✕</button>
+            <!-- Cargo shirt SVG recreation -->
+            <svg width="155" height="190" viewBox="0 0 155 190" fill="none">
+                <!-- body -->
+                <rect x="28" y="55" width="99" height="128" rx="2" fill="#3a3a3a"/>
+                <!-- left sleeve -->
+                <polygon points="0,30 28,55 28,100 0,85" fill="#3a3a3a"/>
+                <!-- right sleeve -->
+                <polygon points="155,30 127,55 127,100 155,85" fill="#3a3a3a"/>
+                <!-- collar -->
+                <path d="M55,55 Q77,40 100,55" stroke="#555" stroke-width="2" fill="none"/>
+                <!-- button placket -->
+                <rect x="74" y="55" width="7" height="128" fill="#333"/>
+                <!-- pocket left -->
+                <rect x="38" y="68" width="28" height="24" rx="1" fill="#333" stroke="#444" stroke-width="1"/>
+                <!-- pocket right -->
+                <rect x="89" y="68" width="28" height="24" rx="1" fill="#333" stroke="#444" stroke-width="1"/>
+                <!-- shirt bottom raw edge -->
+                <rect x="28" y="176" width="99" height="7" rx="1" fill="#2e2e2e"/>
+            </svg>
+            </div>
+            <div class="wish-footer">
+            <span class="wish-name">Cargo Shirt</span>
+            <span class="wish-price">£380</span>
+            </div>
+            <button class="btn-cart">🛒 &nbsp;MOVE TO CART</button>
+        </div>
+
+        <!-- Card 2 – Oversized Tee (cream/beige long sleeve) -->
+        <div class="wish-card">
+            <div class="wish-img">
+            <button class="wish-close">✕</button>
+            <!-- Oversized tee SVG recreation -->
+            <svg width="155" height="175" viewBox="0 0 155 175" fill="none">
+                <!-- body -->
+                <rect x="28" y="50" width="99" height="118" rx="2" fill="#d4c89a"/>
+                <!-- left sleeve (long) -->
+                <polygon points="0,28 28,50 28,108 0,115" fill="#d4c89a"/>
+                <!-- right sleeve (long) -->
+                <polygon points="155,28 127,50 127,108 155,115" fill="#d4c89a"/>
+                <!-- collar neckline -->
+                <path d="M55,50 Q77,36 100,50" stroke="#bfb487" stroke-width="1.5" fill="none"/>
+                <!-- subtle seam -->
+                <line x1="28" y1="50" x2="127" y2="50" stroke="#bfb487" stroke-width="1"/>
+                <!-- small tag label at top center -->
+                <rect x="72" y="49" width="11" height="7" rx="1" fill="#c8bc8e"/>
+            </svg>
+            </div>
+            <div class="wish-footer">
+            <span class="wish-name">Oversized Tee</span>
+            <span class="wish-price">£210</span>
+            </div>
+            <button class="btn-cart">🛒 &nbsp;MOVE TO CART</button>
+        </div>
+
+        </div>
+    </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     MODAL 1 – LOGOUT
+     Full black screen · question centred · Logout (white fill) + Cancel (outline)
+════════════════════════════════════════════════════════════════ -->
+<div id="m-logout" class="modal" style="min-height:100vh;">
+  <p class="logout-q">Are you sure you want to Logout?</p>
+  <div class="logout-btns">
+    <a href={% url 'user_logout' %} ><button class="btn-logout-confirm" onclick="closeModal('logout')">Logout</button></a>
+    <button class="btn-cancel-outline" onclick="closeModal('logout')">Cancel</button>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     MODAL 2 – ADDRESSES LIST
+     Title "Addresses" · X · divider · ADD NEW + right · two address rows with EDIT DELETE
+════════════════════════════════════════════════════════════════ -->
+<div id="m-addresses" class="modal">
+  <div class="modal-box">
+    <div class="modal-header">
+        <span class="modal-title">Addresses</span>
+        <button class="btn-close-modal" onclick="closeModal('addresses')">✕</button>
+    </div>
+    <div class="modal-body">
+        <div class="addr-addnew">
+        <button class="btn-addnew" onclick="go('addresses','new-address')">ADD NEW +</button>
+        </div>
+        {% for address in addresses %}
+        <div class="addr-row">
+            <div class="addr-block">
+                <p>
+                    {{ address.line1 }}<br>
+                    {{ address.city }}<br>
+                    {{ address.postal_code }}<br>
+                    {{ address.state }}
+                </p>
+            </div>
+
+            <div class="addr-actions">
+                
+                <button class="btn-addr-act" onclick="openEditModal(
+                    '{{ address.id }}',
+                    '{{ address.name }}',
+                    '{{ address.phone }}',
+                    '{{ address.line1 }}',
+                    '{{ address.city }}',
+                    '{{ address.postal_code }}',
+                    '{{ address.state }}'
+                )">EDIT</button>
+                <button class="btn-addr-act" onclick="openDeleteModal('{{ address.id }}')">DELETE</button>
+                
+            </div>
+        </div>
+        {% empty %}
+        <p>No addresses found</p>
+        {% endfor %}
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     MODAL 3 – NEW ADDRESS
+     Title "New Address" · X top right · divider · 6 fields · SAVE CHANGES →
+════════════════════════════════════════════════════════════════ -->
+<div id="m-new-address" class="modal">
+  <div class="modal-box">
+    <div class="modal-header">
+        <span class="modal-title">New Address</span>
+        <button class="btn-close-modal" onclick="go('new-address','addresses')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <form method="POST" action="{% url 'user_add_address' %}">
+        {% csrf_token %}
+        <div class="form-wrap">
+
+            {% if messages %}
+                {% for message in messages %}
+                    <p style="color:red; font-size:12px;">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+
+        <div class="form-field">
+            <label>Name :</label>
+            <input type="text" name="name" value="{{ new_address_data.name|default:'' }}" minlength="3" pattern="[A-Za-z ]+" required/>
+        </div>
+        <div class="form-field">
+            <label>Street Address :</label>
+            <input type="text" name="line1" value="{{ new_address_data.line1|default:'' }}" minlength="5" required/>
+        </div>
+        <div class="form-row">
+            <div class="form-field">
+            <label>Phone :</label>
+            <input type="text" name="phone" value="{{ new_address_data.phone|default:'' }}" pattern="[0-9]{10}" maxlength="10" required/>
+            </div>
+            <div class="form-field">
+            <label>City :</label>
+            <input type="text" name="city" value="{{ new_address_data.city|default:'' }}" pattern="[A-Za-z ]+" required/>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-field">
+            <label>Postal code / zip code :</label>
+            <input type="text" name="postal_code" value="{{ new_address_data.postal_code|default:'' }}" pattern="[0-9]{5,6}" required/>
+            </div>
+            <div class="form-field">
+                <label>State :</label>
+                    <select name="state" style="width:100%;background:#000;border:1px solid #333;color:#fff;padding:13px 14px;font-size:12px;font-family:'Space Mono',monospace;outline:none;">
+                        <option value="">-- Select State --</option>
+                        <option value="AP">Andhra Pradesh</option>
+                        <option value="AR">Arunachal Pradesh</option>
+                        <option value="AS">Assam</option>
+                        <option value="BR">Bihar</option>
+                        <option value="CG">Chhattisgarh</option>
+                        <option value="DL">Delhi</option>
+                        <option value="GA">Goa</option>
+                        <option value="GJ">Gujarat</option>
+                        <option value="HR">Haryana</option>
+                        <option value="HP">Himachal Pradesh</option>
+                        <option value="JK">Jammu and Kashmir</option>
+                        <option value="JH">Jharkhand</option>
+                        <option value="KA">Karnataka</option>
+                        <option value="KL">Kerala</option>
+                        <option value="MP">Madhya Pradesh</option>
+                        <option value="MH">Maharashtra</option>
+                        <option value="MN">Manipur</option>
+                        <option value="ML">Meghalaya</option>
+                        <option value="MZ">Mizoram</option>
+                        <option value="NL">Nagaland</option>
+                        <option value="OD">Odisha</option>
+                        <option value="PB">Punjab</option>
+                        <option value="RJ">Rajasthan</option>
+                        <option value="SK">Sikkim</option>
+                        <option value="TN">Tamil Nadu</option>
+                        <option value="TG">Telangana</option>
+                        <option value="TR">Tripura</option>
+                        <option value="UP">Uttar Pradesh</option>
+                        <option value="UT">Uttarakhand</option>
+                        <option value="WB">West Bengal</option>
+                        <option value="AN">Andaman and Nicobar Islands</option>
+                        <option value="CH">Chandigarh</option>
+                        <option value="DN">Dadra and Nagar Haveli</option>
+                        <option value="LA">Ladakh</option>
+                        <option value="LD">Lakshadweep</option>
+                        <option value="PY">Puducherry</option>
+                    </select>
+            </div>
+        </div>
+        <div class="form-save">
+            <button class="btn-save" type="submit">SAVE CHANGES &nbsp;→</button>
+        </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     MODAL – EDIT ADDRESS
+════════════════════════════════════════════════════════════════ -->
+<div id="m-edit-address" class="modal">
+  <div class="modal-box">
+    <div class="modal-header">
+        <span class="modal-title">Edit Address</span>
+        <button class="btn-close-modal" onclick="closeModal('edit-address')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <form method="POST" id="editForm" novalidate >
+        {% csrf_token %}
+        <div class="form-wrap">
+
+            {% if messages %}
+                {% for message in messages %}
+                    <p style="color:red; font-size:12px;">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+
+        <input type="hidden" name="address_id" id="edit_address_id">
+
+        <div class="form-field">
+            <label>Name :</label>
+            <input type="text" name="name" id="edit_name" value="{{ edit_address_data.name|default:'' }}" minlength="3" pattern="[A-Za-z ]+" required/>
+        </div>
+
+        <div class="form-field">
+            <label>Street Address :</label>
+            <input type="text" name="line1" id="edit_line1" value="{{ edit_address_data.line1|default:'' }}" minlength="5" required/>
+        </div>
+
+        <div class="form-row">
+            <div class="form-field">
+            <label>Phone :</label>
+            <input type="text" name="phone" id="edit_phone" value="{{ edit_address_data.phone|default:'' }}" pattern="[0-9]{10}" maxlength="10" required/>
+            </div>
+            <div class="form-field">
+            <label>City :</label>
+            <input type="text" name="city" id="edit_city" value="{{ edit_address_data.city|default:'' }}" pattern="[A-Za-z ]+" required/>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-field">
+            <label>Postal code :</label>
+            <input type="text" name="postal_code" id="edit_postal" value="{{ edit_address_data.postal_code|default:'' }}" pattern="[0-9]{5,6}" required/>
+            </div>
+            <div class="form-field">
+                <label>State :</label>
+                    <select name="state" id="edit_state" style="width:100%;background:#000;border:1px solid #333;color:#fff;padding:13px 14px;font-size:12px;font-family:'Space Mono',monospace;outline:none;">
+                        <option value="">-- Select State --</option>
+                        <option value="AP">Andhra Pradesh</option>
+                        <option value="AR">Arunachal Pradesh</option>
+                        <option value="AS">Assam</option>
+                        <option value="BR">Bihar</option>
+                        <option value="CG">Chhattisgarh</option>
+                        <option value="DL">Delhi</option>
+                        <option value="GA">Goa</option>
+                        <option value="GJ">Gujarat</option>
+                        <option value="HR">Haryana</option>
+                        <option value="HP">Himachal Pradesh</option>
+                        <option value="JK">Jammu and Kashmir</option>
+                        <option value="JH">Jharkhand</option>
+                        <option value="KA">Karnataka</option>
+                        <option value="KL">Kerala</option>
+                        <option value="MP">Madhya Pradesh</option>
+                        <option value="MH">Maharashtra</option>
+                        <option value="MN">Manipur</option>
+                        <option value="ML">Meghalaya</option>
+                        <option value="MZ">Mizoram</option>
+                        <option value="NL">Nagaland</option>
+                        <option value="OD">Odisha</option>
+                        <option value="PB">Punjab</option>
+                        <option value="RJ">Rajasthan</option>
+                        <option value="SK">Sikkim</option>
+                        <option value="TN">Tamil Nadu</option>
+                        <option value="TG">Telangana</option>
+                        <option value="TR">Tripura</option>
+                        <option value="UP">Uttar Pradesh</option>
+                        <option value="UT">Uttarakhand</option>
+                        <option value="WB">West Bengal</option>
+                        <option value="AN">Andaman and Nicobar Islands</option>
+                        <option value="CH">Chandigarh</option>
+                        <option value="DN">Dadra and Nagar Haveli</option>
+                        <option value="LA">Ladakh</option>
+                        <option value="LD">Lakshadweep</option>
+                        <option value="PY">Puducherry</option>
+                    </select>
+            </div>
+        </div>
+
+        <div class="form-save">
+            <button class="btn-save" type="submit">SAVE CHANGES →</button>
+        </div>
+
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- ═══════════════════════════════════════════════════════════════
+     MODAL 4 – DELETE ADDRESS
+     Bold title · divider · address with left bar · warning text · CANCEL | DELETE ADDRESS
+════════════════════════════════════════════════════════════════ -->
+<div id="m-delete-address" class="modal">
+  <div class="modal-box">
+      <form method="POST" id="deleteForm">
+        {% csrf_token %}
+        <div class="modal-header">
+            <span class="modal-title bold-title">Delete Address ?</span>
+            <button class="btn-close-modal" onclick="closeModal('delete-address')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="delete-warning">
+            This address will be permanently removed from your account.<br>
+            You won't be able to use it for future orders.
+            </div>
+            <div class="delete-btns">
+            <button type="button"  class="btn-cancel-del" onclick="go('delete-address','addresses')">
+                <!-- ban / no icon -->
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#fff" stroke-width="1.6"><circle cx="9" cy="9" r="7.5"/><line x1="3.8" y1="14.2" x2="14.2" y2="3.8"/></svg>
+                CANCEL
+            </button>
+            
+            <button type="submit" class="btn-del-confirm">
+                    <!-- X-in-box icon -->
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#000" stroke-width="1.8"><rect x="1" y="1" width="14" height="14" rx="1"/><line x1="4.5" y1="4.5" x2="11.5" y2="11.5"/><line x1="11.5" y1="4.5" x2="4.5" y2="11.5"/></svg>
+                DELETE ADDRESS
+            </button>
+            
+            </div>
+        </div>
+      </form>
+  </div>
+</div>
+
+<div class="border-t border-[#111] py-4 text-center text-[9px] tracking-[0.18em] text-[#333]">
+    FASHIO // BUILT FOR THE FUTURE // ALL RIGHTS RESERVED 2024
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+  // ── 1. MODAL CORE (defined first, before any overrides) ──
+  function _baseOpenModal(id) {
+    document.querySelectorAll('.modal').forEach(m => m.classList.remove('open'));
+    document.getElementById('m-'+id).classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal(id) {
+    document.getElementById('m-'+id).classList.remove('open');
+    if (!document.querySelector('.modal.open')) document.body.style.overflow = '';
+  }
+
+  function go(from, to) {
+    closeModal(from);
+    openModal(to);
+  }
+
+  // ── 2. VALIDATION HELPERS ──
+  function showFieldError(input, msg) {
+    input.style.borderColor = '#ef4444';
+    let err = input.parentElement.querySelector('.field-error');
+    if (!err) {
+      err = document.createElement('p');
+      err.className = 'field-error';
+      err.style.cssText = 'color:#ef4444;font-size:10px;margin-top:5px;letter-spacing:0.08em;font-family:Space Mono,monospace;';
+      input.parentElement.appendChild(err);
+    }
+    err.textContent = msg;
+  }
+
+  function showFieldSuccess(input) {
+    input.style.borderColor = '#22c55e';
+    const err = input.parentElement.querySelector('.field-error');
+    if (err) err.remove();
+  }
+
+  function clearFieldError(input) {
+    input.style.borderColor = '';
+    const err = input.parentElement.querySelector('.field-error');
+    if (err) err.remove();
+  }
+
+  // ── 3. ATTACH LIVE VALIDATION (called when modal opens) ──
+  function attachAddressValidation(isEdit) {
+    const name    = isEdit ? document.getElementById('edit_name')   : document.querySelector('#m-new-address input[name="name"]');
+    const phone   = isEdit ? document.getElementById('edit_phone')  : document.querySelector('#m-new-address input[name="phone"]');
+    const line1   = isEdit ? document.getElementById('edit_line1')  : document.querySelector('#m-new-address input[name="line1"]');
+    const city    = isEdit ? document.getElementById('edit_city')   : document.querySelector('#m-new-address input[name="city"]');
+    const postal  = isEdit ? document.getElementById('edit_postal') : document.querySelector('#m-new-address input[name="postal_code"]');
+    const stateEl = isEdit ? document.getElementById('edit_state')  : document.querySelector('#m-new-address select[name="state"]');
+
+    if (!name || name.dataset.validated) return; // attach only once
+    name.dataset.validated = 'true';
+
+    name.addEventListener('input', function () {
+      const v = this.value.trim();
+      if (!v)                           showFieldError(this, 'Name is required');
+      else if (v.length < 3)            showFieldError(this, 'At least 3 characters');
+      else if (!/^[A-Za-z ]+$/.test(v)) showFieldError(this, 'Letters only');
+      else                              showFieldSuccess(this);
+    });
+
+    phone.addEventListener('input', function () {
+      if (!/^\d{10}$/.test(this.value.trim())) showFieldError(this, 'Enter valid 10-digit number');
+      else                                      showFieldSuccess(this);
+    });
+
+    line1.addEventListener('input', function () {
+      if (this.value.trim().length < 5) showFieldError(this, 'At least 5 characters');
+      else                              showFieldSuccess(this);
+    });
+
+    city.addEventListener('input', function () {
+      const v = this.value.trim();
+      if (!v)                           showFieldError(this, 'City is required');
+      else if (!/^[A-Za-z ]+$/.test(v)) showFieldError(this, 'Letters only');
+      else                              showFieldSuccess(this);
+    });
+
+    postal.addEventListener('input', function () {
+      if (!/^\d{6}$/.test(this.value.trim())) showFieldError(this, 'Enter valid 6-digit PIN');
+      else                                     showFieldSuccess(this);
+    });
+
+    stateEl.addEventListener('change', function () {
+      if (!this.value) showFieldError(this, 'Please select a state');
+      else             showFieldSuccess(this);
+    });
+  }
+
+  // ── 4. openModal — single definition that includes validation hook ──
+  function openModal(id) {
+    _baseOpenModal(id);
+    if (id === 'new-address')  attachAddressValidation(false);
+    if (id === 'edit-address') attachAddressValidation(true);
+  }
+
+  // ── 5. ADDRESS-SPECIFIC MODAL OPENERS ──
+  function openDeleteModal(id) {
+    openModal('delete-address');
+    document.getElementById('deleteForm').action = `/delete-address/${id}/`;
+  }
+
+  function openEditModal(id, name, phone, line1, city, postal, state) {
+    openModal('edit-address');
+    document.getElementById('edit_address_id').value = id;
+    document.getElementById('edit_name').value = name;
+    document.getElementById('edit_phone').value = phone;
+    document.getElementById('edit_line1').value = line1;
+    document.getElementById('edit_city').value = city;
+    document.getElementById('edit_postal').value = postal;
+    document.getElementById('edit_state').value = state;
+    document.getElementById('editForm').action = `/edit-address/${id}/`;
+  }
+
+  // ── 6. SUBMIT GUARDS ──
+  document.querySelector('#m-new-address form').addEventListener('submit', function (e) {
+    let valid = true;
+    const name   = this.querySelector('input[name="name"]');
+    const phone  = this.querySelector('input[name="phone"]');
+    const line1  = this.querySelector('input[name="line1"]');
+    const city   = this.querySelector('input[name="city"]');
+    const postal = this.querySelector('input[name="postal_code"]');
+    const state  = this.querySelector('select[name="state"]');
+
+    if (!name.value.trim() || name.value.trim().length < 3 || !/^[A-Za-z ]+$/.test(name.value.trim())) {
+      showFieldError(name, 'Enter a valid name (min 3 letters)'); valid = false;
+    }
+    if (!/^\d{10}$/.test(phone.value.trim())) {
+      showFieldError(phone, 'Enter valid 10-digit number'); valid = false;
+    }
+    if (line1.value.trim().length < 5) {
+      showFieldError(line1, 'At least 5 characters'); valid = false;
+    }
+    if (!city.value.trim() || !/^[A-Za-z ]+$/.test(city.value.trim())) {
+      showFieldError(city, 'Enter a valid city'); valid = false;
+    }
+    if (!/^\d{6}$/.test(postal.value.trim())) {
+      showFieldError(postal, 'Enter valid 6-digit PIN'); valid = false;
+    }
+    if (!state.value) {
+      showFieldError(state, 'Please select a state'); valid = false;
+    }
+    if (!valid) e.preventDefault();
+  });
+
+  document.getElementById('editForm').addEventListener('submit', function (e) {
+    let valid = true;
+    const name   = document.getElementById('edit_name');
+    const phone  = document.getElementById('edit_phone');
+    const line1  = document.getElementById('edit_line1');
+    const city   = document.getElementById('edit_city');
+    const postal = document.getElementById('edit_postal');
+    const state  = document.getElementById('edit_state');
+
+    if (!name.value.trim() || name.value.trim().length < 3 || !/^[A-Za-z ]+$/.test(name.value.trim())) {
+      showFieldError(name, 'Enter a valid name (min 3 letters)'); valid = false;
+    }
+    if (!/^\d{10}$/.test(phone.value.trim())) {
+      showFieldError(phone, 'Enter valid 10-digit number'); valid = false;
+    }
+    if (line1.value.trim().length < 5) {
+      showFieldError(line1, 'At least 5 characters'); valid = false;
+    }
+    if (!city.value.trim() || !/^[A-Za-z ]+$/.test(city.value.trim())) {
+      showFieldError(city, 'Enter a valid city'); valid = false;
+    }
+    if (!/^\d{6}$/.test(postal.value.trim())) {
+      showFieldError(postal, 'Enter valid 6-digit PIN'); valid = false;
+    }
+    if (!state.value) {
+      showFieldError(state, 'Please select a state'); valid = false;
+    }
+    if (!valid) e.preventDefault();
+  });
+
+  // ── 7. PAGE LOAD — reopen modal + restore dropdowns after server error ──
+  window.onload = function () {
+    const modal = "{{ open_modal|default:'' }}";
+    if (modal) openModal(modal);
+
+    const editId = "{{ edit_address_id|default:'' }}";
+    if (editId) {
+      document.getElementById('editForm').action = `/edit-address/${editId}/`;
+    }
+
+    // Restore new-address state dropdown after server-side validation error
+    const savedState = "{{ new_address_data.state|default:'' }}";
+    if (savedState) {
+      const sel = document.querySelector('#m-new-address select[name="state"]');
+      if (sel) sel.value = savedState;
+    }
+
+    // Restore edit-address state dropdown after server-side validation error
+    const savedEditState = "{{ edit_address_data.state|default:'' }}";
+    if (savedEditState) {
+      const sel = document.getElementById('edit_state');
+      if (sel) sel.value = savedEditState;
+    }
+  };
+
+</script>
+{% endblock %}
