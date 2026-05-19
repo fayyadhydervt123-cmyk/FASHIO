@@ -11,6 +11,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.utils.dateparse import parse_datetime
 from .models import Address
+from products.models import Category
 # Create your views here.
 
 User = get_user_model() #Gets the custom User model
@@ -24,7 +25,11 @@ def user_landing_dashboard(request):
 
 @login_required(login_url='user_login')
 def user_loggedin_dashboard(request):
-    return render(request, 'user_panel/loggedin_dashboard.html')
+    categories = Category.objects.filter(
+        is_blocked=False
+    ).order_by('-created_at')
+
+    return render(request, 'user_panel/loggedin_dashboard.html', {'categories': categories})
 
 @never_cache
 def user_login(request):

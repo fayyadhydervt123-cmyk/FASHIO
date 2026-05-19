@@ -12,16 +12,13 @@ Customers
   <!-- Search Bar -->
   <div class="relative mb-6">
     <div class="relative">
-      {% comment %} <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-      </svg> {% endcomment %}
       <form method="GET" class="mb-4">
           <input 
               type="text" 
               name="q" 
               value="{{ search_query }}"
               placeholder="Search by Name, Email, or Phone"
-              class="w-full bg-black border border-white/10 px-4 py-2 text-sm"
+              class="bg-black border border-white/10 px-4 py-2 text-sm placeholder-[#2e2e2e]"
           >
 
           {% if search_query %}

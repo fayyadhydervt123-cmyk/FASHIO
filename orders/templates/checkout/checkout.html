@@ -1,0 +1,551 @@
+{% extends 'user_base/base.html' %}
+
+{% block title %}
+Checkout | FASHIO
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #fff;
+    color: #000;
+  }
+
+  .mono {
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .bebas {
+    font-family: 'Bebas Neue', sans-serif;
+  }
+
+  .checkout-row {
+    transition: border-color .25s ease, background .25s ease;
+  }
+
+  .checkout-row:hover {
+    border-color: rgba(0,0,0,.25);
+    background: rgba(0,0,0,.015);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="bg-white pt-10 md:pt-12 px-6 md:px-12 pb-20">
+
+  <!-- Back + Header -->
+  <div class="mb-12">
+
+    {% if checkout_source == 'buy_now' %}
+    <a href="{% url 'product_list' %}"
+        class="inline-flex items-center gap-2 mono text-[10px] tracking-widest text-black/40 hover:text-black transition-colors uppercase mb-8">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to Shopping
+    </a>
+    {% else %}
+    <a href="{% url 'cart_page' %}"
+        class="inline-flex items-center gap-2 mono text-[10px] tracking-widest text-black/40 hover:text-black transition-colors uppercase mb-8">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to Cart
+    </a>
+    {% endif %}
+
+    <div class="flex items-center gap-4">
+      <div class="w-1 h-14 bg-black"></div>
+
+      <div>
+        <p class="mono text-[10px] tracking-[.3em] text-black/40 uppercase mb-2">
+          Secure Checkout
+        </p>
+
+        <h1 class="bebas text-black text-6xl md:text-8xl leading-none tracking-wide">
+          CHECKOUT
+        </h1>
+      </div>
+    </div>
+
+    <p class="mono text-[10px] tracking-widest text-black/40 uppercase mt-5">
+      {{ total_items }} ITEM{% if total_items != 1 %}S{% endif %} READY TO ORDER
+    </p>
+
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-10">
+
+    <!-- LEFT CONTENT -->
+    <div class="space-y-10">
+
+      <!-- Product Table -->
+      <div class="border border-black/10">
+
+        <!-- Desktop Header -->
+        <div class="hidden md:grid grid-cols-[1fr_120px_140px_140px] gap-6 bg-neutral-50 border-b border-black/10 px-5 py-4">
+          <p class="mono text-[10px] tracking-widest text-black/60 uppercase">
+            Product Details
+          </p>
+
+          <p class="mono text-[10px] tracking-widest text-black/60 uppercase text-center">
+            Quantity
+          </p>
+
+          <p class="mono text-[10px] tracking-widest text-black/60 uppercase text-right">
+            Price
+          </p>
+
+          <p class="mono text-[10px] tracking-widest text-black/60 uppercase text-right">
+            Total
+          </p>
+        </div>
+
+        {% for item in cart_items %}
+        <div class="checkout-row border-b border-black/10 last:border-b-0 px-5 py-5">
+
+          <div class="grid grid-cols-1 md:grid-cols-[1fr_120px_140px_140px] gap-6 items-center">
+
+            <!-- Product -->
+            <div class="flex gap-4">
+              <div class="w-24 h-24 bg-neutral-100 border border-black/10 overflow-hidden shrink-0">
+                {% if item.thumbnail %}
+                  <img src="{{ item.thumbnail }}"
+                       alt="{{ item.product.name }}"
+                       class="w-full h-full object-cover">
+                {% else %}
+                  <div class="w-full h-full flex items-center justify-center">
+                    <span class="mono text-[9px] tracking-widest text-black/30">
+                      NO IMAGE
+                    </span>
+                  </div>
+                {% endif %}
+              </div>
+
+              <div class="min-w-0">
+                <p class="text-black text-sm md:text-base font-semibold leading-snug">
+                  {{ item.product.name }}
+                </p>
+
+                {% if item.variant.sku %}
+                  <p class="mono text-[9px] tracking-widest text-black/35 uppercase mt-1">
+                    SKU: {{ item.variant.sku }}
+                  </p>
+                {% else %}
+                  <p class="mono text-[9px] tracking-widest text-black/35 uppercase mt-1">
+                    ID: {{ item.variant.id|stringformat:"s"|slice:":8" }}
+                  </p>
+                {% endif %}
+
+                <div class="flex flex-wrap gap-2 mt-3">
+                  <span class="mono text-[9px] tracking-widest border border-black/10 px-2 py-1 text-black/45 uppercase">
+                    Size: {{ item.variant.size }}
+                  </span>
+
+                  <span class="mono text-[9px] tracking-widest border border-black/10 px-2 py-1 text-black/45 uppercase">
+                    Color: {{ item.variant.color }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quantity -->
+            <div class="md:text-center">
+              <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden mb-1">
+                Quantity
+              </p>
+
+              <p class="mono text-sm font-bold text-black">
+                {{ item.quantity }}
+              </p>
+            </div>
+
+            <!-- Price -->
+            <div class="md:text-right">
+              <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden mb-1">
+                Price
+              </p>
+
+              <p class="mono text-sm font-bold text-black">
+                ₹{{ item.unit_price_amount|floatformat:0 }}
+              </p>
+            </div>
+
+            <!-- Total -->
+            <div class="md:text-right">
+              <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden mb-1">
+                Total
+              </p>
+
+              <p class="mono text-sm font-bold text-black">
+                ₹{{ item.subtotal_amount|floatformat:0 }}
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+        {% endfor %}
+
+      </div>
+
+      <!-- Delivery Address -->
+    <div>
+    <div class="flex items-center gap-3 mb-5">
+        <div class="w-1 h-8 bg-black"></div>
+        <h2 class="bebas text-3xl md:text-4xl text-black leading-none">
+        DELIVERY ADDRESS
+        </h2>
+    </div>
+
+    {% if selected_address %}
+        <div id="selected-address-box"
+            class="border border-black/10 p-5 max-w-md">
+
+        <p id="selected-address-name"
+            class="text-sm font-semibold text-black mb-1">
+            {{ selected_address.name }}
+        </p>
+
+        <p id="selected-address-phone"
+            class="mono text-[10px] tracking-widest text-black/45 mb-5">
+            +91 {{ selected_address.phone }}
+        </p>
+
+        <p id="selected-address-full"
+            class="text-sm text-black/60 leading-relaxed">
+            {{ selected_address.line1 }}<br>
+            {{ selected_address.city }}<br>
+            {{ selected_address.get_state_display }} - {{ selected_address.postal_code }}<br>
+            India
+        </p>
+
+        <input type="hidden"
+                id="selected-address-id"
+                name="address_id"
+                value="{{ selected_address.id }}">
+
+        <input type="hidden"
+                name="checkout_source"
+                value="{{ checkout_source }}">
+
+        <div class="border-t border-black/10 mt-5 pt-4">
+            <button type="button"
+                    id="open-address-modal"
+                    class="mono text-[10px] tracking-widest text-black/50 hover:text-black transition-colors uppercase">
+            Change
+            </button>
+        </div>
+
+        </div>
+    {% else %}
+        <div class="border border-black/10 p-6 max-w-md">
+        <p class="mono text-[10px] tracking-widest text-black/40 uppercase mb-5">
+            No delivery address found
+        </p>
+
+        <a href="{% url 'user_profile' %}"
+            class="inline-flex mono text-[10px] tracking-widest bg-black text-white px-6 py-3 font-bold uppercase hover:bg-black/80 transition-colors">
+            Add Address
+        </a>
+        </div>
+    {% endif %}
+    </div>
+</div>
+
+    <!-- RIGHT SUMMARY -->
+    <aside class="xl:sticky xl:top-24 h-fit">
+
+      <div class="border border-black/10 bg-neutral-50 p-6">
+
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-1 h-7 bg-black"></div>
+          <h2 class="bebas text-3xl text-black leading-none">
+            PRICE SUMMARY
+          </h2>
+        </div>
+
+        <div class="space-y-4">
+
+          <div class="flex justify-between gap-6">
+            <p class="text-sm text-black/55">
+              Subtotal
+            </p>
+
+            <p class="mono text-sm font-bold text-black">
+              ₹{{ subtotal|floatformat:0 }}
+            </p>
+          </div>
+
+          <div class="flex justify-between gap-6">
+            <p class="text-sm text-black/55">
+              Delivery Fee
+            </p>
+
+            <p class="mono text-sm font-bold text-black">
+              {% if delivery_fee > 0 %}
+                ₹{{ delivery_fee|floatformat:0 }}
+              {% else %}
+                Free
+              {% endif %}
+            </p>
+          </div>
+
+          <div class="flex justify-between gap-6">
+            <p class="text-sm text-black/55">
+              Discount
+            </p>
+
+            <p class="mono text-sm font-bold text-black">
+              -₹{{ discount_amount|floatformat:0 }}
+            </p>
+          </div>
+
+          <div class="flex justify-between gap-6 border-b border-black/10 pb-5">
+            <p class="text-sm text-black/55">
+              GST and Taxes
+            </p>
+
+            <p class="mono text-sm font-bold text-black">
+              ₹{{ tax_amount|floatformat:0 }}
+            </p>
+          </div>
+
+          <div class="pt-2">
+            <p class="mono text-[10px] tracking-widest text-black/45 uppercase mb-2">
+              Total Payable
+            </p>
+
+            <p class="mono text-4xl font-bold text-black">
+              ₹{{ total_payable|floatformat:0 }}
+            </p>
+          </div>
+
+        </div>
+
+        <button type="button"
+                {% if not address %}disabled{% endif %}
+                class="w-full mt-8 mono text-[10px] tracking-[.3em] py-4 font-bold uppercase transition-all flex items-center justify-center gap-3
+                {% if address %}
+                  bg-black text-white hover:bg-black/80 active:scale-[0.98]
+                {% else %}
+                  border border-black/15 text-black/30 cursor-not-allowed
+                {% endif %}">
+          Continue To Payment
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+
+      </div>
+
+    </aside>
+
+  </div>
+
+</section>
+
+<!-- Address Select Modal -->
+<div id="address-modal"
+     class="fixed inset-0 z-[999] hidden">
+
+  <!-- Overlay -->
+  <div id="address-modal-overlay"
+       class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+  <!-- Modal Content -->
+  <div class="relative z-10 min-h-screen flex items-center justify-center px-4">
+
+    <div class="bg-white border border-black/10 w-full max-w-2xl shadow-2xl">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between px-5 py-4 border-b border-black/10">
+        <div>
+          <p class="mono text-[9px] tracking-[.25em] text-black/35 uppercase">
+            Delivery
+          </p>
+
+          <h2 class="bebas text-4xl text-black leading-none mt-1">
+            SELECT ADDRESS
+          </h2>
+        </div>
+
+        <button type="button"
+                id="close-address-modal"
+                class="mono text-xl text-black/40 hover:text-black transition-colors">
+          ×
+        </button>
+      </div>
+
+      <!-- Address List -->
+      <div class="p-5 max-h-[70vh] overflow-y-auto space-y-3">
+
+        {% for address in addresses %}
+          <button type="button"
+                  class="address-option w-full text-left border p-4 transition-colors
+                  {% if selected_address and selected_address.id == address.id %}
+                    border-black bg-neutral-50
+                  {% else %}
+                    border-black/10 hover:border-black/30
+                  {% endif %}"
+                  data-id="{{ address.id }}"
+                  data-name="{{ address.name }}"
+                  data-phone="{{ address.phone }}"
+                  data-line1="{{ address.line1 }}"
+                  data-city="{{ address.city }}"
+                  data-state="{{ address.get_state_display }}"
+                  data-postal="{{ address.postal_code }}">
+
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <p class="text-sm font-semibold text-black">
+                  {{ address.name }}
+                </p>
+
+                <p class="mono text-[9px] tracking-widest text-black/35 mt-1">
+                  +91 {{ address.phone }}
+                </p>
+
+                <p class="text-sm text-black/60 leading-relaxed mt-4">
+                  {{ address.line1 }}<br>
+                  {{ address.city }},
+                  {{ address.get_state_display }} -
+                  {{ address.postal_code }}<br>
+                  India
+                </p>
+              </div>
+
+              <span class="address-check mono text-[10px] tracking-widest
+                {% if selected_address and selected_address.id == address.id %}
+                  text-black
+                {% else %}
+                  text-black/20
+                {% endif %}">
+                SELECT
+              </span>
+            </div>
+
+          </button>
+        {% empty %}
+          <div class="py-10 text-center">
+            <p class="mono text-[10px] tracking-widest text-black/40 uppercase mb-5">
+              No saved addresses
+            </p>
+
+            <a href="{% url 'user_profile' %}"
+               class="inline-flex mono text-[10px] tracking-widest bg-black text-white px-6 py-3 font-bold uppercase hover:bg-black/80 transition-colors">
+              Add Address
+            </a>
+          </div>
+        {% endfor %}
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const addressModal = document.getElementById('address-modal');
+  const openAddressModalBtn = document.getElementById('open-address-modal');
+  const closeAddressModalBtn = document.getElementById('close-address-modal');
+  const addressModalOverlay = document.getElementById('address-modal-overlay');
+
+  const selectedAddressIdInput = document.getElementById('selected-address-id');
+  const selectedAddressName = document.getElementById('selected-address-name');
+  const selectedAddressPhone = document.getElementById('selected-address-phone');
+  const selectedAddressFull = document.getElementById('selected-address-full');
+
+  function openAddressModal() {
+    if (!addressModal) return;
+
+    addressModal.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+  }
+
+  function closeAddressModal() {
+    if (!addressModal) return;
+
+    addressModal.classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+  }
+
+  if (openAddressModalBtn) {
+    openAddressModalBtn.addEventListener('click', openAddressModal);
+  }
+
+  if (closeAddressModalBtn) {
+    closeAddressModalBtn.addEventListener('click', closeAddressModal);
+  }
+
+  if (addressModalOverlay) {
+    addressModalOverlay.addEventListener('click', closeAddressModal);
+  }
+
+  document.querySelectorAll('.address-option').forEach(button => {
+    button.addEventListener('click', () => {
+      const id = button.dataset.id;
+      const name = button.dataset.name;
+      const phone = button.dataset.phone;
+      const line1 = button.dataset.line1;
+      const city = button.dataset.city;
+      const state = button.dataset.state;
+      const postal = button.dataset.postal;
+
+      if (selectedAddressIdInput) {
+        selectedAddressIdInput.value = id;
+      }
+
+      if (selectedAddressName) {
+        selectedAddressName.textContent = name;
+      }
+
+      if (selectedAddressPhone) {
+        selectedAddressPhone.textContent = `+91 ${phone}`;
+      }
+
+      if (selectedAddressFull) {
+        selectedAddressFull.innerHTML = `
+          ${line1}<br>
+          ${city}<br>
+          ${state} - ${postal}<br>
+          India
+        `;
+      }
+
+      document.querySelectorAll('.address-option').forEach(option => {
+        option.classList.remove('border-black', 'bg-neutral-50');
+        option.classList.add('border-black/10');
+
+        const check = option.querySelector('.address-check');
+        if (check) {
+          check.classList.remove('text-black');
+          check.classList.add('text-black/20');
+        }
+      });
+
+      button.classList.remove('border-black/10');
+      button.classList.add('border-black', 'bg-neutral-50');
+
+      const activeCheck = button.querySelector('.address-check');
+      if (activeCheck) {
+        activeCheck.classList.remove('text-black/20');
+        activeCheck.classList.add('text-black');
+      }
+
+      closeAddressModal();
+    });
+  });
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      closeAddressModal();
+    }
+  });
+</script>
+{% endblock %}

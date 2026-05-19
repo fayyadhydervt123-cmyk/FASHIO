@@ -1,0 +1,497 @@
+{% extends 'admin_base/base.html' %}
+
+{% block title %}
+Categories
+{% endblock %}
+
+{% block content %}
+
+  <div class="max-w-5xl">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center gap-3">
+        <h1 class="mono text-white text-4xl font-bold tracking-tight">Category Management</h1>
+      </div>
+      <button onclick="openAddModal()" class="border border-white/10 text-white px-5 py-2 text-sm tracking-widest">
+        + Add New
+      </button>
+    </div>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="mb-4 px-4 py-3 text-sm tracking-wide
+          {% if message.tags == 'error' %} text-red-400
+          {% else %} text-green-400{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <!-- Search -->
+    <form method="GET" action="{% url 'categories' %}">
+      <div class="relative mb-6 max-w-sm">
+        <input
+          type="text"
+          name="q"
+          value="{{ query }}"
+          placeholder="Search by Name ..."
+          class="w-full bg-black border border-white/10 px-4 py-2 text-sm pr-8"/>
+        {% if query %}
+          <a href="{% url 'categories' %}"
+            class="absolute right-2 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-sm">✕</a>
+        {% endif %}
+      </div>
+    </form>
+
+    <!-- Table -->
+    <div class="border border-white/10 rounded-sm overflow-hidden max-w-5xl">
+      <table class="w-full text-sm table-fixed">
+        <colgroup>
+          <col style="width:72px"/>
+          <col class="w-1/5"/>
+          <col class="w-2/5"/>
+          <col class="w-24"/>
+          <col class="w-28"/>
+        </colgroup>
+        <thead>
+          <tr class="bg-[#141414] border-b border-white/10">
+            <th class="text-left px-5 py-4 mono text-xs text-white font-semibold">Image</th>
+            <th class="text-left px-5 py-4 mono text-xs text-white font-semibold">Category Name</th>
+            <th class="text-left px-5 py-4 mono text-xs text-white font-semibold">Description</th>
+            <th class="text-left px-5 py-4 mono text-xs text-white font-semibold">Status</th>
+            <th class="text-left px-5 py-4 mono text-xs text-white font-semibold">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="categoryTable">
+          {% for cat in categories %}
+          <tr class="border-t border-white/10"
+              data-name="{{ cat.name }}"
+              data-desc="{{ cat.description }}"
+              data-image="{% if cat.image %}{{ cat.image.url }}{% endif %}"
+              data-status="{% if cat.is_blocked %}Blocked{% else %}Active{% endif %}">
+
+            <!-- Image cell — click to open lightbox -->
+            <td class="px-5 py-4">
+              {% if cat.image %}
+                <img src="{{ cat.image.url }}" alt="{{ cat.name }}"
+                     onclick="openLightbox('{{ cat.image.url }}', '{{ cat.name }}')"
+                     class="w-10 h-10 object-cover rounded-sm border border-white/10
+                            cursor-zoom-in hover:opacity-70 transition-opacity"/>
+              {% else %}
+                <div class="w-10 h-10 bg-white/5 border border-white/10 rounded-sm
+                            flex items-center justify-center text-white/20 text-xs select-none">
+                  N/A
+                </div>
+              {% endif %}
+            </td>
+
+            <td class="px-5 py-4 truncate">{{ cat.name }}</td>
+            <td class="px-5 py-4 text-gray-300 break-words whitespace-normal">{{ cat.description }}</td>
+            <td class="px-5 py-4 {% if cat.is_blocked %}text-red-400{% else %}text-green-400{% endif %}">
+              {% if cat.is_blocked %}
+               <span class="bg-[#3b1010] text-red-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit">
+                Inactive
+              </span>
+              {% else %}
+              <span class="bg-[#0f4c2a] text-green-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit">
+                Active
+              </span>
+              {% endif %}
+            </td>
+            <td class="px-5 py-4">
+              <div class="flex items-center gap-4">
+                <button onclick="openEditModal(this, '{{ cat.id }}')" class="mono text-xs text-white/50 hover:text-white transition-colors tracking-widest">Edit</button>
+                <button onclick="openBlockConfirm(this, '{{ cat.id }}', {{ cat.is_blocked|yesno:'true,false' }})"
+                        class="mono text-xs tracking-widest transition-colors {% if cat.is_blocked %}text-green-400/60 hover:text-green-400{% else %}text-red-400/60 hover:text-red-400{% endif %}">
+                  {% if cat.is_blocked %}Unblock{% else %}Block{% endif %}
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="px-5 py-10 text-center text-gray-500">
+              No categories found{% if query %} for "<span class="text-white">{{ query }}</span>"{% endif %}.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if categories.paginator.num_pages > 1 %}
+      <div class="flex justify-end items-center gap-4 mt-4 text-sm tracking-widest max-w-5xl">
+        {% if categories.has_previous %}
+          <a href="?page={{ categories.previous_page_number }}&q={{ query }}"
+            class="text-gray-400 hover:text-white transition">Prev</a>
+        {% else %}
+          <span class="text-gray-600">Prev</span>
+        {% endif %}
+
+        <span>{{ categories.number }} / {{ categories.paginator.num_pages }}</span>
+
+        {% if categories.has_next %}
+          <a href="?page={{ categories.next_page_number }}&q={{ query }}"
+            class="text-gray-400 hover:text-white transition">Next</a>
+        {% else %}
+          <span class="text-gray-600">Next</span>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Hidden submission forms -->
+  <form id="addForm" method="POST" action="{% url 'add_category' %}" class="hidden" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="name" id="addName"/>
+    <input type="hidden" name="description" id="addDesc"/>
+    <input type="file" name="image" id="addImage" accept="image/*"/>
+  </form>
+
+  <form id="editForm" method="POST" action="{% url 'edit_category' %}" class="hidden" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="category_id" id="editId"/>
+    <input type="hidden" name="name" id="editName"/>
+    <input type="hidden" name="description" id="editDesc"/>
+    <input type="file" name="image" id="editImage" accept="image/*"/>
+  </form>
+
+  <form id="blockForm" method="POST" action="{% url 'toggle_category_block' %}" class="hidden">
+    {% csrf_token %}
+    <input type="hidden" name="category_id" id="blockCategoryId"/>
+  </form>
+
+{% endblock %}
+
+
+{% block modals %}
+
+  <!-- ═══════════════════════════════════════════════════════
+       ADD / EDIT MODAL
+       Fixed height (640 px) keeps add and edit identical.
+       Body scrolls internally — outer size never changes.
+  ════════════════════════════════════════════════════════ -->
+  <div id="categoryModal"
+       class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 hidden">
+    <div class="bg-black border border-white/10 w-full max-w-2xl flex flex-col"
+         style="height:640px;">
+
+      <!-- Header — fixed -->
+      <div class="text-center py-6 border-b border-white/10 flex-shrink-0">
+        <h2 id="modalTitle" class="text-2xl tracking-widest font-bold">New Category</h2>
+      </div>
+
+      <!-- Body — scrollable -->
+      <div class="px-16 py-10 space-y-7 overflow-y-auto flex-1">
+
+        <!-- Name -->
+        <div>
+          <label class="block text-sm tracking-widest mb-2">Category Name</label>
+          <input id="catName" type="text"
+            class="w-full bg-black border border-white/10 text-white px-4 py-3 outline-none tracking-wide"/>
+          <p id="nameError" class="text-red-400 text-xs mt-2 hidden"></p>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="block text-sm tracking-widest mb-2">Category Description</label>
+          <textarea id="catDesc" rows="4"
+            class="w-full bg-black border border-white/10 text-white px-4 py-3 outline-none tracking-wide resize-none"></textarea>
+        </div>
+
+        <!-- Image -->
+        <div>
+          <label class="block text-sm tracking-widest mb-2">Category Image</label>
+
+          <!-- Current image row — hidden in add mode, shown in edit mode -->
+          <div id="currentImageWrapper" class="hidden mb-4 flex items-center gap-4">
+            <img id="currentImagePreview" src="" alt="Current image"
+                 onclick="openLightbox(this.src, 'Current Image')"
+                 class="w-14 h-14 object-cover rounded-sm border border-white/10
+                        cursor-zoom-in hover:opacity-70 transition-opacity flex-shrink-0"/>
+            <div>
+              <p class="text-white/50 text-xs tracking-wide">Current image</p>
+              <p class="text-white/30 text-xs mt-0.5">Uploading a new file will replace it.</p>
+            </div>
+          </div>
+
+          <input id="catImage" type="file" accept="image/jpeg,image/png,image/webp,image/gif"
+              class="w-full bg-black border border-white/10 text-white px-4 py-3 outline-none tracking-wide
+                    file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-black file:text-white
+                    file:text-xs file:tracking-widest file:font-bold file:cursor-pointer"/>
+          <p id="imageError" class="text-red-400 text-xs mt-2 hidden"></p>
+          <p class="text-white/30 text-xs mt-1 tracking-wide">Accepted: JPG, PNG, WEBP, GIF · Max 5 MB</p>
+        </div>
+
+      </div>
+
+      <!-- Footer — fixed -->
+      <div class="border-t border-white/10 px-16 py-6 flex gap-6 flex-shrink-0">
+        <button onclick="closeModal()"
+          class="flex-1 border border-white/10 text-white py-3 tracking-widest hover:bg-white/10 transition">
+          Cancel
+        </button>
+        <button id="modalSaveBtn" onclick="saveCategory()"
+          class="flex-1 border border-white/10 text-white py-3 tracking-widest hover:bg-white/10 transition">
+          Add
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       BLOCK / UNBLOCK CONFIRM MODAL
+  ════════════════════════════════════════════════════════ -->
+  <div id="confirmModal"
+       class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 hidden">
+    <div class="bg-black border border-white/10 w-full max-w-lg px-16 py-16 text-center space-y-10">
+      <p id="confirmText" class="text-xl tracking-wide leading-relaxed">
+        Are you sure you want to make this change?
+      </p>
+      <div class="flex justify-center gap-8">
+        <button onclick="confirmAction()"
+          class="flex-1 border border-white/10 text-white py-3 tracking-widest hover:bg-white/10 transition">
+          Yes
+        </button>
+        <button onclick="closeConfirm()"
+          class="flex-1 border border-white/10 text-white py-3 tracking-widest hover:bg-white/10 transition">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       LIGHTBOX
+       Click the dark backdrop OR the Close button to dismiss.
+  ════════════════════════════════════════════════════════ -->
+  <div id="lightboxModal"
+       class="fixed inset-0 bg-black bg-opacity-95 flex flex-col items-center justify-center z-[60] hidden"
+       onclick="closeLightbox()">
+    <div onclick="event.stopPropagation()"
+         class="flex flex-col items-center gap-5 max-w-3xl w-full px-6">
+
+      <img id="lightboxImg" src="" alt=""
+           class="max-h-[75vh] max-w-full object-contain border border-white/10 rounded-sm"/>
+
+      <p id="lightboxCaption" class="text-white/50 text-sm tracking-widest"></p>
+
+      <button onclick="closeLightbox()"
+              class="border border-white/10 text-white/60 hover:text-white px-10 py-2
+                     text-xs tracking-widest hover:bg-white/5 transition">
+        Close
+      </button>
+    </div>
+  </div>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+  /* ─────────────────────────────────────────────
+     State
+  ───────────────────────────────────────────── */
+  let pendingAction = null;
+  let currentEditId = null;
+
+  /* ─────────────────────────────────────────────
+     DOM refs — resolved after DOM is ready
+  ───────────────────────────────────────────── */
+  let catNameInput, nameError, catImageInput, imageError;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    catNameInput  = document.getElementById('catName');
+    nameError     = document.getElementById('nameError');
+    catImageInput = document.getElementById('catImage');
+    imageError    = document.getElementById('imageError');
+
+    catNameInput.addEventListener('input', validateName);
+    catImageInput.addEventListener('change', validateImage);
+
+    // Global Escape key handler
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape') return;
+      closeModal();
+      closeConfirm();
+      closeLightbox();
+    });
+  });
+
+  /* ─────────────────────────────────────────────
+     Validation
+  ───────────────────────────────────────────── */
+  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  const MAX_SIZE_MB   = 5;
+
+  function validateName() {
+    const name = catNameInput.value.trim();
+    nameError.classList.add('hidden');
+    catNameInput.classList.remove('border-red-500');
+
+    if (!name) {
+      nameError.textContent = 'Category name is required.';
+      nameError.classList.remove('hidden');
+      catNameInput.classList.add('border-red-500');
+      return false;
+    }
+    if (name.length < 3) {
+      nameError.textContent = 'Minimum 3 characters required.';
+      nameError.classList.remove('hidden');
+      catNameInput.classList.add('border-red-500');
+      return false;
+    }
+    return true;
+  }
+
+  function validateImage() {
+    imageError.classList.add('hidden');
+    catImageInput.classList.remove('border-red-500');
+
+    const file = catImageInput.files[0];
+    if (!file) return true;  // image is optional
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      imageError.textContent = 'Only JPG, PNG, WEBP, or GIF images are allowed.';
+      imageError.classList.remove('hidden');
+      catImageInput.classList.add('border-red-500');
+      catImageInput.value = '';
+      return false;
+    }
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      imageError.textContent = `Image must be smaller than ${MAX_SIZE_MB} MB.`;
+      imageError.classList.remove('hidden');
+      catImageInput.classList.add('border-red-500');
+      catImageInput.value = '';
+      return false;
+    }
+    return true;
+  }
+
+  /* ─────────────────────────────────────────────
+     Shared reset — called before opening any modal
+  ───────────────────────────────────────────── */
+  function resetModalFields() {
+    document.getElementById('catName').value  = '';
+    document.getElementById('catDesc').value  = '';
+    document.getElementById('catImage').value = '';
+    document.getElementById('nameError').classList.add('hidden');
+    document.getElementById('imageError').classList.add('hidden');
+    document.getElementById('catName').classList.remove('border-red-500');
+    document.getElementById('catImage').classList.remove('border-red-500');
+    document.getElementById('currentImageWrapper').classList.add('hidden');
+    document.getElementById('currentImagePreview').src = '';
+  }
+
+  /* ─────────────────────────────────────────────
+     Add modal
+  ───────────────────────────────────────────── */
+  function openAddModal() {
+    currentEditId = null;
+    resetModalFields();
+    document.getElementById('modalTitle').textContent   = 'New Category';
+    document.getElementById('modalSaveBtn').textContent = 'Add';
+    document.getElementById('categoryModal').classList.remove('hidden');
+  }
+
+  /* ─────────────────────────────────────────────
+     Edit modal
+  ───────────────────────────────────────────── */
+  function openEditModal(btn, categoryId) {
+    const row = btn.closest('tr');
+    currentEditId = categoryId;
+
+    resetModalFields();
+    document.getElementById('modalTitle').textContent   = 'Edit Category';
+    document.getElementById('modalSaveBtn').textContent = 'Save';
+    document.getElementById('catName').value = row.dataset.name;
+    document.getElementById('catDesc').value = row.dataset.desc;
+
+    const imageUrl = row.dataset.image;
+    if (imageUrl) {
+      document.getElementById('currentImagePreview').src = imageUrl;
+      document.getElementById('currentImageWrapper').classList.remove('hidden');
+    }
+
+    document.getElementById('categoryModal').classList.remove('hidden');
+  }
+
+  function closeModal() {
+    document.getElementById('categoryModal').classList.add('hidden');
+  }
+
+  /* ─────────────────────────────────────────────
+     Save (add or edit)
+  ───────────────────────────────────────────── */
+  function saveCategory() {
+    if (!validateName() | !validateImage()) return;  // run both always
+
+    const name      = document.getElementById('catName').value.trim();
+    const desc      = document.getElementById('catDesc').value.trim();
+    const imageFile = document.getElementById('catImage').files[0];
+
+    if (currentEditId) {
+      document.getElementById('editId').value   = currentEditId;
+      document.getElementById('editName').value = name;
+      document.getElementById('editDesc').value = desc;
+      if (imageFile) transferFile(imageFile, 'editImage');
+      document.getElementById('editForm').submit();
+    } else {
+      document.getElementById('addName').value = name;
+      document.getElementById('addDesc').value = desc;
+      if (imageFile) transferFile(imageFile, 'addImage');
+      document.getElementById('addForm').submit();
+    }
+
+    closeModal();
+  }
+
+  function transferFile(file, targetInputId) {
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    document.getElementById(targetInputId).files = dt.files;
+  }
+
+  /* ─────────────────────────────────────────────
+     Block / Unblock confirm
+  ───────────────────────────────────────────── */
+  function openBlockConfirm(btn, categoryId, isBlocked) {
+    pendingAction = { type: 'block', categoryId, isBlocked };
+    document.getElementById('confirmText').textContent = isBlocked
+      ? 'Are you sure you want to unblock this category?'
+      : 'Are you sure you want to block this category?';
+    document.getElementById('confirmModal').classList.remove('hidden');
+  }
+
+  function confirmAction() {
+    if (!pendingAction) return;
+    if (pendingAction.type === 'block') {
+      document.getElementById('blockCategoryId').value = pendingAction.categoryId;
+      document.getElementById('blockForm').submit();
+    }
+    closeConfirm();
+  }
+
+  function closeConfirm() {
+    document.getElementById('confirmModal').classList.add('hidden');
+    pendingAction = null;
+  }
+
+  /* ─────────────────────────────────────────────
+     Lightbox
+  ───────────────────────────────────────────── */
+  function openLightbox(src, caption) {
+    document.getElementById('lightboxImg').src              = src;
+    document.getElementById('lightboxCaption').textContent  = caption || '';
+    document.getElementById('lightboxModal').classList.remove('hidden');
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightboxModal').classList.add('hidden');
+    document.getElementById('lightboxImg').src = '';
+  }
+</script>
+{% endblock %}

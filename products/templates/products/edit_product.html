@@ -1,0 +1,293 @@
+{% extends 'admin_base/base.html' %}
+{% block title %}Add New Product{% endblock %}
+
+{% block content %}
+<div class="p-8 max-w-screen-xl mx-auto">
+
+  <!-- Top Bar -->
+  <div class="flex items-center gap-4 mb-8">
+    <a href="{% url 'products' %}"
+       class="text-white/40 hover:text-white transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+      </svg>
+    </a>
+    <h1 class="mono text-white text-4xl font-bold tracking-tight">Edit Product</h1>
+  </div>
+
+
+
+  <form method="POST" action="{% url 'edit_product' product_id=product.id %}" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- ── Section: Basic Information ── -->
+    <div class="mb-8">
+      <div class="flex items-center gap-4 mb-5">
+        <span class="mono text-xs text-white/40 tracking-widest uppercase">Basic Information</span>
+        <div class="flex-1 h-px bg-white/10"></div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-4">
+
+        <!-- Product Name -->
+        <div class="flex flex-col gap-2">
+          <label class="mono text-xs text-white/50 tracking-widest">Product Name</label>
+          <input
+            type="text"
+            name="name"
+            value="{{ form_data.name|default:'' }}"
+            placeholder="Enter product name"
+            class="bg-[#111] border px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none transition-colors
+            {% if errors.name %}border-red-500/60 focus:border-red-500{% else %}border-white/10 focus:border-white/30{% endif %}"
+          >
+
+          {% if errors.name %}
+            <span class="server-error font-mono text-[11px] text-red-400">{{ errors.name }}</span>
+          {% endif %}
+
+        </div>
+
+        <!-- Category -->
+        <div class="flex flex-col gap-2">
+        <label class="mono text-xs text-white/50 tracking-widest">Category</label>
+        <select name="category_id" id="category-select"
+          class="bg-[#111] border px-4 py-2.5 text-sm text-white font-mono outline-none transition-colors appearance-none
+                {% if errors.subcategory_id %}border-red-500/60{% else %}border-white/10 focus:border-white/30{% endif %}"
+          style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23555'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\"); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;">
+          <option value="">Select category</option>
+          {% for cat in categories %}
+          <option value="{{ cat.id }}"
+            {% if form_data.category_id == cat.id|stringformat:"s" %}selected{% endif %}>
+            {{ cat.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-4">
+
+        <!-- Sub Category -->
+        <div class="flex flex-col gap-2">
+        <label class="mono text-xs text-white/50 tracking-widest">Sub Category</label>
+        <select name="subcategory_id" id="subcategory-select"
+          class="bg-[#111] border px-4 py-2.5 text-sm text-white font-mono outline-none transition-colors appearance-none
+                {% if errors.subcategory_id %}border-red-500/60 focus:border-red-500{% else %}border-white/10 focus:border-white/30{% endif %}"
+          style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23555'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\"); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;">
+          <option value="">Select subcategory</option>
+        </select>
+        {% if errors.subcategory_id %}
+          <span class="server-error font-mono text-[11px] text-red-400">{{ errors.subcategory_id }}</span>
+        {% endif %}
+      </div>
+
+        <!-- Base Price -->
+        <div class="flex flex-col gap-2">
+        <label class="mono text-xs text-white/50 tracking-widest">Base Price</label>
+        <div class="relative">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-sm text-white/30">$</span>
+          <input
+            type="number"
+            name="base_price"
+            value="{{ form_data.base_price|default:'' }}"
+            placeholder="0.00"
+            step="0.01"
+            min="0"
+            class="w-full bg-[#111] border pl-8 pr-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none transition-colors
+                  {% if errors.base_price %}border-red-500/60 focus:border-red-500{% else %}border-white/10 focus:border-white/30{% endif %}"
+          >
+        </div>
+        {% if errors.base_price %}
+          <span class="server-error font-mono text-[11px] text-red-400">{{ errors.base_price }}</span>
+        {% endif %}
+      </div>
+
+      </div>
+
+      <!-- Description -->
+      <div class="flex flex-col gap-2">
+      <label class="mono text-xs text-white/50 tracking-widest">Description</label>
+      <textarea
+        name="description"
+        rows="5"
+        placeholder="Describe the product features and details"
+        class="bg-[#111] border px-4 py-3 text-sm text-white placeholder-white/20 font-mono outline-none transition-colors resize-none
+              {% if errors.description %}border-red-500/60 focus:border-red-500{% else %}border-white/10 focus:border-white/30{% endif %}"
+      >{{ form_data.description|default:'' }}</textarea>
+      {% if errors.description %}
+        <span class="server-error font-mono text-[11px] text-red-400">{{ errors.description }}</span>
+      {% endif %}
+    </div>
+
+    </div>
+
+    <!-- ── Section: Product Details ── -->
+    <div class="mb-8">
+      <div class="flex items-center gap-4 mb-5">
+        <span class="mono text-xs text-white/40 tracking-widest uppercase">Product Details</span>
+        <div class="flex-1 h-px bg-white/10"></div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+
+        <div class="flex flex-col gap-2">
+          <label class="mono text-xs text-white/50 tracking-widest">Material</label>
+          <input type="text" name="material" value="{{ form_data.material|default:'' }}" placeholder="e.g. 100% Cotton"
+            class="bg-[#111] border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none focus:border-white/30 transition-colors">
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class="mono text-xs text-white/50 tracking-widest">Fabric Weight</label>
+          <input type="text" name="fabric_weight" value="{{ form_data.fabric_weight|default:'' }}" placeholder="e.g. 180 GSM"
+            class="bg-[#111] border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none focus:border-white/30 transition-colors">
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class="mono text-xs text-white/50 tracking-widest">Fit</label>
+          <input type="text" name="fit" value="{{ form_data.fit|default:'' }}" placeholder="e.g. Regular Fit"
+            class="bg-[#111] border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none focus:border-white/30 transition-colors">
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class="mono text-xs text-white/50 tracking-widest">Design</label>
+          <input type="text" name="design" value="{{ form_data.design|default:'' }}" placeholder="e.g. Solid"
+            class="bg-[#111] border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none focus:border-white/30 transition-colors">
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class="mono text-xs text-white/50 tracking-widest">Care</label>
+          <input type="text" name="care" value="{{ form_data.care|default:'' }}" placeholder="e.g. Machine wash cold"
+            class="bg-[#111] border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none focus:border-white/30 transition-colors">
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class="mono text-xs text-white/50 tracking-widest">Durability</label>
+          <input type="text" name="durability" value="{{ form_data.durability|default:'' }}" placeholder="e.g. High"
+            class="bg-[#111] border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none focus:border-white/30 transition-colors">
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Divider ── -->
+    <div class="h-px bg-white/10 mb-8"></div>
+
+    <!-- ── Action Buttons ── -->
+    <div class="flex items-center justify-end gap-3">
+
+      <a href="{% url 'products' %}"
+         class="mono text-xs px-6 py-2.5 border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors tracking-widest">
+        Cancel
+      </a>
+
+      <button type="submit" name="action" value="save"
+              class="mono text-xs px-6 py-2.5 border border-white/20 text-white hover:bg-white/5 transition-colors tracking-widest">
+        Save Changes
+    </button>
+
+    </div>
+
+  </form>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const categorySelect    = document.getElementById('category-select');
+  const subcategorySelect = document.getElementById('subcategory-select');
+  const subcategoryData   = {{ subcategories_json|safe|default:'{}' }};
+  const selectedSubcatId  = "{{ form_data.subcategory_id|default:'' }}";
+
+  // ── Subcategory dynamic loading ──────────────────────────
+  function updateSubcategories() {
+    const selectedCatId = categorySelect.value;
+    const subs = subcategoryData[selectedCatId] || [];
+    subcategorySelect.innerHTML = '<option value="">Select subcategory</option>';
+    subs.forEach(sub => {
+      const opt = document.createElement('option');
+      opt.value = sub.id;
+      opt.textContent = sub.name;
+      if (sub.id === selectedSubcatId) opt.selected = true;
+      subcategorySelect.appendChild(opt);
+    });
+  }
+
+  categorySelect.addEventListener('change', () => {
+    updateSubcategories();
+    // Clear category red border when user picks a category
+    categorySelect.style.borderColor = categorySelect.value
+      ? 'rgba(255, 255, 255, 0.1)'
+      : 'rgba(239, 68, 68, 0.6)';
+    // Reset subcategory border too since options changed
+    subcategorySelect.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+    const subWrapper = getFieldWrapper(subcategorySelect);
+    if (subWrapper) {
+      const liveErr = subWrapper.querySelector('.live-error');
+      if (liveErr) liveErr.textContent = '';
+      const serverErr = subWrapper.querySelector('.server-error');
+      if (serverErr) serverErr.remove();
+    }
+  });
+
+  updateSubcategories();
+
+  // ── Validation rules ─────────────────────────────────────
+  const rules = {
+    name:           v => !v ? 'Product name is required.'     : v.length < 3 ? 'Must be at least 3 characters.' : '',
+    base_price:     v => !v ? 'Base price is required.'       : isNaN(v) || +v <= 0 ? 'Must be a number greater than 0.' : '',
+    description:    v => !v ? 'Description is required.'      : v.length < 10 ? 'Must be at least 10 characters.' : '',
+    subcategory_id: v => !v ? 'Please select a subcategory.'  : '',
+  };
+
+  function getFieldWrapper(input) {
+    let el = input.parentElement;
+    while (el && !el.classList.contains('flex-col')) el = el.parentElement;
+    return el;
+  }
+
+  function getErrorEl(wrapper) {
+    let err = wrapper.querySelector('.live-error');
+    if (!err) {
+      err = document.createElement('span');
+      err.className = 'live-error font-mono text-[11px] text-red-400';
+      wrapper.appendChild(err);
+    }
+    return err;
+  }
+
+  function applyError(input, msg) {
+    const wrapper = getFieldWrapper(input);
+    if (!wrapper) return;
+    const serverErr = wrapper.querySelector('.server-error');
+    if (serverErr) serverErr.remove();
+    const err = getErrorEl(wrapper);
+    err.textContent = msg;
+    input.style.borderColor = msg ? 'rgba(239, 68, 68, 0.6)' : 'rgba(255, 255, 255, 0.1)';
+  }
+
+  // ── Attach listeners ─────────────────────────────────────
+  Object.entries(rules).forEach(([name, validate]) => {
+    const input = document.querySelector(`[name="${name}"]`);
+    if (!input) return;
+
+    input.addEventListener('blur', () => {
+      applyError(input, validate(input.value.trim()));
+    });
+
+    const onLiveUpdate = () => {
+      const wrapper = getFieldWrapper(input);
+      if (!wrapper) return;
+      const liveErr = wrapper.querySelector('.live-error');
+      const serverErr = wrapper.querySelector('.server-error');
+      if ((liveErr && liveErr.textContent) || serverErr) {
+        applyError(input, validate(input.value.trim()));
+      }
+    };
+
+    input.addEventListener('input',  onLiveUpdate);
+    input.addEventListener('change', onLiveUpdate);
+  });
+</script>
+{% endblock %}

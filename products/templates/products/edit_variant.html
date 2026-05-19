@@ -1,0 +1,795 @@
+{% extends 'admin_base/base.html' %}
+{% block title %}Edit Variant{% endblock %}
+
+{% block extra_css %}
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css"
+/>
+<style>
+.cropper-bg {
+    background-image: none !important;
+}
+.cropper-container {
+    width: 100% !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="p-8 max-w-screen-xl mx-auto">
+
+  <!-- Top Bar -->
+  <div class="flex items-center gap-4 mb-8">
+    <a href="{% url 'product_variants' product_id=product.id %}"
+       class="text-white/40 hover:text-white transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+      </svg>
+    </a>
+    <h1 class="mono text-white text-4xl font-bold tracking-tight">Edit Variant</h1>
+  </div>
+
+  <!-- ── Product Summary Card ── -->
+  <div class="border border-white/10 bg-[#0d0d0d] p-5 mb-8 flex items-center gap-6">
+
+    <!-- Product Info -->
+    <div class="flex-1">
+      <span class="mono text-[10px] text-white/30 tracking-widest uppercase">Product</span>
+      <h2 class="mono text-white text-2xl font-bold tracking-tight mt-0.5">{{ product.name }}</h2>
+      <div class="flex items-center gap-2 mt-1">
+        <span class="mono text-[10px] tracking-widest">Status:</span>
+        {% if product.is_active %}
+          <span class="mono text-[10px] text-green-400 tracking-widest">Active</span>
+        {% else %}
+          <span class="mono text-[10px] text-white/40 tracking-widest">Inactive</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Base Price -->
+    <div class="text-right border-l border-white/10 pl-6">
+      <span class="mono text-[10px] text-white/30 tracking-widest uppercase block mb-1">Base Price</span>
+      <span class="mono text-white text-2xl font-bold">${{ product.base_price }}</span>
+    </div>
+
+    <!-- Total Stock -->
+    <div class="text-right border-l border-white/10 pl-6">
+      <span class="mono text-[10px] text-white/30 tracking-widest uppercase block mb-1">Total Stock</span>
+      <span class="mono text-white text-2xl font-bold">{{ product.total_stock|default:0 }}</span>
+    </div>
+
+  </div>
+
+  <!-- ── Variant Form ── -->
+  <form method="POST" action="{% url 'edit_variant' variant_id=variant.id %}" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- ── Section: Variant Information ── -->
+    <div class="mb-6">
+      <div class="flex items-center gap-4 mb-5">
+        <span class="mono text-xs text-white/40 tracking-widest uppercase">Variant Information</span>
+        <div class="flex-1 h-px bg-white/10"></div>
+      </div>
+
+      <div class="border border-white/10 bg-[#0d0d0d] p-6">
+
+        <div class="grid grid-cols-2 gap-6">
+
+          <!-- Color Display -->
+          <div class="flex flex-col gap-2">
+            <label class="mono text-xs text-white/50 tracking-widest">Color Display</label>
+            <input
+              type="text"
+              name="color"
+              value="{{ form_data.color|default:'' }}"
+              placeholder="color name to show"
+              class="bg-[#111] border px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none transition-colors
+              {% if errors.color %}border-red-500/60{% else %}border-white/10 focus:border-white/30{% endif %}"
+            >
+            {% if errors.color %}
+              <span class="server-error font-mono text-[11px] text-red-400">{{ errors.color }}</span>
+            {% endif %}
+          </div>
+
+          <!-- Size -->
+          <div class="flex flex-col gap-2">
+            <label class="mono text-xs text-white/50 tracking-widest">Size</label>
+            <div class="flex gap-2">
+              {% for size_val, size_label in size_choices %}
+              <label class="cursor-pointer">
+                <input type="radio" name="size" value="{{ size_val }}"
+                  {% if form_data.size == size_val %}checked{% endif %}
+                  class="sr-only peer">
+                <span class="mono text-xs px-5 py-2.5 border border-white/10 text-white/50
+                             peer-checked:border-white peer-checked:text-white
+                             hover:border-white/30 hover:text-white/80
+                             transition-colors block">
+                  {{ size_label }}
+                </span>
+              </label>
+              {% endfor %}
+            </div>
+            {% if errors.size %}
+              <span class="server-error font-mono text-[11px] text-red-400">{{ errors.size }}</span>
+            {% endif %}
+          </div>
+
+        </div>
+
+        <!-- Color Hex Picker -->
+        <div class="mt-4 flex flex-col gap-2">
+          <label class="mono text-xs text-white/50 tracking-widest">Color</label>
+          <div class="flex items-center gap-3">
+            <div class="relative">
+              <input
+                type="color"
+                name="color_hex"
+                value="{{ form_data.color_hex|default:'#000000' }}"
+                id="color-picker"
+                class="w-10 h-10 border border-white/10 bg-[#111] cursor-pointer p-0.5"
+              >
+            </div>
+            <div class="flex-1 relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-xs text-white/30">#</span>
+              <input
+                type="text"
+                id="color-hex-text"
+                placeholder="000000"
+                maxlength="6"
+                class="w-full bg-[#111] border border-white/10 pl-8 pr-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none focus:border-white/30 transition-colors"
+              >
+            </div>
+          </div>
+          {% if errors.color_hex %}
+            <span class="server-error font-mono text-[11px] text-red-400">{{ errors.color_hex }}</span>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Section: Price / Stock / Status ── -->
+    <div class="mb-6">
+      <div class="grid grid-cols-3 gap-4">
+
+        <!-- Price -->
+        <div class="border border-white/10 bg-[#0d0d0d] p-5">
+          <span class="mono text-xs text-white/40 tracking-widest uppercase block mb-4">Price</span>
+          <div class="flex flex-col gap-2">
+            <label class="mono text-xs text-white/50 tracking-widest">Price Override</label>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-sm text-white/30">$</span>
+              <input
+                type="number"
+                name="price"
+                value="{{ form_data.price|default:'' }}"
+                placeholder="Optional"
+                step="0.01"
+                min="0"
+                class="w-full bg-[#111] border pl-8 pr-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none transition-colors
+                {% if errors.price %}border-red-500/60{% else %}border-white/10 focus:border-white/30{% endif %}"
+              >
+            </div>
+            {% if errors.price %}
+              <span class="server-error font-mono text-[11px] text-red-400">{{ errors.price }}</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Stock -->
+        <div class="border border-white/10 bg-[#0d0d0d] p-5">
+          <span class="mono text-xs text-white/40 tracking-widest uppercase block mb-4">Stock</span>
+          <div class="flex flex-col gap-2">
+            <label class="mono text-xs text-white/50 tracking-widest">Stock Quantity</label>
+            <input
+              type="number"
+              name="stock"
+              value="{{ form_data.stock|default:'0' }}"
+              min="0"
+              class="bg-[#111] border px-4 py-2.5 text-sm text-white font-mono outline-none transition-colors
+              {% if errors.stock %}border-red-500/60{% else %}border-white/10 focus:border-white/30{% endif %}"
+            >
+            {% if errors.stock %}
+              <span class="server-error font-mono text-[11px] text-red-400">{{ errors.stock }}</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="border border-white/10 bg-[#0d0d0d] p-5">
+          <span class="mono text-xs text-white/40 tracking-widest uppercase block mb-4">Status</span>
+          <div class="flex flex-col gap-2">
+            <label class="mono text-xs text-white/50 tracking-widest">Select Status</label>
+            <select
+              name="status"
+              class="bg-[#111] border border-white/10 px-4 py-2.5 text-sm font-mono outline-none focus:border-white/30 transition-colors appearance-none
+              {% if form_data.status == 'ACTIVE' %}text-green-400{% else %}text-white{% endif %}"
+              style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23555'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\"); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;"
+              id="status-select"
+            >
+              <option value="ACTIVE"   {% if form_data.status == 'ACTIVE'   %}selected{% endif %} class="text-green-400">Active</option>
+              <option value="INACTIVE" {% if form_data.status == 'INACTIVE' %}selected{% endif %} class="text-white">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Section: Variant Images ── -->
+    <div class="mb-6">
+      <div class="flex items-center gap-4 mb-5">
+        <span class="mono text-xs text-white/40 tracking-widest uppercase">Variant Images</span>
+        <div class="flex-1 h-px bg-white/10"></div>
+        <span class="mono text-xs text-white/30">Min. 3 required</span>
+      </div>
+
+      <div class="border border-white/10 bg-[#0d0d0d] p-6">
+
+        <!-- Keep / Replace toggle -->
+        <div class="flex items-center gap-6 mb-5 pb-5 border-b border-white/10">
+          <span class="mono text-xs text-white/30 tracking-widest">Images:</span>
+          <label class="flex items-center gap-2 cursor-pointer group">
+            <input type="radio" name="image_mode" value="keep"
+                   id="mode-keep" checked class="sr-only peer">
+            <div class="w-3.5 h-3.5 border border-white/30 rounded-full
+                        peer-checked:bg-white peer-checked:border-white
+                        transition-colors"></div>
+            <span class="mono text-xs text-white/40 group-hover:text-white/70
+                         peer-checked:text-white transition-colors tracking-widest">
+              Keep existing
+            </span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer group">
+            <input type="radio" name="image_mode" value="replace"
+                   id="mode-replace" class="sr-only peer">
+            <div class="w-3.5 h-3.5 border border-white/30 rounded-full
+                        peer-checked:bg-white peer-checked:border-white
+                        transition-colors"></div>
+            <span class="mono text-xs text-white/40 group-hover:text-white/70
+                         peer-checked:text-white transition-colors tracking-widest">
+              Replace all
+            </span>
+          </label>
+        </div>
+
+        <!-- Hidden field read by the view -->
+        <input type="hidden" name="keep_existing_images" id="keep-existing-input" value="true">
+        <input type="hidden" name="removed_image_ids" id="removed-image-ids" value="">
+
+        <div class="grid grid-cols-[260px_1fr] gap-5 items-start">
+
+          <!-- Upload Box -->
+          <div class="w-full">
+            <div
+              id="image-drop-zone"
+              class="border border-dashed border-white/20 h-[260px]
+                     flex flex-col items-center justify-center gap-3
+                     cursor-pointer hover:border-white/40 transition-colors">
+              <input type="file" id="image-input" accept="image/*" class="hidden">
+              <svg class="w-8 h-8 text-white/20" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+              </svg>
+              <div class="text-center px-4">
+                <p class="mono text-xs text-white/60 tracking-widest">Upload Images</p>
+                <p class="mono text-[10px] text-white/30 mt-1" id="upload-hint">Add more images</p>
+                <p class="mono text-[10px] text-white/20 mt-0.5">Click to upload</p>
+              </div>
+            </div>
+            <p id="image-error" class="mono text-[11px] text-red-400 mt-3 hidden"></p>
+            {% if errors.images %}
+              <p class="mono text-[11px] text-red-400 mt-2">{{ errors.images }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Preview Side -->
+          <div class="min-w-0">
+
+            <!-- Existing images panel -->
+            <div id="existing-panel">
+              <p class="mono text-xs text-white/30 mb-3 tracking-widest">
+                <span id="existing-count">{{ existing_images|length }}</span> existing image(s)
+              </p>
+              <!-- AFTER -->
+            <div class="grid grid-cols-2 lg:grid-cols-3 gap-3" id="existing-grid">
+            {% for img in existing_images %}
+            <div class="relative border border-white/10 bg-[#111] aspect-square overflow-hidden group"
+                data-image-id="{{ img.id }}">
+                <img src="{{ img.image.url }}"
+                    class="existing-preview w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity">
+                <button type="button"
+                        class="remove-existing absolute top-1.5 right-1.5
+                            w-5 h-5 bg-black/70 text-white
+                            flex items-center justify-center
+                            opacity-0 group-hover:opacity-100 transition-opacity text-xs leading-none">
+                ✕
+                </button>
+            </div>
+            {% empty %}
+            <p class="mono text-xs text-white/20 col-span-3">No existing images.</p>
+            {% endfor %}
+            </div>
+            </div>
+
+            <!-- New cropped image count -->
+            <div id="image-count" class="mono text-xs text-white/30 mt-4 mb-3 hidden">
+              <span id="count-number">0</span> new image(s) added —
+              <span id="count-status"></span>
+            </div>
+
+            <!-- New cropped previews -->
+            <div id="image-preview-grid"
+                 class="grid grid-cols-2 lg:grid-cols-3 gap-3 hidden">
+            </div>
+
+            <!-- Empty state (only shown in replace mode with 0 new images) -->
+            <div id="image-empty-state"
+                 class="border border-dashed border-white/5 h-[120px]
+                        flex items-center justify-center hidden">
+              <span class="mono text-xs text-white/20 tracking-widest">
+                Cropped previews appear here
+              </span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Default Variant -->
+        <div class="border-t border-white/10 pt-4 mt-4">
+          <label class="flex items-center gap-3 cursor-pointer group w-fit">
+            <div class="relative">
+              <input type="checkbox" name="is_default" id="default-checkbox"
+                {% if form_data.is_default %}checked{% endif %}
+                class="sr-only peer">
+              <div class="w-4 h-4 border border-white/20 bg-[#111]
+                          peer-checked:bg-white peer-checked:border-white
+                          group-hover:border-white/40 transition-colors
+                          flex items-center justify-center">
+                <svg class="w-2.5 h-2.5 text-black hidden peer-checked:block" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+              </div>
+            </div>
+            <span class="mono text-xs text-white/40 group-hover:text-white/70 transition-colors tracking-widest">
+              Set as Default Variant
+            </span>
+          </label>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Lightbox overlay ── -->
+    <div id="lightbox"
+         class="fixed inset-0 bg-black/90 z-50 hidden
+                flex items-center justify-center p-8">
+      <button id="lightbox-close"
+              class="absolute top-6 right-6 text-white/50 hover:text-white
+                     transition-colors mono text-xs tracking-widest">
+        Close
+      </button>
+      <img id="lightbox-img" src=""
+           class="max-h-[90vh] max-w-[90vw] object-contain border border-white/10">
+    </div>
+
+    <!-- ── Crop modal ── -->
+    <div id="crop-modal" class="fixed inset-0 bg-black/95 z-[60] hidden flex items-center justify-center p-8">
+      <div class="bg-[#111] border border-white/10 p-6 w-full max-w-5xl">
+        <div class="flex items-center justify-between mb-4">
+          <span class="mono text-sm text-white tracking-widest">Crop &amp; Resize</span>
+          <button type="button" id="crop-modal-close" class="text-white/40 hover:text-white mono text-xs">close</button>
+        </div>
+        <div class="w-full h-[500px] bg-black overflow-hidden flex items-center justify-center">
+          <img id="crop-image" class="block max-w-full"/>
+        </div>
+        <div class="flex justify-end gap-3 mt-4">
+          <button type="button" id="crop-cancel"
+                  class="mono text-xs px-5 py-2 border border-white/20 text-white/60 hover:text-white transition-colors tracking-widest">
+            Cancel
+          </button>
+          <button type="button" id="crop-apply"
+                  class="mono text-xs px-5 py-2 bg-white text-black font-bold hover:bg-white/80 transition-colors tracking-widest">
+            Apply
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Divider ── -->
+    <div class="h-px bg-white/10 mb-8"></div>
+
+    <!-- ── Action Buttons ── -->
+    <div class="flex items-center justify-end gap-3">
+      <a href="{% url 'product_variants' product_id=product.id %}"
+         class="mono text-xs px-6 py-2.5 border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors tracking-widest">
+        Cancel
+      </a>
+      <button type="submit"
+              class="mono text-xs px-6 py-2.5 bg-white text-black font-bold hover:bg-white/80 transition-colors tracking-widest">
+        Save Changes
+      </button>
+    </div>
+
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    // Edit page never uses session storage — clear any leftover from add flow
+    sessionStorage.removeItem("variantImages");
+
+    // =========================
+    // COLOR PICKER SYNC
+    // =========================
+
+    const colorPicker  = document.getElementById("color-picker");
+    const colorHexText = document.getElementById("color-hex-text");
+
+    colorHexText.value = colorPicker.value.replace("#", "");
+
+    colorPicker.addEventListener("input", () => {
+        colorHexText.value = colorPicker.value.replace("#", "");
+    });
+
+    colorHexText.addEventListener("input", () => {
+        let value = colorHexText.value.replace(/[^0-9A-Fa-f]/g, "");
+        if (value.length > 6) value = value.slice(0, 6);
+        colorHexText.value = value;
+        if (value.length === 6) colorPicker.value = `#${value}`;
+    });
+
+    // =========================
+    // IMAGE MODE TOGGLE
+    // =========================
+
+    const modeKeep       = document.getElementById("mode-keep");
+    const modeReplace    = document.getElementById("mode-replace");
+    const keepInput      = document.getElementById("keep-existing-input");
+    const existingPanel  = document.getElementById("existing-panel");
+    const uploadHint     = document.getElementById("upload-hint");
+    const emptyState     = document.getElementById("image-empty-state");
+
+    function applyImageMode() {
+        const isKeep = modeKeep.checked;
+        keepInput.value = isKeep ? "true" : "false";
+
+        // Show/hide existing images panel
+        existingPanel.style.display = isKeep ? "" : "none";
+
+        // Hint text in upload box
+        uploadHint.textContent = isKeep ? "Add more images" : "Min. 3 required";
+
+        // In replace mode with no new images yet, show empty state
+        if (!isKeep && croppedFiles.length === 0) {
+            emptyState.classList.remove("hidden");
+        } else {
+            emptyState.classList.add("hidden");
+        }
+
+        updateCountStatus();
+    }
+
+    modeKeep.addEventListener("change", applyImageMode);
+    modeReplace.addEventListener("change", applyImageMode);
+
+    // =========================
+    // EXISTING IMAGE INTERACTIONS
+    // =========================
+
+    const existingGrid  = document.getElementById("existing-grid");
+    const existingCount = document.getElementById("existing-count");
+    const removedInput  = document.getElementById("removed-image-ids");
+    let removedIds      = [];
+
+    // Click image → open lightbox
+    existingGrid.addEventListener("click", (e) => {
+        const img = e.target.closest(".existing-preview");
+        if (img) {
+            lightboxImg.src = img.src;
+            lightbox.classList.remove("hidden");
+        }
+    });
+
+    // Click ✕ → remove card, track ID
+    existingGrid.addEventListener("click", (e) => {
+        const btn = e.target.closest(".remove-existing");
+        if (!btn) return;
+
+        const card = btn.closest("[data-image-id]");
+        const id   = card.dataset.imageId;
+
+        removedIds.push(id);
+        removedInput.value = removedIds.join(",");
+
+        card.remove();
+
+        // update count
+        const current = parseInt(existingCount.textContent) || 0;
+        existingCount.textContent = Math.max(0, current - 1);
+
+        updateCountStatus();
+    });
+
+    // =========================
+    // ELEMENTS
+    // =========================
+
+    const imageInput  = document.getElementById("image-input");
+    const dropZone    = document.getElementById("image-drop-zone");
+    const cropModal   = document.getElementById("crop-modal");
+    const cropImage   = document.getElementById("crop-image");
+    const cropApply   = document.getElementById("crop-apply");
+    const cropCancel  = document.getElementById("crop-cancel");
+    const cropClose   = document.getElementById("crop-modal-close");
+    const previewGrid = document.getElementById("image-preview-grid");
+    const imageCount  = document.getElementById("image-count");
+    const countNumber = document.getElementById("count-number");
+    const countStatus = document.getElementById("count-status");
+    const form        = document.querySelector("form");
+
+    let cropper      = null;
+    let croppedFiles = [];
+
+    // =========================
+    // ERROR HANDLING
+    // =========================
+
+    function showImageError(message) {
+        const el = document.getElementById("image-error");
+        el.textContent = message;
+        el.classList.remove("hidden");
+    }
+
+    function clearImageError() {
+        const el = document.getElementById("image-error");
+        el.textContent = "";
+        el.classList.add("hidden");
+    }
+
+    // =========================
+    // COUNT STATUS
+    // =========================
+
+    function updateCountStatus() {
+        const existingCount = parseInt(
+            document.getElementById("existing-count").textContent
+        ) || 0;
+        const isKeep = modeKeep.checked;
+        const total  = (isKeep ? existingCount : 0) + croppedFiles.length;
+
+        if (croppedFiles.length > 0) {
+            imageCount.classList.remove("hidden");
+            countNumber.textContent = croppedFiles.length;
+        } else {
+            imageCount.classList.add("hidden");
+        }
+
+        if (total >= 3) {
+            countStatus.textContent = "Minimum reached";
+            countStatus.className   = "text-green-400";
+        } else {
+            countStatus.textContent = `${3 - total} more needed`;
+            countStatus.className   = "text-red-400";
+        }
+    }
+
+    // =========================
+    // OPEN FILE PICKER
+    // =========================
+
+    dropZone.addEventListener("click", () => imageInput.click());
+
+    // =========================
+    // IMAGE SELECT → CROP MODAL
+    // =========================
+
+    imageInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // =========================
+        // FILE SIZE VALIDATION
+        // =========================
+
+        const MAX_IMAGE_SIZE_MB = 10;
+        const maxBytes = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+
+        if (file.size > maxBytes) {
+            showImageError(
+                `Image must be smaller than ${MAX_IMAGE_SIZE_MB} MB.`
+            );
+
+            imageInput.value = "";
+            return;
+        }
+
+        // =========================
+        // FILE TYPE VALIDATION
+        // =========================
+
+        const allowedTypes = [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+        ];
+
+        if (!allowedTypes.includes(file.type)) {
+            showImageError(
+                "Only JPG, PNG, or WEBP images are allowed."
+            );
+
+            imageInput.value = "";
+            return;
+        }
+
+        clearImageError();
+
+        // =========================
+        // OPEN CROPPER
+        // =========================
+
+        const reader = new FileReader();
+
+        reader.onload = (event) => {
+            cropImage.src = event.target.result;
+
+            cropModal.classList.remove("hidden");
+
+            if (cropper) {
+                cropper.destroy();
+            }
+
+            cropper = new Cropper(cropImage, {
+                aspectRatio: 1,
+                viewMode: 1,
+                autoCropArea: 1,
+                responsive: true,
+                background: false,
+            });
+        };
+
+        reader.readAsDataURL(file);
+
+        imageInput.value = "";
+    });
+
+    // =========================
+    // CLOSE CROP MODAL
+    // =========================
+
+    function closeCropModal() {
+        cropModal.classList.add("hidden");
+        if (cropper) { cropper.destroy(); cropper = null; }
+    }
+
+    cropCancel.addEventListener("click", closeCropModal);
+    cropClose.addEventListener("click", closeCropModal);
+
+    // =========================
+    // APPLY CROP
+    // =========================
+
+    cropApply.addEventListener("click", () => {
+        if (!cropper) return;
+
+        const canvas = cropper.getCroppedCanvas({
+            width: 800,
+            height: 800,
+            imageSmoothingQuality: "high",
+        });
+
+        canvas.toBlob((blob) => {
+            const croppedFile = new File(
+                [blob],
+                `cropped_${Date.now()}.jpg`,
+                { type: "image/jpeg" }
+            );
+            croppedFiles.push(croppedFile);
+            clearImageError();
+            renderPreviews();
+            closeCropModal();
+        }, "image/jpeg", 0.95);
+    });
+
+    // =========================
+    // RENDER NEW PREVIEWS
+    // =========================
+
+    function renderPreviews() {
+        previewGrid.innerHTML = "";
+
+        if (croppedFiles.length > 0) {
+            previewGrid.classList.remove("hidden");
+            emptyState.classList.add("hidden");
+        } else {
+            previewGrid.classList.add("hidden");
+            // show empty state only in replace mode
+            if (modeReplace.checked) {
+                emptyState.classList.remove("hidden");
+            }
+        }
+
+        croppedFiles.forEach((file, index) => {
+            const url = URL.createObjectURL(file);
+            const div = document.createElement("div");
+            div.className = "relative border border-white/10 bg-[#111] aspect-square overflow-hidden";
+            div.innerHTML = `
+                <img src="${url}" data-index="${index}"
+                     class="preview-image w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity">
+            `;
+            previewGrid.appendChild(div);
+        });
+
+        document.querySelectorAll(".preview-image").forEach(img => {
+            img.addEventListener("click", () => {
+                openLightbox(parseInt(img.dataset.index));
+            });
+        });
+
+        updateCountStatus();
+    }
+
+    // =========================
+    // LIGHTBOX
+    // =========================
+
+    const lightbox      = document.getElementById("lightbox");
+    const lightboxImg   = document.getElementById("lightbox-img");
+    const lightboxClose = document.getElementById("lightbox-close");
+
+    function openLightbox(index) {
+        lightboxImg.src = URL.createObjectURL(croppedFiles[index]);
+        lightbox.classList.remove("hidden");
+    }
+
+    lightboxClose.addEventListener("click", () => lightbox.classList.add("hidden"));
+    lightbox.addEventListener("click", (e) => {
+        if (e.target === lightbox) lightbox.classList.add("hidden");
+    });
+
+    // =========================
+    // FORM SUBMIT
+    // =========================
+
+    form.addEventListener("submit", (e) => {
+        const existingCount = parseInt(
+            document.getElementById("existing-count").textContent
+        ) || 0;
+        const isKeep = modeKeep.checked;
+        const total  = (isKeep ? existingCount : 0) + croppedFiles.length;
+
+        if (total < 3) {
+            e.preventDefault();
+            showImageError(
+                isKeep
+                    ? "Please upload at least 3 images total."
+                    : "Please upload at least 3 new images to replace existing ones."
+            );
+            return;
+        }
+
+        // Attach cropped files as hidden inputs
+        document.querySelectorAll(".dynamic-image-input").forEach(el => el.remove());
+
+        croppedFiles.forEach(file => {
+            const dt    = new DataTransfer();
+            dt.items.add(file);
+            const input = document.createElement("input");
+            input.type  = "file";
+            input.name  = "images";
+            input.files = dt.files;
+            input.classList.add("dynamic-image-input");
+            input.hidden = true;
+            form.appendChild(input);
+        });
+    });
+
+});
+</script>
+{% endblock %}

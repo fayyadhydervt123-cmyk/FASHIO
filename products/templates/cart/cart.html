@@ -1,0 +1,390 @@
+{% extends 'user_base/base.html' %}
+
+{% block title %}
+Cart | FASHIO
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #fff;
+    color: #000;
+  }
+
+  .mono {
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .bebas {
+    font-family: 'Bebas Neue', sans-serif;
+  }
+
+  .cart-card {
+    transition: border-color .25s ease, transform .25s ease;
+  }
+
+  .cart-card:hover {
+    border-color: rgba(0,0,0,.28);
+  }
+
+  .qty-btn {
+    transition: background .2s ease, color .2s ease;
+  }
+
+  .qty-btn:hover {
+    background: rgba(0,0,0,.04);
+    color: #000;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="bg-white pt-10 md:pt-12 px-6 md:px-12 pb-20">
+
+  <!-- Breadcrumb -->
+  <div class="mb-8 flex items-center gap-2">
+    <a href="{% url 'product_list' %}"
+       class="mono text-[10px] tracking-widest text-black/40 hover:text-black transition-colors uppercase">
+      SHOP
+    </a>
+
+    <span class="mono text-[10px] tracking-widest text-black/25">/</span>
+
+    <span class="mono text-[10px] tracking-widest text-black/35 uppercase">
+      CART
+    </span>
+  </div>
+
+  <!-- Page Header -->
+  <div class="mb-12">
+    <div class="flex items-center gap-4 mb-4">
+      <div class="w-1 h-12 bg-black"></div>
+
+      <div>
+        <p class="mono text-[10px] tracking-[.3em] text-black/40 uppercase mb-2">
+          SHOPPING BAG
+        </p>
+
+        <h1 class="bebas text-black text-6xl md:text-8xl leading-none tracking-wide">
+          MY CART
+        </h1>
+      </div>
+    </div>
+
+    <p class="mono text-[10px] tracking-widest text-black/40 uppercase">
+      {{ total_items }} ITEM{% if total_items != 1 %}S{% endif %} IN YOUR CART
+    </p>
+  </div>
+
+  {% if cart_items %}
+
+  <div class="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-10">
+
+    <!-- LEFT: Cart Items -->
+    <div>
+
+      <!-- Table Header Desktop -->
+      <div class="hidden md:grid grid-cols-[1fr_180px_160px_80px] gap-6 border border-black/10 bg-neutral-50 px-6 py-4 mb-0">
+        <p class="mono text-[10px] tracking-widest text-black/60 uppercase">
+          Product Details
+        </p>
+
+        <p class="mono text-[10px] tracking-widest text-black/60 uppercase text-center">
+          Quantity
+        </p>
+
+        <p class="mono text-[10px] tracking-widest text-black/60 uppercase text-right">
+          Price
+        </p>
+
+        <p class="mono text-[10px] tracking-widest text-black/60 uppercase text-right">
+          Remove
+        </p>
+      </div>
+
+      <!-- Cart Item List -->
+      <div class="border-x border-b border-black/10">
+
+        {% for item in cart_items %}
+        <div class="cart-card border-t border-black/10 px-4 md:px-6 py-6">
+
+          <div class="grid grid-cols-1 md:grid-cols-[1fr_180px_160px_80px] gap-6 items-center">
+
+            <!-- Product -->
+            <div class="flex gap-4">
+
+              <a href="{% url 'product_detail' item.product.id %}"
+                 class="w-28 h-28 md:w-32 md:h-32 bg-neutral-100 border border-black/10 overflow-hidden shrink-0">
+                {% if item.thumbnail %}
+                  <img src="{{ item.thumbnail }}"
+                       alt="{{ item.product.name }}"
+                       class="w-full h-full object-cover">
+                {% else %}
+                  <div class="w-full h-full flex items-center justify-center">
+                    <span class="mono text-[9px] tracking-widest text-black/30">
+                      NO IMAGE
+                    </span>
+                  </div>
+                {% endif %}
+              </a>
+
+              <div class="min-w-0">
+                <a href="{% url 'product_detail' item.product.id %}"
+                   class="block text-black hover:text-black/60 transition-colors">
+                  <h2 class="text-base md:text-lg font-semibold leading-snug mb-2">
+                    {{ item.product.name }}
+                  </h2>
+                </a>
+
+                {% if item.product.subcategory %}
+                  <p class="mono text-[9px] tracking-widest text-black/35 uppercase mb-3">
+                    {{ item.product.subcategory.category.name }} / {{ item.product.subcategory.name }}
+                  </p>
+                {% endif %}
+
+                <div class="flex flex-wrap gap-2">
+                  <span class="mono text-[9px] tracking-widest border border-black/10 px-2 py-1 text-black/45 uppercase">
+                    Size: {{ item.variant.size }}
+                  </span>
+
+                  <span class="mono text-[9px] tracking-widest border border-black/10 px-2 py-1 text-black/45 uppercase">
+                    Color: {{ item.variant.color }}
+                  </span>
+                </div>
+
+                {% if not item.is_available %}
+                  <p class="mono text-[9px] tracking-widest text-red-600 mt-3 uppercase">
+                    {{ item.unavailable_reason }}
+                  </p>
+                {% elif item.quantity > item.max_quantity %}
+                  <p class="mono text-[9px] tracking-widest text-red-600 mt-3 uppercase">
+                    {{ item.unavailable_reason }}
+                  </p>
+                {% else %}
+                  <p class="mono text-[9px] tracking-widest text-black/30 mt-3 uppercase">
+                    Max {{ item.max_quantity }} available
+                  </p>
+                {% endif %}
+              </div>
+
+            </div>
+
+            <!-- Quantity -->
+            <div class="flex md:justify-center">
+              <div class="flex items-center border border-black/15 w-fit">
+
+                <form method="POST" action="{% url 'update_cart_quantity' %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="item_id" value="{{ item.id }}">
+                  <input type="hidden" name="action" value="decrease">
+
+                  <button type="submit"
+                        {% if not item.is_available %}disabled{% endif %}
+                        class="qty-btn w-10 h-10 mono border-r border-black/10
+                        {% if not item.is_available %}
+                          text-black/20 cursor-not-allowed
+                        {% else %}
+                          text-black/50
+                        {% endif %}">
+                  −
+                </button>
+                </form>
+
+                <span class="w-12 h-10 flex items-center justify-center mono text-[11px] text-black">
+                  {{ item.quantity }}
+                </span>
+
+                <form method="POST" action="{% url 'update_cart_quantity' %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="item_id" value="{{ item.id }}">
+                  <input type="hidden" name="action" value="increase">
+
+                  <button type="submit"
+                          {% if not item.is_available or item.quantity >= item.max_quantity %}disabled{% endif %}
+                          class="qty-btn w-10 h-10 mono border-l border-black/10
+                          {% if item.quantity >= item.max_quantity %}
+                            text-black/20 cursor-not-allowed
+                          {% else %}
+                            text-black/50
+                          {% endif %}">
+                    +
+                  </button>
+                </form>
+
+              </div>
+            </div>
+
+            <!-- Price -->
+            <div class="md:text-right">
+              <p class="mono text-base font-bold text-black">
+                ₹{{ item.subtotal|floatformat:0 }}
+              </p>
+
+              <p class="mono text-[9px] tracking-widest text-black/30 mt-1 uppercase">
+                ₹{{ item.unit_price|floatformat:0 }} each
+              </p>
+            </div>
+
+            <!-- Remove -->
+            <div class="md:text-right">
+              <form method="POST" action="{% url 'remove_cart_item' %}">
+                {% csrf_token %}
+                <input type="hidden" name="item_id" value="{{ item.id }}">
+
+                <button type="submit"
+                        class="mono text-[9px] tracking-widest text-black/35 hover:text-red-600 transition-colors uppercase">
+                  Remove
+                </button>
+              </form>
+            </div>
+
+          </div>
+
+        </div>
+        {% endfor %}
+
+      </div>
+
+      <!-- Continue Shopping -->
+      <div class="mt-8">
+        <a href="{% url 'product_list' %}"
+           class="inline-flex items-center justify-center mono text-[10px] tracking-widest border border-black/15 text-black/60 px-8 py-4 hover:border-black hover:text-black transition-colors uppercase">
+          Continue Shopping
+        </a>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: Summary -->
+    <aside class="xl:sticky xl:top-24 h-fit">
+
+      <!-- Order Summary -->
+      <div class="border border-black/10 p-6 mb-6">
+
+        <p class="mono text-[10px] tracking-widest text-black/50 uppercase mb-6">
+          Order Summary
+        </p>
+
+        <div class="space-y-4">
+
+          <div class="flex justify-between gap-6">
+            <p class="text-sm text-black/55">
+              Subtotal
+            </p>
+
+            <p class="mono text-sm font-bold text-black">
+              ₹{{ total_price|floatformat:0 }}
+            </p>
+          </div>
+
+          <div class="flex justify-between gap-6 border-b border-black/10 pb-4">
+            <p class="text-sm text-black/55">
+              Shipping
+            </p>
+
+            <p class="mono text-sm text-black/45">
+              Calculated later
+            </p>
+          </div>
+
+          <div class="flex justify-between items-end gap-6 pt-2">
+            <p class="mono text-[10px] tracking-widest text-black/50 uppercase">
+              Total
+            </p>
+
+            <p class="mono text-3xl font-bold text-black">
+              ₹{{ total_price|floatformat:0 }}
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Coupon Placeholder -->
+        <div class="mt-8">
+          <label class="block mono text-[10px] tracking-widest text-black/45 uppercase mb-3">
+            Coupon Code
+          </label>
+
+          <div class="flex border border-black/15">
+            <input type="text"
+                   placeholder="ENTER CODE"
+                   class="mono text-[10px] tracking-widest flex-1 px-3 py-3 outline-none placeholder-black/25">
+
+            <button type="button"
+                    class="mono text-[10px] tracking-widest bg-black text-white px-5 font-bold hover:bg-black/80 transition-colors">
+              APPLY
+            </button>
+          </div>
+        </div>
+
+        {% if can_checkout and total_items > 0 %}
+          <a href="{% url 'checkout_page' %}?source=cart"
+            class="block text-center w-full mt-8 mono text-[10px] tracking-[.3em] bg-black text-white py-4 font-bold hover:bg-black/80 active:scale-[0.98] transition-all uppercase">
+            Proceed To Checkout
+          </a>
+        {% else %}
+          <button type="button"
+            disabled
+            class="block text-center w-full mt-8 mono text-[10px] tracking-[.3em] border border-black/15 text-black/30 py-4 font-bold cursor-not-allowed uppercase">
+            Checkout Unavailable
+          </button>
+
+          <p class="mono text-[9px] tracking-widest text-red-600 mt-3 uppercase text-center">
+            Remove unavailable or out-of-stock products to continue.
+          </p>
+        {% endif %}
+
+      </div>
+
+      <!-- Trust Box -->
+      <div class="border border-black/10 p-6">
+        <p class="mono text-[10px] tracking-widest text-black/50 uppercase mb-4">
+          Fashio Promise
+        </p>
+
+        <div class="space-y-4 text-sm text-black/55 leading-relaxed">
+          <p>
+            Every order is checked before dispatch and packed with care.
+          </p>
+
+          <p>
+            Free standard shipping may apply on selected orders.
+          </p>
+
+          <p class="mono text-[9px] tracking-widest text-black/30 uppercase">
+            Secure checkout · Quality inspected · Easy support
+          </p>
+        </div>
+      </div>
+
+    </aside>
+
+  </div>
+
+  {% else %}
+
+  <!-- Empty Cart -->
+  <div class="border border-black/10 py-24 px-6 text-center">
+
+    <h2 class="bebas text-5xl md:text-7xl text-black leading-none mb-4">
+      EMPTY CART
+    </h2>
+
+    <p class="mono text-[10px] tracking-widest text-black/40 uppercase mb-8">
+      Your cart is waiting for something good.
+    </p>
+
+    <a href="{% url 'product_list' %}"
+       class="inline-flex mono text-[10px] tracking-widest bg-black text-white px-8 py-4 font-bold hover:bg-black/80 transition-colors uppercase">
+      Shop Now
+    </a>
+
+  </div>
+
+  {% endif %}
+
+</section>
+
+{% endblock %}

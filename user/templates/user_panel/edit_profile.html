@@ -3,17 +3,142 @@
 {% block title %}FASHIO | Edit Profile{% endblock %}
 
 {% block extra_css %}
-  * { font-family: 'Space Mono', monospace; }
-  .brutalist-card { border: 1px solid #1a1a1a; }
-  .hidden-form { display: none; }
+<style>
+  *{
+    font-family:'Space Mono', monospace;
+  }
+
+  .edit-wrapper{
+    padding-top:56px;
+    background:#fff;
+    min-height:100vh;
+  }
+
+  .profile-header{
+    padding:10px 70px 24px;
+    border-bottom:1px solid #e5e5e5;
+    background:#fff;
+    display:flex;
+    align-items:center;
+    gap:24px;
+  }
+
+  .avatar-wrapper{
+    display:flex;
+    align-items:stretch;
+  }
+
+  .avatar-bar{
+    width:3px;
+    background:#000;
+    margin-right:14px;
+  }
+
+  .avatar-img{
+    width:100px;
+    height:100px;
+    background:#f5f5f5;
+    overflow:hidden;
+  }
+
+  .edit-card{
+    max-width:900px;
+    margin:40px auto;
+    border:1px solid #e5e5e5;
+    background:#fff;
+  }
+
+  .section-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.08em;
+    margin-bottom:24px;
+  }
+
+  .form-input{
+    width:100%;
+    border:1px solid #d4d4d4;
+    background:#fff;
+    color:#111;
+    padding:13px 14px;
+    font-size:12px;
+    outline:none;
+    transition:.2s;
+  }
+
+  .form-input:focus{
+    border-color:#111;
+  }
+
+  .form-label{
+    display:block;
+    font-size:11px;
+    letter-spacing:.08em;
+    color:#555;
+    margin-bottom:8px;
+  }
+
+  .btn-primary{
+    background:#111;
+    color:#fff;
+    border:none;
+    padding:16px 40px;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.12em;
+    cursor:pointer;
+  }
+
+  .btn-primary:hover{
+    background:#222;
+  }
+
+  .btn-secondary{
+    border:1px solid #d4d4d4;
+    background:#fff;
+    color:#111;
+    padding:16px 40px;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.12em;
+    cursor:pointer;
+  }
+
+  .btn-secondary:hover{
+    background:#f5f5f5;
+  }
+
+  .info-box{
+    border:1px solid #e5e5e5;
+    padding:16px;
+    margin-top:32px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-size:11px;
+    color:#666;
+  }
+
+  .footer-strip{
+    border-top:1px solid #e5e5e5;
+    padding:18px;
+    text-align:center;
+    font-size:9px;
+    letter-spacing:.18em;
+    color:#777;
+    margin-top:40px;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="flex items-center gap-6 px-8 pt-10 pb-8 max-w-[900px] mx-auto">
-    <!-- Red bar + avatar -->
-    <div class="flex items-stretch gap-0">
-      <div class="w-[3px] bg-red-600 self-stretch"></div>
-      <div class="w-[100px] h-[100px] bg-[#1a1a1a] overflow-hidden ml-3">
+<div class="profile-header">    <!-- Red bar + avatar -->
+    <div class="avatar-wrapper">
+      <div class="avatar-bar"></div>
+      <div class="avatar-img">
         {% if user.image %}
             <img src="{{ user.image.url }}" alt="profile" class="w-full h-full object-cover"/>
         {% endif %}
@@ -27,151 +152,154 @@
   </div>
 
   <!-- Edit Profile Card -->
-  <div class="mx-8 mb-10 bg-[#111] rounded-sm max-w-[900px] mx-auto">
+  <div class="edit-wrapper">
+    <div class="edit-card">
 
     <!-- Form body -->
-    <div class="px-10 pb-0">
+        <div class="px-10 pb-0">
 
-      <!-- ── Personal details ── -->
-      <div class="flex items-center gap-3 border-l-2 border-red-600 pl-3 mb-6">
-        <span class="text-[14px] font-bold tracking-[0.06em]">Personal details</span>
-      </div>
-
-      <form method="POST" enctype="multipart/form-data" id="profileForm">
-        {% csrf_token %}
-
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="mb-4 px-4 py-3 text-[11px] tracking-[0.08em]
-                        {% if message.tags == 'error' %}
-                            bg-red-900/30 border border-red-600 text-red-400
-                        {% else %}
-                            bg-green-900/30 border border-green-600 text-green-400
-                        {% endif %}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-
-        <div class="flex flex-col items-center pt-10 pb-6">
-            <div class="relative">
-                <div class="w-[110px] h-[110px] bg-[#222] overflow-hidden">
-                    
-                    <img id="preview" src="{% if user.image %}{{ user.image.url }}{% else %}/static/default.png{% endif %}" alt="profile" class="w-full h-full object-cover"/>
-                    
-                </div>
-                <input type="file" name="image" id="imageInput" class="opacity-0 absolute inset-0 cursor-pointer" accept="image/*">
-                <!-- Edit pencil icon bottom-right -->
-                <button type="button" class="absolute bottom-0 right-0 w-7 h-7 bg-[#333] border border-[#555] flex items-center justify-center text-xs hover:bg-white hover:text-black transition-colors"
-                onclick="document.getElementById('imageInput').click()">
-                ✎
-                </button>
-            </div>
-            <p class="mt-4 text-[11px] tracking-[0.12em] text-[#888]">Update customer details</p>
+        <!-- ── Personal details ── -->
+        <div class="flex items-center gap-3 border-l-2 border-red-600 pl-3 mb-6">
+            {% comment %} <span class="text-[14px] font-bold tracking-[0.06em]">Personal details</span> {% endcomment %}
         </div>
 
-        <!-- Full name -->
-        <div class="mb-5">
-            <label class="block text-[11px] tracking-[0.08em] text-white mb-2">Full name</label>
-            <input type="text" name="fullname" value="{{ user.fullname }}"
-            class="w-full bg-[#0d0d0d] border border-[#2a2a2a] text-white px-4 py-3 text-[12px] outline-none focus:border-[#555] transition-colors placeholder-transparent"/>
-        </div>
+        <form method="POST" enctype="multipart/form-data" id="profileForm">
+            {% csrf_token %}
 
-        <!-- Email + Phone row -->
-        <div class="grid grid-cols-2 gap-5 mb-8">
-
-            <div id="emailColumn">
-                <label class="block text-[11px] tracking-[0.08em] text-white mb-2">Email</label>
-                <input type="email" value="{{ user.email }}" readonly
-                    class="w-full bg-[#0d0d0d] border border-[#2a2a2a] text-white px-4 py-3 text-[12px] outline-none"/>
-
-                <!-- Visible new email input (not inside a form) -->
-                <input type="email" id="newEmailInput"
-                    placeholder="Enter new email"
-                    class="w-full bg-[#0d0d0d] border border-[#2a2a2a] text-white px-4 py-3 text-[12px] outline-none mt-2 {% if show_email_field %}block{% else %}hidden{% endif %}"/>
-
-                {% if email_error %}
-                <p id="emailErrorMsg" class="text-red-500 text-[10px] mt-1 tracking-[0.08em]">
-                    {{ email_error }}
-                </p>
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="mb-4 px-4 py-3 text-[11px] tracking-[0.08em]
+                            {% if message.tags == 'error' %}
+                                bg-red-900/30 border border-red-600 text-red-400
+                            {% else %}
+                                bg-green-900/30 border border-green-600 text-green-400
+                            {% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
                 {% endif %}
 
-                <div class="flex items-center gap-3 mt-2">
-                    <button type="button" id="changeEmailBtn"
-                        class="text-[10px] tracking-[0.12em] text-[#666] hover:text-white font-bold font-mono border-none bg-transparent cursor-pointer">
-                        CHANGE EMAIL
+            <div class="flex flex-col items-center pt-10 pb-6">
+                <div class="relative">
+                    <div class="w-[110px] h-[110px] bg-[#222] overflow-hidden">
+                        
+                        <img id="preview" src="{% if user.image %}{{ user.image.url }}{% else %}/static/default.png{% endif %}" alt="profile" class="w-full h-full object-cover"/>
+                        
+                    </div>
+                    <input type="file" name="image" id="imageInput" class="opacity-0 absolute inset-0 cursor-pointer" accept="image/*">
+                    <!-- Edit pencil icon bottom-right -->
+                    <button type="button" class="absolute bottom-0 right-0 w-7 h-7 bg-[#333] border border-[#555] flex items-center justify-center text-xs hover:bg-white hover:text-black transition-colors"
+                    onclick="document.getElementById('imageInput').click()">
+                    ✎
                     </button>
-                    <button type="button" id="sendOtpBtn"
-                        class="hidden text-[10px] tracking-[0.12em] text-[#666] font-bold font-mono bg-transparent cursor-pointer hover:text-white">
-                        SEND OTP
-                    </button>
-                    <button type="button" id="cancelEmailBtn"
-                        class="hidden text-[10px] tracking-[0.12em] text-[#666] hover:text-white font-bold font-mono border-none bg-transparent cursor-pointer">
+                </div>
+                <p class="mt-4 text-[11px] tracking-[0.12em] text-[#888]">Update customer details</p>
+            </div>
+
+            <!-- Full name -->
+            <div class="mb-5">
+                <label class="block text-[11px] tracking-[0.08em] text-white mb-2">Full name</label>
+                <input type="text" name="fullname" value="{{ user.fullname }}"
+                class="form-input"/>
+            </div>
+
+            <!-- Email + Phone row -->
+            <div class="grid grid-cols-2 gap-5 mb-8">
+
+                <div id="emailColumn">
+                    <label class="block text-[11px] tracking-[0.08em] text-white mb-2">Email</label>
+                    <input type="email" value="{{ user.email }}" readonly
+                        class="form-input"/>
+
+                    <!-- Visible new email input (not inside a form) -->
+                    <input type="email" id="newEmailInput"
+                        placeholder="Enter new email"
+                        class="w-full bg-[#0d0d0d] border border-[#2a2a2a] text-white px-4 py-3 text-[12px] outline-none mt-2 {% if show_email_field %}block{% else %}hidden{% endif %}"/>
+
+                    {% if email_error %}
+                    <p id="emailErrorMsg" class="text-red-500 text-[10px] mt-1 tracking-[0.08em]">
+                        {{ email_error }}
+                    </p>
+                    {% endif %}
+
+                    <div class="flex items-center gap-3 mt-2">
+                        <button type="button" id="changeEmailBtn"
+                            class="text-[10px] tracking-[0.12em] text-[#666] hover:text-black font-bold font-mono border-none bg-transparent cursor-pointer">
+                            CHANGE EMAIL
+                        </button>
+                        <button type="button" id="sendOtpBtn"
+                            class="hidden text-[10px] tracking-[0.12em] text-[#666] font-bold font-mono bg-transparent cursor-pointer hover:text-black">
+                            SEND OTP
+                        </button>
+                        <button type="button" id="cancelEmailBtn"
+                            class="hidden text-[10px] tracking-[0.12em] text-[#666] hover:text-black font-bold font-mono border-none bg-transparent cursor-pointer">
+                            CANCEL
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                <label class="block text-[11px] tracking-[0.08em] text-white mb-2">Phone</label>
+                <input type="tel" name="phone" value="{{ user.phone }}" pattern="\d{10,15}" required
+                    class="form-input"/>
+                </div>
+            </div>
+
+            {% if user.auth_provider == 'email' %}
+                <!-- ── Password ── -->
+                <div class="flex items-center gap-3 border-l-2 border-red-600 pl-3 mb-6 mt-8">
+                    <span class="text-[14px] font-bold tracking-[0.06em]">Password</span>
+                </div>
+
+                <div class="mb-5">
+                    <label class="block text-[11px] tracking-[0.08em] text-white mb-2">Current Password</label>
+                    <input type="password" name="current_password"
+                        class="w-full bg-[#0d0d0d] border border-[#2a2a2a] text-white px-4 py-3 text-[12px] outline-none focus:border-[#555] transition-colors"/>
+                </div>
+
+                <div class="grid grid-cols-2 gap-5 mb-0">
+                    <div>
+                        <label class="block text-[11px] tracking-[0.08em] text-white mb-2">New Password</label>
+                        <input type="password" name="new_password"
+                            class="w-full bg-[#0d0d0d] border border-[#2a2a2a] text-white px-4 py-3 text-[12px] outline-none focus:border-[#555] transition-colors"/>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] tracking-[0.08em] text-white mb-2">Confirm Password</label>
+                        <input type="password" name="confirm_password"
+                            class="w-full bg-[#0d0d0d] border border-[#2a2a2a] text-white px-4 py-3 text-[12px] outline-none focus:border-[#555] transition-colors"/>
+                    </div>
+                </div>
+
+                {% else %}
+                <!-- Google user — no password management -->
+                <div class="flex items-center gap-3 border border-[#222] px-4 py-4 mt-8 mb-4">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                        <circle cx="9" cy="9" r="8" stroke="#555" stroke-width="1.2"/>
+                        <line x1="9" y1="7" x2="9" y2="13" stroke="#555" stroke-width="1.4"/>
+                        <circle cx="9" cy="5" r="0.8" fill="#555"/>
+                    </svg>
+                    <span class="text-[11px] text-[#555] tracking-[0.07em]">
+                        You signed in with Google. Password management is not available.
+                    </span>
+                </div>
+                {% endif %}
+
+            <!-- Save / Cancel buttons -->
+            <div class="flex items-center justify-center gap-4 px-10 py-8 mt-6 border-t border-[#1e1e1e]">
+            
+                
+                <a href="{% url 'user_profile' %}" >
+                    <button type="button" class="border border-[#555] bg-transparent text-black px-10 py-4 text-[12px] font-bold tracking-[0.12em] transition-colors">
                         CANCEL
                     </button>
-                </div>
-            </div>
-
-            <div>
-            <label class="block text-[11px] tracking-[0.08em] text-white mb-2">Phone</label>
-            <input type="tel" name="phone" value="{{ user.phone }}" pattern="\d{10,15}" required
-                class="w-full bg-[#0d0d0d] border border-[#2a2a2a] text-white px-4 py-3 text-[12px] outline-none focus:border-[#555] transition-colors"/>
-            </div>
-        </div>
-
-        {% if user.auth_provider == 'email' %}
-            <!-- ── Password ── -->
-            <div class="flex items-center gap-3 border-l-2 border-red-600 pl-3 mb-6 mt-8">
-                <span class="text-[14px] font-bold tracking-[0.06em]">Password</span>
-            </div>
-
-            <div class="mb-5">
-                <label class="block text-[11px] tracking-[0.08em] text-white mb-2">Current Password</label>
-                <input type="password" name="current_password"
-                    class="w-full bg-[#0d0d0d] border border-[#2a2a2a] text-white px-4 py-3 text-[12px] outline-none focus:border-[#555] transition-colors"/>
-            </div>
-
-            <div class="grid grid-cols-2 gap-5 mb-0">
-                <div>
-                    <label class="block text-[11px] tracking-[0.08em] text-white mb-2">New Password</label>
-                    <input type="password" name="new_password"
-                        class="w-full bg-[#0d0d0d] border border-[#2a2a2a] text-white px-4 py-3 text-[12px] outline-none focus:border-[#555] transition-colors"/>
-                </div>
-                <div>
-                    <label class="block text-[11px] tracking-[0.08em] text-white mb-2">Confirm Password</label>
-                    <input type="password" name="confirm_password"
-                        class="w-full bg-[#0d0d0d] border border-[#2a2a2a] text-white px-4 py-3 text-[12px] outline-none focus:border-[#555] transition-colors"/>
-                </div>
-            </div>
-
-            {% else %}
-            <!-- Google user — no password management -->
-            <div class="flex items-center gap-3 border border-[#222] px-4 py-4 mt-8 mb-4">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                    <circle cx="9" cy="9" r="8" stroke="#555" stroke-width="1.2"/>
-                    <line x1="9" y1="7" x2="9" y2="13" stroke="#555" stroke-width="1.4"/>
-                    <circle cx="9" cy="5" r="0.8" fill="#555"/>
-                </svg>
-                <span class="text-[11px] text-[#555] tracking-[0.07em]">
-                    You signed in with Google. Password management is not available.
-                </span>
-            </div>
-            {% endif %}
-
-        <!-- Save / Cancel buttons -->
-        <div class="flex items-center justify-center gap-4 px-10 py-8 mt-6 border-t border-[#1e1e1e]">
-        
-            <button class="bg-white text-black px-16 py-4 text-[12px] font-bold tracking-[0.12em] hover:bg-gray-200 transition-colors"
-            type="submit"
-            >
-                SAVE CHANGES
-            </button>
-            <a href="{% url 'user_profile' %}" >
-                <button type="button" class="border border-[#555] bg-transparent text-white px-10 py-4 text-[12px] font-bold tracking-[0.12em] hover:bg-black hover:text-white transition-colors">
-                    CANCEL
+                </a>
+                <button class="bg-[#666] text-white px-16 py-4 text-[12px] font-bold tracking-[0.12em] hover:bg-black transition-colors"
+                type="submit"
+                >
+                    SAVE CHANGES
                 </button>
-            </a>
-        </div>
+            </div>
+    <div>
 
     </form>
     <form method="POST" action="{% url 'user_edit_email' %}" id="emailChangeForm" novalidate>

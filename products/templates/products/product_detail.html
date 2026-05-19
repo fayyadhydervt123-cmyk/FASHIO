@@ -1,0 +1,996 @@
+{% extends 'user_base/base.html' %}
+
+{% block title %}
+{{ product.name }} | FASHIO
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #fff;
+    color: #000;
+  }
+
+  .mono {
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .bebas {
+    font-family: 'Bebas Neue', sans-serif;
+  }
+
+  .thumb-active {
+    border-color: #000;
+  }
+
+  .size-btn {
+    transition: border-color .2s ease, color .2s ease, background .2s ease;
+  }
+
+  .size-btn:hover,
+  .size-btn.active {
+    border-color: #000;
+    color: #000;
+    background: #f7f7f7;
+  }
+
+  .color-dot {
+    transition: transform .2s ease, border-color .2s ease;
+  }
+
+  .color-dot:hover {
+    transform: scale(1.08);
+    border-color: #000;
+  }
+
+  .detail-row {
+    border-bottom: 1px solid rgba(0,0,0,.08);
+  }
+
+  .related-card {
+    transition: transform .3s, box-shadow .3s, border-color .3s;
+  }
+
+  .related-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0,0,0,.28);
+    box-shadow: 0 20px 40px rgba(0,0,0,.08);
+  }
+
+  .zoom-image {
+    transform-origin: center center;
+    }
+
+    #zoom-container:hover .zoom-image {
+    transform: scale(1.5);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="bg-white pt-10 md:pt-12 px-6 md:px-12 pb-20">
+
+<!-- Breadcrumb -->
+<div class="mb-8 flex items-center gap-2">
+  <a href="{% url 'product_list' %}"
+     class="mono text-[10px] tracking-widest text-black/40 hover:text-black transition-colors uppercase">
+    SHOP
+  </a>
+
+  {% if product.subcategory %}
+    <span class="mono text-[10px] tracking-widest text-black/25">/</span>
+
+    <a href="{% url 'product_list' %}?category={{ product.subcategory.category.id }}"
+       class="mono text-[10px] tracking-widest text-black/40 hover:text-black transition-colors uppercase">
+      {{ product.subcategory.category.name }}
+    </a>
+
+    <span class="mono text-[10px] tracking-widest text-black/25">/</span>
+
+    <span class="mono text-[10px] tracking-widest text-black/35 uppercase">
+      {{ product.subcategory.name }}
+    </span>
+  {% endif %}
+</div>
+
+  <!-- Main Product Detail -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+
+    <!-- LEFT: Product Images -->
+    <div>
+
+      <!-- Main Image -->
+      <div class="max-w-[600px] mx-auto lg:mx-0">
+        <div id="zoom-container"
+            class="relative bg-neutral-100 border border-black/10 overflow-hidden mb-4 cursor-zoom-in aspect-square">
+            {% if images %}
+            <img id="main-product-image"
+                src="{{ images.0.image.url }}"
+                alt="{{ product.name }}"
+                class="zoom-image w-full h-full object-cover transition-transform duration-200 ease-out">
+            {% else %}
+            <div class="w-full h-full flex items-center justify-center">
+                <p class="mono text-[10px] tracking-widest text-black/30">
+                NO IMAGE
+                </p>
+            </div>
+            {% endif %}
+        </div>
+        </div>
+
+      <!-- Thumbnails -->
+   {% if images %}
+    <div class="max-w-[600px] mx-auto lg:mx-0">
+    <div id="thumbnail-container" class="grid grid-cols-4 gap-3">
+        {% for image in images %}
+        <button type="button"
+                onclick="changeMainImage('{{ image.image.url }}', this)"
+                class="thumb-btn border {% if forloop.first %}border-black{% else %}border-black/10{% endif %} bg-neutral-100 overflow-hidden aspect-square hover:border-black transition-colors">
+            <img src="{{ image.image.url }}"
+                alt="{{ product.name }}"
+                class="w-full h-full object-cover">
+        </button>
+        {% endfor %}
+    </div>
+    </div>
+    {% endif %}
+
+          <!-- Product Details Box -->
+    <div class="pt-8">
+      {% if product.product_details %}
+      <div class="border border-black/10 mb-8">
+        <div class="flex items-center justify-between px-4 py-4 border-b border-black/10">
+          <p class="mono text-[10px] tracking-widest text-black/60 uppercase">
+            Product Details
+          </p>
+          <span class="mono text-black/40 text-xs">+</span>
+        </div>
+
+        <div class="px-4 py-4 space-y-3">
+          {% for key, value in product.product_details.items %}
+            {% if value %}
+              <div class="{% if not forloop.last %}detail-row pb-3{% endif %} flex justify-between gap-6">
+                <p class="mono text-[9px] tracking-widest text-black/35 uppercase">
+                  {{ key|title }}
+                </p>
+                <p class="text-sm text-black/60 text-right">
+                  {{ value }}
+                </p>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    </div>
+
+    <!-- RIGHT: Product Info -->
+    <div class="lg:sticky lg:top-24 h-fit">
+
+      <!-- Category -->
+      <p class="mono text-[10px] tracking-widest text-black/40 uppercase mb-3">
+        {% if product.subcategory %}
+          {{ product.subcategory.category.name }} · {{ product.subcategory.name }}
+        {% else %}
+          PRODUCT
+        {% endif %}
+      </p>
+
+      <!-- Product Name -->
+      <h1 class="bebas text-black text-6xl md:text-8xl leading-none tracking-wide mb-5">
+        {{ product.name }}
+      </h1>
+
+      <!-- Price -->
+      <div class="mb-8">
+        <p class="mono text-[10px] tracking-widest text-black/40 mb-2">
+            PRICE
+        </p>
+
+        {% if default_variant %}
+            <div class="flex items-end gap-3">
+            <p id="variant-price" class="mono text-2xl md:text-3xl font-bold text-black">
+                ₹{{ default_variant.discounted_price|floatformat:0 }}
+            </p>
+
+            <p id="variant-original-price"
+                class="mono text-sm text-black/35 line-through mb-1 {% if default_variant.discount <= 0 %}hidden{% endif %}">
+                ₹{{ default_variant.price|floatformat:0 }}
+            </p>
+
+            <span id="variant-discount"
+                    class="mono text-[9px] tracking-widest bg-black text-white px-2 py-1 mb-1 {% if default_variant.discount <= 0 %}hidden{% endif %}">
+                {{ default_variant.discount|floatformat:0 }}% OFF
+            </span>
+            </div>
+        {% else %}
+            <p class="mono text-2xl md:text-3xl font-bold text-black">
+            ₹{{ product.base_price|floatformat:0 }}
+            </p>
+        {% endif %}
+        </div>
+
+      <!-- Stock -->
+      <div class="mb-8 border-y border-black/10 py-4">
+        <p id="variant-stock"
+            class="mono text-[10px] tracking-widest {% if default_variant and default_variant.stock > 0 %}text-green-700{% else %}text-red-600{% endif %}">
+            {% if default_variant and default_variant.stock > 0 %}
+            IN STOCK · {{ default_variant.stock }} AVAILABLE
+            {% else %}
+            SOLD OUT
+            {% endif %}
+        </p>
+        </div>
+
+      <!-- Sizes -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between mb-3">
+            <p class="mono text-[10px] tracking-widest text-black/50 uppercase">
+            AVAILABLE SIZES
+            </p>
+        </div>
+
+        <div class="grid grid-cols-4 md:grid-cols-5 gap-2">
+            {% for size in available_sizes %}
+            <button type="button"
+                    data-size="{{ size }}"
+                    class="size-btn variant-size-btn mono text-[10px] tracking-widest border py-3
+                        {% if default_variant and default_variant.size == size %}
+                            border-black text-black bg-neutral-100
+                        {% else %}
+                            border-black/15 text-black/45
+                        {% endif %}">
+                {{ size }}
+            </button>
+            {% endfor %}
+        </div>
+        </div>
+
+      <!-- Colors -->
+<div class="mb-8">
+  <div class="flex items-center justify-between mb-3">
+    <p class="mono text-[10px] tracking-widest text-black/50 uppercase">
+      AVAILABLE COLORS
+    </p>
+  </div>
+
+  <div class="flex items-start gap-4">
+    {% for color in available_colors %}
+      <button type="button"
+              data-color="{{ color.name }}"
+              title="{{ color.name }}"
+              class="variant-color-btn flex flex-col items-center gap-2 group">
+
+        <span class="color-dot w-9 h-9 border block
+          {% if default_variant and default_variant.color == color.name %}
+            border-black
+          {% else %}
+            border-black/20
+          {% endif %}"
+          style="background: {{ color.hex|default:'#ddd' }};">
+        </span>
+
+        <span class="color-name mono text-[8px] tracking-widest uppercase
+          {% if default_variant and default_variant.color == color.name %}
+            text-black
+          {% else %}
+            text-black/35
+          {% endif %}">
+          {{ color.name }}
+        </span>
+
+      </button>
+    {% endfor %}
+  </div>
+</div>
+
+      <!-- Description Box -->
+      <div class="border-l border-black/20 pl-6 mb-8">
+        <p class="text-black/60 text-sm leading-relaxed">
+          {{ product.description }}
+        </p>
+      </div>
+
+       <!-- Quantity Selector -->
+<div id="quantity-box"
+     class="mb-6 {% if not default_variant or default_variant.stock <= 0 %}opacity-40 pointer-events-none{% endif %}">
+
+  <div class="flex items-center justify-between mb-3">
+    <p class="mono text-[10px] tracking-widest text-black/50 uppercase">
+      Quantity
+    </p>
+
+    <p id="quantity-help"
+       class="mono text-[9px] tracking-widest text-black/35">
+      {% if default_variant and default_variant.stock > 0 %}
+        MAX {{ default_variant.stock }} AVAILABLE
+      {% else %}
+        SOLD OUT
+      {% endif %}
+    </p>
+  </div>
+
+  <div class="flex items-center border border-black/15 w-fit">
+    <button id="qty-decrease"
+            type="button"
+            class="qty-btn w-10 h-10 flex items-center justify-center mono text-sm text-black/50 hover:text-black hover:bg-black/5 transition-colors">
+      −
+    </button>
+
+    <input id="quantity-input"
+           type="text"
+           name="quantity"
+           value="{% if default_variant and default_variant.stock > 0 %}1{% else %}0{% endif %}"
+           readonly
+           class="w-12 h-10 text-center mono text-[11px] text-black outline-none border-x border-black/10 bg-white">
+
+    <button id="qty-increase"
+            type="button"
+            class="qty-btn w-10 h-10 flex items-center justify-center mono text-sm text-black/50 hover:text-black hover:bg-black/5 transition-colors">
+      +
+    </button>
+  </div>
+</div>
+
+      <!-- Buttons -->
+      <div class="space-y-3">
+        <form method="POST" action="{% url 'buy_now' %}">
+            {% csrf_token %}
+
+            <input type="hidden"
+                    name="variant_id"
+                    id="buy-now-variant-id"
+                    value="{% if default_variant %}{{ default_variant.id }}{% endif %}">
+
+            <input type="hidden"
+                    name="quantity"
+                    id="buy-now-quantity"
+                    value="1">
+
+            <button id="buy-now-btn"
+                    type="submit"
+                    {% if not default_variant or default_variant.stock <= 0 %}disabled{% endif %}
+                    class="w-full mono text-[10px] tracking-widest border py-4 font-bold transition-colors
+                    {% if default_variant and default_variant.stock > 0 %}
+                        bg-black text-white hover:bg-black/80 active:scale-[0.98]
+                    {% else %}
+                        border-black/15 text-black/30 cursor-not-allowed
+                    {% endif %}">
+                {% if default_variant and default_variant.stock > 0 %}
+                BUY NOW
+                {% else %}
+                SOLD OUT
+                {% endif %}
+            </button>
+            </form>
+
+        <form id="detail-add-to-cart-form" method="POST" action="{% url 'add_to_cart' %}">
+            {% csrf_token %}
+
+            <input type="hidden"
+                    name="variant_id"
+                    id="cart-variant-id"
+                    value="{% if default_variant %}{{ default_variant.id }}{% endif %}">
+
+            <input type="hidden"
+                    name="quantity"
+                    id="cart-quantity"
+                    value="1">
+
+            <button id="add-to-cart-btn"
+                    type="submit"
+                    {% if not default_variant or default_variant.stock <= 0 %}disabled{% endif %}
+                    class="w-full mono text-[10px] tracking-widest border py-4 font-bold transition-colors
+                    {% if default_variant and default_variant.stock > 0 %}
+                        border-black/15 text-black/60 hover:border-black hover:text-black
+                    {% else %}
+                        border-black/15 text-black/30 cursor-not-allowed
+                    {% endif %}">
+                {% if default_variant and default_variant.stock > 0 %}
+                ADD TO CART
+                {% else %}
+                SOLD OUT
+                {% endif %}
+            </button>
+            </form>
+
+        <button type="button"
+                class="w-full mono text-[10px] tracking-widest border border-black/15 text-black/60 py-4 font-bold hover:border-black hover:text-black transition-colors">
+            ADD TO WISHLIST
+        </button>
+        </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+<!-- Reviews Section -->
+<section class="bg-white border-t border-black/10 px-6 md:px-12 py-16">
+
+  <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-12">
+
+    <!-- Rating Summary -->
+    <div>
+      <h2 class="bebas text-4xl text-black mb-6">
+        Customer Reviews
+      </h2>
+
+      <div class="flex items-end gap-3 mb-3">
+        <p class="mono text-6xl font-bold text-black">4.7</p>
+        <div class="pb-2">
+          <p class="text-yellow-500 text-sm">★★★★★</p>
+          <p class="mono text-[9px] tracking-widest text-black/40">
+            OVERALL RATING
+          </p>
+        </div>
+      </div>
+
+      <div class="space-y-2 mt-8">
+        <div class="flex items-center gap-3">
+          <span class="mono text-[9px] text-black/40 w-3">5</span>
+          <div class="h-1 bg-black/10 flex-1">
+            <div class="h-full bg-black w-[80%]"></div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <span class="mono text-[9px] text-black/40 w-3">4</span>
+          <div class="h-1 bg-black/10 flex-1">
+            <div class="h-full bg-black w-[35%]"></div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <span class="mono text-[9px] text-black/40 w-3">3</span>
+          <div class="h-1 bg-black/10 flex-1">
+            <div class="h-full bg-black w-[15%]"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review List -->
+    <div class="space-y-8">
+      <div class="border-b border-black/10 pb-8">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <p class="mono text-[10px] tracking-widest text-black font-bold">
+              Alex R.
+            </p>
+            <p class="mono text-[9px] tracking-widest text-black/30">
+              24 HOURS AGO
+            </p>
+          </div>
+          <p class="text-yellow-500 text-xs">★★★★★</p>
+        </div>
+
+        <p class="text-sm text-black/60 leading-relaxed">
+          Great everyday shirt. The material feels strong but comfortable.
+          Fits well and works both casual and slightly dressed up.
+        </p>
+      </div>
+
+      <div class="border-b border-black/10 pb-8">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <p class="mono text-[10px] tracking-widest text-black font-bold">
+              Chris T.
+            </p>
+            <p class="mono text-[9px] tracking-widest text-black/30">
+              3 DAYS AGO
+            </p>
+          </div>
+          <p class="text-yellow-500 text-xs">★★★★★</p>
+        </div>
+
+        <p class="text-sm text-black/60 leading-relaxed">
+          Clean design and great quality. The fabric feels premium and the fit is true to size.
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- Related Products -->
+<section class="bg-white border-t border-black/10 px-6 md:px-12 py-16">
+
+  <div class="flex items-end justify-between mb-8">
+    <h2 class="bebas text-4xl md:text-5xl text-black leading-none">
+      You May Also Like
+    </h2>
+
+    <a href="{% url 'product_list' %}"
+       class="mono text-[10px] tracking-widest text-black/40 hover:text-black transition-colors">
+      VIEW ALL →
+    </a>
+  </div>
+
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-6">
+
+    {% for related in related_products %}
+      <a href="{% url 'product_detail' related.id %}"
+         class="related-card bg-white border border-black/15 overflow-hidden">
+        <div class="h-64 bg-neutral-100 overflow-hidden">
+          {% if related.thumbnail %}
+            <img src="{{ related.thumbnail }}"
+                 alt="{{ related.name }}"
+                 class="w-full h-full object-cover">
+          {% else %}
+            <div class="w-full h-full flex items-center justify-center">
+              <span class="mono text-[10px] tracking-widest text-black/30">
+                NO IMAGE
+              </span>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="p-4">
+          <div class="flex items-start justify-between gap-3">
+            <p class="text-black text-sm font-medium leading-snug">
+              {{ related.name }}
+            </p>
+            <p class="mono text-black text-sm font-bold">
+              ₹{{ related.display_price|floatformat:0 }}
+            </p>
+          </div>
+        </div>
+      </a>
+    {% empty %}
+      <div class="col-span-full py-12 text-center">
+        <p class="mono text-[10px] tracking-widest text-black/35">
+          NO RELATED PRODUCTS
+        </p>
+      </div>
+    {% endfor %}
+
+  </div>
+
+</section>
+
+<div id="cart-toast"
+     class="fixed top-20 right-6 z-[1000] hidden border border-black/10 bg-white shadow-xl px-5 py-4">
+  <p id="cart-toast-message"
+     class="mono text-[10px] tracking-widest text-black uppercase">
+    Added to cart
+  </p>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ variants_data|json_script:"variants-data" }}
+
+<script>
+  const variants = JSON.parse(document.getElementById('variants-data').textContent);
+
+  let selectedVariant = variants.find(v => v.is_default) || variants[0] || null;
+  let selectedSize = selectedVariant ? selectedVariant.size : null;
+  let selectedColor = selectedVariant ? selectedVariant.color : null;
+
+  const MAX_PER_ORDER = 5;
+
+    function getMaxQuantity(variant) {
+    const stock = Number(variant?.stock || 0);
+    return Math.min(stock, MAX_PER_ORDER);
+    }
+
+    function updateQuantityControls(variant) {
+    const quantityBox = document.getElementById('quantity-box');
+    const quantityInput = document.getElementById('quantity-input');
+    const decreaseBtn = document.getElementById('qty-decrease');
+    const increaseBtn = document.getElementById('qty-increase');
+    const quantityHelp = document.getElementById('quantity-help');
+
+    if (!quantityBox || !quantityInput || !decreaseBtn || !increaseBtn || !quantityHelp) {
+        return;
+    }
+
+    const maxQuantity = getMaxQuantity(variant);
+
+    if (maxQuantity <= 0) {
+        quantityInput.value = 0;
+
+        const buyNowQuantityInput = document.getElementById('buy-now-quantity');
+        const cartQuantityInput = document.getElementById('cart-quantity');
+
+        if (buyNowQuantityInput) {
+        buyNowQuantityInput.value = 0;
+        }
+
+        if (cartQuantityInput) {
+        cartQuantityInput.value = 0;
+        }
+
+        decreaseBtn.disabled = true;
+        increaseBtn.disabled = true;
+
+        quantityBox.classList.add('opacity-40', 'pointer-events-none');
+        quantityHelp.textContent = 'SOLD OUT';
+        return;
+    }
+
+    quantityBox.classList.remove('opacity-40', 'pointer-events-none');
+
+    let currentQuantity = parseInt(quantityInput.value) || 1;
+
+    if (currentQuantity < 1) {
+        currentQuantity = 1;
+    }
+
+    if (currentQuantity > maxQuantity) {
+        currentQuantity = maxQuantity;
+    }
+
+    quantityInput.value = currentQuantity;
+
+    const buyNowQuantityInput = document.getElementById('buy-now-quantity');
+    const cartQuantityInput = document.getElementById('cart-quantity');
+
+    if (buyNowQuantityInput) {
+    buyNowQuantityInput.value = currentQuantity;
+    }
+
+    if (cartQuantityInput) {
+    cartQuantityInput.value = currentQuantity;
+    }
+
+    decreaseBtn.disabled = currentQuantity <= 1;
+    increaseBtn.disabled = currentQuantity >= maxQuantity;
+
+    decreaseBtn.classList.toggle('opacity-30', currentQuantity <= 1);
+    increaseBtn.classList.toggle('opacity-30', currentQuantity >= maxQuantity);
+
+    if (Number(variant.stock) < MAX_PER_ORDER) {
+        quantityHelp.textContent = `ONLY ${variant.stock} AVAILABLE`;
+    } else {
+        quantityHelp.textContent = `MAX ${MAX_PER_ORDER} PER ORDER`;
+    }
+    }
+
+  function formatPrice(value) {
+    return `₹${Math.round(Number(value))}`;
+  }
+
+  function getMatchingVariant() {
+    return variants.find(v => v.size === selectedSize && v.color === selectedColor);
+  }
+
+  function updateMainImage(imageUrl) {
+    const mainImage = document.getElementById('main-product-image');
+
+    if (mainImage && imageUrl) {
+      mainImage.src = imageUrl;
+    }
+  }
+
+  function renderThumbnails(variant) {
+    const thumbnailContainer = document.getElementById('thumbnail-container');
+
+    if (!thumbnailContainer || !variant) return;
+
+    thumbnailContainer.innerHTML = '';
+
+    if (!variant.images || variant.images.length === 0) {
+      thumbnailContainer.innerHTML = `
+        <div class="col-span-4 h-28 md:h-36 bg-neutral-100 flex items-center justify-center border border-black/10">
+          <span class="mono text-[10px] tracking-widest text-black/30">NO IMAGE</span>
+        </div>
+      `;
+      return;
+    }
+
+    variant.images.forEach((imageUrl, index) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = `thumb-btn border ${index === 0 ? 'border-black' : 'border-black/10'} bg-neutral-100 overflow-hidden aspect-square hover:border-black transition-colors`;
+      button.innerHTML = `
+        <img src="${imageUrl}" alt="Product image" class="w-full h-full object-cover">
+      `;
+
+      button.addEventListener('click', () => {
+        changeMainImage(imageUrl, button);
+      });
+
+      thumbnailContainer.appendChild(button);
+    });
+  }
+
+  function updateVariantUI(variant) {
+    if (!variant) return;
+
+    selectedVariant = variant;
+    selectedSize = variant.size;
+    selectedColor = variant.color;
+
+    const selectedVariantInput = document.getElementById('selected-variant-id');
+    const buyNowVariantInput = document.getElementById('buy-now-variant-id');
+    const cartVariantInput = document.getElementById('cart-variant-id');
+    const priceEl = document.getElementById('variant-price');
+    const originalPriceEl = document.getElementById('variant-original-price');
+    const discountEl = document.getElementById('variant-discount');
+    const stockEl = document.getElementById('variant-stock');
+    const colorNameEl = document.getElementById('selected-color-name');
+    const addToCartBtn = document.getElementById('add-to-cart-btn');
+    const buyNowBtn = document.getElementById('buy-now-btn');
+
+    if (selectedVariantInput) {
+      selectedVariantInput.value = variant.id;
+    }
+
+    if (buyNowVariantInput) {
+      buyNowVariantInput.value = variant.id;
+    }
+
+    if (cartVariantInput) {
+      cartVariantInput.value = variant.id;
+    }
+
+    if (priceEl) {
+      priceEl.textContent = formatPrice(variant.discounted_price);
+    }
+
+    if (originalPriceEl) {
+      if (Number(variant.discount) > 0) {
+        originalPriceEl.textContent = formatPrice(variant.price);
+        originalPriceEl.classList.remove('hidden');
+      } else {
+        originalPriceEl.classList.add('hidden');
+      }
+    }
+
+    if (discountEl) {
+      if (Number(variant.discount) > 0) {
+        discountEl.textContent = `${Math.round(Number(variant.discount))}% OFF`;
+        discountEl.classList.remove('hidden');
+      } else {
+        discountEl.classList.add('hidden');
+      }
+    }
+
+    if (stockEl) {
+      if (Number(variant.stock) > 0) {
+        stockEl.textContent = `IN STOCK · ${variant.stock} AVAILABLE`;
+        stockEl.classList.remove('text-red-600');
+        stockEl.classList.add('text-green-700');
+      } else {
+        stockEl.textContent = 'SOLD OUT';
+        stockEl.classList.remove('text-green-700');
+        stockEl.classList.add('text-red-600');
+      }
+    }
+
+    if (colorNameEl) {
+      colorNameEl.textContent = variant.color.toUpperCase();
+    }
+
+    if (addToCartBtn) {
+      if (Number(variant.stock) > 0) {
+        addToCartBtn.disabled = false;
+        addToCartBtn.textContent = 'ADD TO CART';
+        addToCartBtn.className = 'w-full mono text-[11px] tracking-[.35em] bg-black text-white py-4 font-bold hover:bg-black/80 active:scale-[0.98] transition-all';
+      } else {
+        addToCartBtn.disabled = true;
+        addToCartBtn.textContent = 'SOLD OUT';
+        addToCartBtn.className = 'w-full mono text-[11px] tracking-[.35em] border border-black/15 text-black/30 py-4 font-bold cursor-not-allowed';
+      }
+    }
+
+    if (buyNowBtn) {
+        if (Number(variant.stock) > 0) {
+            buyNowBtn.disabled = false;
+            buyNowBtn.textContent = 'BUY NOW';
+            buyNowBtn.className = 'w-full mono text-[11px] tracking-[.35em] bg-black text-white py-4 font-bold hover:bg-black/80 active:scale-[0.98] transition-all';
+        } else {
+            buyNowBtn.disabled = true;
+            buyNowBtn.textContent = 'SOLD OUT';
+            buyNowBtn.className = 'w-full mono text-[11px] tracking-[.35em] border border-black/15 text-black/30 py-4 font-bold cursor-not-allowed';
+        }
+    }
+
+    document.querySelectorAll('.variant-size-btn').forEach(btn => {
+      const isActive = btn.dataset.size === variant.size;
+
+      btn.classList.toggle('border-black', isActive);
+      btn.classList.toggle('text-black', isActive);
+      btn.classList.toggle('bg-neutral-100', isActive);
+
+      btn.classList.toggle('border-black/15', !isActive);
+      btn.classList.toggle('text-black/45', !isActive);
+    });
+
+   document.querySelectorAll('.variant-color-btn').forEach(btn => {
+    const isActive = btn.dataset.color === variant.color;
+
+    const dot = btn.querySelector('.color-dot');
+    const name = btn.querySelector('.color-name');
+
+    if (dot) {
+        dot.classList.toggle('border-black', isActive);
+        dot.classList.toggle('border-black/20', !isActive);
+    }
+
+    if (name) {
+        name.classList.toggle('text-black', isActive);
+        name.classList.toggle('text-black/35', !isActive);
+    }
+    });
+
+    if (variant.images && variant.images.length > 0) {
+      updateMainImage(variant.images[0]);
+    }
+    updateQuantityControls(variant);
+    renderThumbnails(variant);
+  }
+
+  document.querySelectorAll('.variant-size-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedSize = btn.dataset.size;
+
+      let matchedVariant = getMatchingVariant();
+
+      if (!matchedVariant) {
+        matchedVariant = variants.find(v => v.size === selectedSize);
+
+        if (matchedVariant) {
+          selectedColor = matchedVariant.color;
+        }
+      }
+
+      updateVariantUI(matchedVariant);
+    });
+  });
+
+  document.querySelectorAll('.variant-color-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedColor = btn.dataset.color;
+
+      let matchedVariant = getMatchingVariant();
+
+      if (!matchedVariant) {
+        matchedVariant = variants.find(v => v.color === selectedColor);
+
+        if (matchedVariant) {
+          selectedSize = matchedVariant.size;
+        }
+      }
+
+      updateVariantUI(matchedVariant);
+    });
+  });
+
+  function changeMainImage(imageUrl, button) {
+    updateMainImage(imageUrl);
+
+    document.querySelectorAll('.thumb-btn').forEach(btn => {
+      btn.classList.remove('border-black');
+      btn.classList.add('border-black/10');
+    });
+
+    if (button) {
+      button.classList.remove('border-black/10');
+      button.classList.add('border-black');
+    }
+  }
+
+    const zoomContainer = document.getElementById('zoom-container');
+    const zoomImage = document.getElementById('main-product-image');
+
+    if (zoomContainer && zoomImage) {
+    zoomContainer.addEventListener('mousemove', function (e) {
+        const rect = zoomContainer.getBoundingClientRect();
+
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+        zoomImage.style.transformOrigin = `${x}% ${y}%`;
+    });
+
+    zoomContainer.addEventListener('mouseleave', function () {
+        zoomImage.style.transformOrigin = 'center center';
+    });
+    }
+
+    const decreaseBtn = document.getElementById('qty-decrease');
+    const increaseBtn = document.getElementById('qty-increase');
+    const quantityInput = document.getElementById('quantity-input');
+
+    if (decreaseBtn && increaseBtn && quantityInput) {
+    decreaseBtn.addEventListener('click', () => {
+        const currentQuantity = parseInt(quantityInput.value) || 1;
+
+        if (currentQuantity > 1) {
+        quantityInput.value = currentQuantity - 1;
+        }
+
+        updateQuantityControls(selectedVariant);
+    });
+
+    increaseBtn.addEventListener('click', () => {
+        const currentQuantity = parseInt(quantityInput.value) || 1;
+        const maxQuantity = getMaxQuantity(selectedVariant);
+
+        if (currentQuantity < maxQuantity) {
+        quantityInput.value = currentQuantity + 1;
+        }
+
+        updateQuantityControls(selectedVariant);
+    });
+    }
+
+    if (selectedVariant) {
+    updateQuantityControls(selectedVariant);
+    }
+
+    const detailAddToCartForm = document.getElementById('detail-add-to-cart-form');
+  const cartBadge = document.getElementById('cart-notification-badge');
+  const cartToast = document.getElementById('cart-toast');
+  const cartToastMessage = document.getElementById('cart-toast-message');
+
+  function showCartToast(message) {
+    if (!cartToast || !cartToastMessage) return;
+
+    cartToastMessage.textContent = message;
+    cartToast.classList.remove('hidden');
+
+    setTimeout(() => {
+      cartToast.classList.add('hidden');
+    }, 1800);
+  }
+
+ function updateCartBadge(count) {
+  const cartBadge = document.getElementById('cart-notification-badge');
+
+  if (!cartBadge) {
+    console.log('Cart badge not found');
+    return;
+  }
+
+  if (Number(count) > 0) {
+    cartBadge.textContent = count;
+    cartBadge.classList.remove('hidden');
+    cartBadge.classList.add('flex');
+  } else {
+    cartBadge.textContent = '';
+    cartBadge.classList.remove('flex');
+    cartBadge.classList.add('hidden');
+  }
+}
+
+  if (detailAddToCartForm) {
+    detailAddToCartForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      const formData = new FormData(detailAddToCartForm);
+
+      fetch(detailAddToCartForm.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          updateCartBadge(data.cart_notification_count);
+          showCartToast(data.message || 'Product added to cart.');
+        } else {
+          showCartToast(data.message || 'Something went wrong.');
+        }
+      })
+      .catch(() => {
+        showCartToast('Could not add product.');
+      });
+    });
+  }
+
+</script>
+{% endblock %}

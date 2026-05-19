@@ -1,0 +1,843 @@
+{% extends 'admin_base/base.html' %}
+{% block title %}Add Variant{% endblock %}
+
+{% block extra_css %}
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css"
+/>
+<style>
+.cropper-bg {
+    background-image: none !important;
+}
+.cropper-container {
+    width: 100% !important;
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="p-8 max-w-screen-xl mx-auto">
+
+  <!-- Top Bar -->
+  <div class="flex items-center gap-4 mb-8">
+    <a href="{% url 'products' %}"
+       class="text-white/40 hover:text-white transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+      </svg>
+    </a>
+    <h1 class="mono text-white text-4xl font-bold tracking-tight">Add Variant</h1>
+  </div>
+
+  <!-- ── Product Summary Card ── -->
+  <div class="border border-white/10 bg-[#0d0d0d] p-5 mb-8 flex items-center gap-6">
+
+
+    <!-- Product Info -->
+    <div class="flex-1">
+      <span class="mono text-[10px] text-white/30 tracking-widest uppercase">Product</span>
+      <h2 class="mono text-white text-2xl font-bold tracking-tight mt-0.5">{{ product.name }}</h2>
+      <div class="flex items-center gap-2 mt-1">
+        <span class="mono text-[10px] tracking-widest">Status:</span>
+        {% if product.is_active %}
+          <span class="mono text-[10px] text-green-400 tracking-widest">Active</span>
+        {% else %}
+          <span class="mono text-[10px] text-white/40 tracking-widest">Inactive</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Base Price -->
+    <div class="text-right border-l border-white/10 pl-6">
+      <span class="mono text-[10px] text-white/30 tracking-widest uppercase block mb-1">Base Price</span>
+      <span class="mono text-white text-2xl font-bold">${{ product.base_price }}</span>
+    </div>
+
+    <!-- Total Stock -->
+    <div class="text-right border-l border-white/10 pl-6">
+      <span class="mono text-[10px] text-white/30 tracking-widest uppercase block mb-1">Total Stock</span>
+      <span class="mono text-white text-2xl font-bold">{{ product.total_stock|default:0 }}</span>
+    </div>
+
+  </div>
+
+  <!-- ── Variant Form ── -->
+  <form method="POST" action="{% url 'add_variant' product_id=product.id %}" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- ── Section: Variant Information ── -->
+    <div class="mb-6">
+      <div class="flex items-center gap-4 mb-5">
+        <span class="mono text-xs text-white/40 tracking-widest uppercase">Variant Information</span>
+        <div class="flex-1 h-px bg-white/10"></div>
+      </div>
+
+      <div class="border border-white/10 bg-[#0d0d0d] p-6">
+
+        <div class="grid grid-cols-2 gap-6">
+
+          <!-- Color Display -->
+          <div class="flex flex-col gap-2">
+            <label class="mono text-xs text-white/50 tracking-widest">Color Display</label>
+            <input
+              type="text"
+              name="color"
+              value="{{ form_data.color|default:'' }}"
+              placeholder="color name to show"
+              class="bg-[#111] border px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none transition-colors
+              {% if errors.color %}border-red-500/60{% else %}border-white/10 focus:border-white/30{% endif %}"
+            >
+            {% if errors.color %}
+              <span class="server-error font-mono text-[11px] text-red-400">{{ errors.color }}</span>
+            {% endif %}
+          </div>
+
+          <!-- Size -->
+          <div class="flex flex-col gap-2">
+            <label class="mono text-xs text-white/50 tracking-widest">Size</label>
+            <div class="flex gap-2">
+              {% for size_val, size_label in size_choices %}
+              <label class="cursor-pointer">
+                <input type="radio" name="size" value="{{ size_val }}"
+                  {% if form_data.size == size_val %}checked{% endif %}
+                  class="sr-only peer">
+                <span class="mono text-xs px-5 py-2.5 border border-white/10 text-white/50
+                             peer-checked:border-white peer-checked:text-white
+                             hover:border-white/30 hover:text-white/80
+                             transition-colors block">
+                  {{ size_label }}
+                </span>
+              </label>
+              {% endfor %}
+            </div>
+            {% if errors.size %}
+              <span class="server-error font-mono text-[11px] text-red-400">{{ errors.size }}</span>
+            {% endif %}
+          </div>
+
+        </div>
+
+        <!-- Color Hex Picker -->
+        <div class="mt-4 flex flex-col gap-2">
+          <label class="mono text-xs text-white/50 tracking-widest">Color</label>
+          <div class="flex items-center gap-3">
+            <div class="relative">
+              <input
+                type="color"
+                name="color_hex"
+                value="{{ form_data.color_hex|default:'#000000' }}"
+                id="color-picker"
+                class="w-10 h-10 border border-white/10 bg-[#111] cursor-pointer p-0.5"
+              >
+            </div>
+            <div class="flex-1 relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-xs text-white/30">#</span>
+              <input
+                type="text"
+                id="color-hex-text"
+                placeholder="000000"
+                maxlength="6"
+                class="w-full bg-[#111] border border-white/10 pl-8 pr-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none focus:border-white/30 transition-colors"
+              >
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Section: Price / Stock / Status ── -->
+    <div class="mb-6">
+      <div class="grid grid-cols-3 gap-4">
+
+        <!-- Price -->
+        <div class="border border-white/10 bg-[#0d0d0d] p-5">
+          <span class="mono text-xs text-white/40 tracking-widest uppercase block mb-4">Price</span>
+          <div class="flex flex-col gap-2">
+            <label class="mono text-xs text-white/50 tracking-widest">Price Override</label>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-sm text-white/30">$</span>
+              <input
+                type="number"
+                name="price"
+                value="{{ form_data.price|default:'' }}"
+                placeholder="Optional"
+                step="0.01"
+                min="0"
+                class="w-full bg-[#111] border pl-8 pr-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none transition-colors
+                {% if errors.price %}border-red-500/60{% else %}border-white/10 focus:border-white/30{% endif %}"
+              >
+            </div>
+            {% if errors.price %}
+              <span class="server-error font-mono text-[11px] text-red-400">{{ errors.price }}</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Stock -->
+        <div class="border border-white/10 bg-[#0d0d0d] p-5">
+          <span class="mono text-xs text-white/40 tracking-widest uppercase block mb-4">Stock</span>
+          <div class="flex flex-col gap-2">
+            <label class="mono text-xs text-white/50 tracking-widest">Stock Quantity</label>
+            <input
+              type="number"
+              name="stock"
+              value="{{ form_data.stock|default:'0' }}"
+              min="0"
+              class="bg-[#111] border px-4 py-2.5 text-sm text-white font-mono outline-none transition-colors
+              {% if errors.stock %}border-red-500/60{% else %}border-white/10 focus:border-white/30{% endif %}"
+            >
+            {% if errors.stock %}
+              <span class="server-error font-mono text-[11px] text-red-400">{{ errors.stock }}</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="border border-white/10 bg-[#0d0d0d] p-5">
+          <span class="mono text-xs text-white/40 tracking-widest uppercase block mb-4">Status</span>
+          <div class="flex flex-col gap-2">
+            <label class="mono text-xs text-white/50 tracking-widest">Select Status</label>
+            <select
+              name="status"
+              class="bg-[#111] border border-white/10 px-4 py-2.5 text-sm font-mono outline-none focus:border-white/30 transition-colors appearance-none
+              {% if form_data.status == 'ACTIVE' %}text-green-400{% else %}text-white{% endif %}"
+              style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23555'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\"); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;"
+              id="status-select"
+            >
+              {% comment %} <option value="DRAFT"    {% if form_data.status == 'DRAFT'    %}selected{% endif %} class="text-white">Draft</option> {% endcomment %}
+              <option value="ACTIVE"   {% if form_data.status == 'ACTIVE'   or not form_data %}selected{% endif %} class="text-green-400">Active</option>
+              <option value="INACTIVE" {% if form_data.status == 'INACTIVE' %}selected{% endif %} class="text-white">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Section: Image + Default ── -->
+    <!-- ── Section: Variant Images ── -->
+    <div class="mb-6">
+    <div class="flex items-center gap-4 mb-5">
+        <span class="mono text-xs text-white/40 tracking-widest uppercase">Variant Images</span>
+        <div class="flex-1 h-px bg-white/10"></div>
+        <span class="mono text-xs text-white/30">Min. 3 required</span>
+    </div>
+
+    <div class="border border-white/10 bg-[#0d0d0d] p-6">
+
+        <div class="grid grid-cols-[260px_1fr] gap-5 items-start">
+
+    <!-- Upload Box -->
+    <div class="w-full">
+
+        <div
+            id="image-drop-zone"
+            class="border border-dashed border-white/20 h-[260px]
+                   flex flex-col items-center justify-center gap-3
+                   cursor-pointer hover:border-white/40 transition-colors">
+
+            <input
+                type="file"
+                id="image-input"
+                accept="image/*"
+                class="hidden"
+            >
+
+            <svg class="w-8 h-8 text-white/20"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="1"
+                 viewBox="0 0 24 24">
+                <path stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M12 4v16m8-8H4"/>
+            </svg>
+
+            <div class="text-center px-4">
+                <p class="mono text-xs text-white/60 tracking-widest">
+                    Upload Images
+                </p>
+
+                <p class="mono text-[10px] text-white/30 mt-1">
+                    Min. 3 required
+                </p>
+
+                <p class="mono text-[10px] text-white/20 mt-0.5">
+                    Click to upload
+                </p>
+            </div>
+
+        </div>
+
+        <p id="image-error"
+           class="mono text-[11px] text-red-400 mt-3 hidden">
+        </p>
+
+    </div>
+
+    <!-- Preview Side -->
+    <div class="min-w-0">
+
+        <!-- Count -->
+        <div id="image-count"
+             class="mono text-xs text-white/30 mb-3 hidden">
+
+            <span id="count-number">0</span>
+            image(s) selected —
+
+            <span id="count-status"></span>
+
+        </div>
+
+        <!-- Preview Grid -->
+        <div id="image-preview-grid"
+             class="grid grid-cols-2 lg:grid-cols-3 gap-3 hidden">
+        </div>
+
+        <!-- Empty -->
+        <div id="image-empty-state"
+             class="border border-dashed border-white/5
+                    h-[260px]
+                    flex items-center justify-center">
+
+            <span class="mono text-xs text-white/20 tracking-widest">
+                Cropped previews appear here
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+        <!-- Default Variant -->
+        <div class="border-t border-white/10 pt-4 mt-4">
+            <label class="flex items-center gap-3 cursor-pointer group w-fit">
+                <div class="relative">
+                    <input type="checkbox" name="is_default" id="default-checkbox"
+                        {% if form_data.is_default %}checked{% endif %}
+                        class="sr-only peer">
+                    <div class="w-4 h-4 border border-white/20 bg-[#111]
+                                peer-checked:bg-white peer-checked:border-white
+                                group-hover:border-white/40 transition-colors
+                                flex items-center justify-center">
+                        <svg class="w-2.5 h-2.5 text-black hidden peer-checked:block" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+                <span class="mono text-xs text-white/40 group-hover:text-white/70 transition-colors tracking-widest">Set as Default Variant</span>
+            </label>
+        </div>
+
+    </div>
+
+    <!-- ── Lightbox overlay ── -->
+    <!-- SIMPLE IMAGE VIEWER -->
+<div id="lightbox"
+     class="fixed inset-0 bg-black/90 z-50 hidden
+            flex items-center justify-center p-8">
+
+    <button id="lightbox-close"
+            class="absolute top-6 right-6
+                   text-white/50 hover:text-white
+                   transition-colors mono text-xs tracking-widest">
+        Close
+    </button>
+
+    <img id="lightbox-img"
+         src=""
+         class="max-h-[90vh] max-w-[90vw]
+                object-contain border border-white/10">
+</div>
+    </div>
+
+    <!-- ── Crop modal ── -->
+    <div id="crop-modal" class="fixed inset-0 bg-black/95 z-[60] hidden flex items-center justify-center p-8">
+    <div class="bg-[#111] border border-white/10 p-6 w-full max-w-5xl">
+        <div class="flex items-center justify-between mb-4">
+        <span class="mono text-sm text-white tracking-widest">Crop &amp; Resize</span>
+        <button id="crop-modal-close" type="button" class="text-white/40 hover:text-white mono text-xs">close</button>
+        </div>
+
+        <div class="w-full h-[500px] bg-black overflow-hidden flex items-center justify-center">         
+            <img
+                id="crop-image"
+                class="block max-w-full"
+            />
+        </div>
+
+        <div class="flex justify-end gap-3">
+        <button id="crop-cancel" type="button" class="mono text-xs px-5 py-2 border border-white/20 text-white/60 hover:text-white transition-colors tracking-widest">Cancel</button>
+        <button id="crop-apply" type="button" class="mono text-xs px-5 py-2 bg-white text-black font-bold hover:bg-white/80 transition-colors tracking-widest">Apply</button>
+        </div>
+    </div>
+    </div>
+
+    <!-- ── Divider ── -->
+    <div class="h-px bg-white/10 mb-8"></div>
+
+    <!-- ── Action Buttons ── -->
+    <div class="flex items-center justify-end gap-3">
+      <a href="{% url 'products' %}"
+         class="mono text-xs px-6 py-2.5 border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors tracking-widest">
+        Cancel
+      </a>
+      <button type="submit"
+              class="mono text-xs px-6 py-2.5 bg-white text-black font-bold hover:bg-white/80 transition-colors tracking-widest">
+        Add Variant
+      </button>
+    </div>
+
+  </form>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    // =========================
+    // COLOR PICKER SYNC
+    // =========================
+
+    const colorPicker = document.getElementById("color-picker");
+    const colorHexText = document.getElementById("color-hex-text");
+
+    // show default value on load
+    colorHexText.value = colorPicker.value.replace("#", "");
+
+    // when picker changes -> update text
+    colorPicker.addEventListener("input", () => {
+
+        colorHexText.value =
+            colorPicker.value.replace("#", "");
+
+    });
+
+    // when text changes -> update picker
+    colorHexText.addEventListener("input", () => {
+
+        let value = colorHexText.value.replace(/[^0-9A-Fa-f]/g, "");
+
+        if (value.length > 6) {
+            value = value.slice(0, 6);
+        }
+
+        colorHexText.value = value;
+
+        if (value.length === 6) {
+            colorPicker.value = `#${value}`;
+        }
+
+    });
+
+    // =========================
+    // ELEMENTS
+    // =========================
+
+    const imageInput = document.getElementById("image-input");
+    const dropZone = document.getElementById("image-drop-zone");
+
+    const cropModal = document.getElementById("crop-modal");
+    const cropImage = document.getElementById("crop-image");
+
+    const cropApply = document.getElementById("crop-apply");
+    const cropCancel = document.getElementById("crop-cancel");
+    const cropClose = document.getElementById("crop-modal-close");
+
+    const previewGrid = document.getElementById("image-preview-grid");
+    const emptyState = document.getElementById("image-empty-state");
+
+    const imageCount = document.getElementById("image-count");
+    const countNumber = document.getElementById("count-number");
+    const countStatus = document.getElementById("count-status");
+
+    const form = document.querySelector("form");
+
+    // =========================
+    // VARIABLES
+    // =========================
+
+    let cropper = null;
+    let currentFile = null;
+
+    // Final cropped images
+    let croppedFiles = [];
+
+    // =========================
+    // SESSION STORAGE
+    // =========================
+
+    async function saveImagesToSession() {
+
+        const imageDataArray = [];
+
+        for (const file of croppedFiles) {
+
+            const base64 = await fileToBase64(file);
+
+            imageDataArray.push({
+                name: file.name,
+                type: file.type,
+                data: base64
+            });
+        }
+
+        sessionStorage.setItem(
+            "variantImages",
+            JSON.stringify(imageDataArray)
+        );
+    }
+
+    function fileToBase64(file) {
+
+        return new Promise((resolve) => {
+
+            const reader = new FileReader();
+
+            reader.onload = () => resolve(reader.result);
+
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // =========================
+    // ERROR HANDLING
+    // =========================
+
+    function showImageError(message) {
+
+        const errorEl = document.getElementById("image-error");
+
+        errorEl.textContent = message;
+
+        errorEl.classList.remove("hidden");
+    }
+
+    function clearImageError() {
+
+        const errorEl = document.getElementById("image-error");
+
+        errorEl.textContent = "";
+
+        errorEl.classList.add("hidden");
+    }
+
+    // =========================
+    // OPEN FILE PICKER
+    // =========================
+
+    dropZone.addEventListener("click", () => {
+        imageInput.click();
+    });
+
+    // =========================
+    // IMAGE SELECT
+    // =========================
+
+    imageInput.addEventListener("change", (e) => {
+
+        const file = e.target.files[0];
+
+        if (!file) return;
+
+        clearImageError();
+
+        // 10 MB
+        const MAX_SIZE = 10 * 1024 * 1024;
+
+        // validate BEFORE cropper opens
+        if (file.size > MAX_SIZE) {
+
+            showImageError("Image must be smaller than 10 MB.");
+
+            imageInput.value = "";
+
+            return;
+        }
+
+        currentFile = file;
+
+        const reader = new FileReader();
+
+        reader.onload = function(event) {
+
+            cropImage.src = event.target.result;
+
+            cropModal.classList.remove("hidden");
+
+            // destroy old cropper
+            if (cropper) {
+                cropper.destroy();
+            }
+
+            cropper = new Cropper(cropImage, {
+                aspectRatio: 1,
+                viewMode: 1,
+                autoCropArea: 1,
+                responsive: true,
+                background: false,
+            });
+        };
+
+        reader.readAsDataURL(file);
+
+        // reset input
+        imageInput.value = "";
+    });
+
+    // =========================
+    // CLOSE MODAL
+    // =========================
+
+    function closeCropModal() {
+
+        cropModal.classList.add("hidden");
+
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+    }
+
+    cropCancel.addEventListener("click", closeCropModal);
+    cropClose.addEventListener("click", closeCropModal);
+
+    // =========================
+    // APPLY CROP
+    // =========================
+
+    cropApply.addEventListener("click", () => {
+
+        if (!cropper) return;
+
+        const canvas = cropper.getCroppedCanvas({
+            width: 800,
+            height: 800,
+            imageSmoothingQuality: "high",
+        });
+
+        canvas.toBlob((blob) => {
+
+            const fileName = `cropped_${Date.now()}.jpg`;
+
+            const croppedFile = new File(
+                [blob],
+                fileName,
+                { type: "image/jpeg" }
+            );
+
+            croppedFiles.push(croppedFile);
+            saveImagesToSession();
+            clearImageError();
+
+            renderPreviews();
+
+            closeCropModal();
+
+        }, "image/jpeg", 0.95);
+    });
+
+    // =========================
+    // RENDER PREVIEW
+    // =========================
+
+    function renderPreviews() {
+
+        previewGrid.innerHTML = "";
+
+        if (croppedFiles.length > 0) {
+
+            previewGrid.classList.remove("hidden");
+            emptyState.classList.add("hidden");
+            imageCount.classList.remove("hidden");
+
+        } else {
+
+            previewGrid.classList.add("hidden");
+            emptyState.classList.remove("hidden");
+            imageCount.classList.add("hidden");
+        }
+
+        countNumber.textContent = croppedFiles.length;
+
+        if (croppedFiles.length >= 3) {
+
+            countStatus.textContent = "Minimum reached";
+            countStatus.className = "text-green-400";
+
+        } else {
+
+            countStatus.textContent =
+                `${3 - croppedFiles.length} more needed`;
+
+            countStatus.className = "text-red-400";
+        }
+
+        croppedFiles.forEach((file, index) => {
+
+            const url = URL.createObjectURL(file);
+
+            const div = document.createElement("div");
+
+            div.className =
+    "relative border border-white/10 bg-[#111] aspect-square overflow-hidden group";
+
+            div.innerHTML = `
+    <img src="${url}"
+         data-index="${index}"
+         class="preview-image w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity">
+         <button type="button"
+        data-remove="${index}"
+        class="remove-existing absolute top-1.5 right-1.5
+                            w-5 h-5 bg-black/70 text-white
+                            flex items-center justify-center
+                            opacity-0 group-hover:opacity-100 transition-opacity text-xs leading-none">
+  ✕
+</button>
+
+`;
+
+            previewGrid.appendChild(div);
+        });
+
+        // preview click
+        document.querySelectorAll(".preview-image").forEach(img => {
+
+            img.addEventListener("click", () => {
+
+                openLightbox(parseInt(img.dataset.index));
+            });
+        });
+
+        document.querySelectorAll(".remove-existing").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const index = parseInt(btn.dataset.remove);
+                croppedFiles.splice(index, 1);
+                saveImagesToSession();
+                renderPreviews();
+            });
+        });
+    }
+
+    // =========================
+    // SIMPLE IMAGE PREVIEW
+    // =========================
+
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImg = document.getElementById("lightbox-img");
+    const lightboxClose = document.getElementById("lightbox-close");
+
+    // OPEN IMAGE
+    function openLightbox(index) {
+
+        const file = croppedFiles[index];
+
+        const url = URL.createObjectURL(file);
+
+        lightboxImg.src = url;
+
+        lightbox.classList.remove("hidden");
+    }
+
+    // CLOSE IMAGE
+    function closeLightbox() {
+
+        lightbox.classList.add("hidden");
+    }
+
+    lightboxClose.addEventListener("click", closeLightbox);
+
+    // CLOSE ON BACKDROP CLICK
+    lightbox.addEventListener("click", (e) => {
+
+        if (e.target === lightbox) {
+
+            closeLightbox();
+        }
+    });
+    // =========================
+    // FORM SUBMIT
+    // =========================
+    // =========================
+    // RESTORE IMAGES
+    // =========================
+
+    async function restoreImagesFromSession() {
+
+        const savedImages = sessionStorage.getItem("variantImages");
+
+        if (!savedImages) return;
+
+        const parsedImages = JSON.parse(savedImages);
+
+        croppedFiles = [];
+
+        for (const image of parsedImages) {
+
+            const response = await fetch(image.data);
+
+            const blob = await response.blob();
+
+            const file = new File(
+                [blob],
+                image.name,
+                { type: image.type }
+            );
+
+            croppedFiles.push(file);
+        }
+
+        renderPreviews();
+    }
+
+
+    restoreImagesFromSession();
+
+    form.addEventListener("submit", (e) => {
+
+        if (croppedFiles.length < 3) {
+
+            e.preventDefault();
+
+            showImageError("Please upload at least 3 images.");
+            return;
+        }
+        sessionStorage.removeItem("variantImages");
+
+        // remove old hidden inputs
+        document.querySelectorAll(".dynamic-image-input")
+            .forEach(el => el.remove());
+
+        // append cropped files
+        croppedFiles.forEach(file => {
+
+            const dt = new DataTransfer();
+
+            dt.items.add(file);
+
+            const input = document.createElement("input");
+
+            input.type = "file";
+            input.name = "images";
+            input.files = dt.files;
+            input.classList.add("dynamic-image-input");
+
+            input.hidden = true;
+
+            form.appendChild(input);
+        });
+    });
+
+});
+</script>
+
+{% endblock %}

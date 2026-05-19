@@ -1,0 +1,302 @@
+{% extends 'admin_base/base.html' %}
+{% block title %}Subcategories{% endblock %}
+
+{% block content %}
+<div class="p-8 max-w-screen-xl mx-auto">
+
+  <!-- Django messages -->
+  {% if messages %}
+  <div class="mb-6 flex flex-col gap-2">
+    {% for message in messages %}
+    <div class="font-mono text-xs px-4 py-3 border rounded
+      {% if message.tags == 'error' %}border-red-900 bg-red-950 text-red-400
+      {% else %}border-green-900 bg-green-950 text-green-400{% endif %}">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Top Bar -->
+  <div class="flex items-center justify-between mb-10">
+    <div class="flex items-center gap-4">
+      <a href="{% url 'products' %}" class="text-gray-600 hover:text-white transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </a>
+      <h1 class="mono text-white text-3xl font-bold tracking-tight">Sub Categories</h1>
+    </div>
+    <!-- Opens Add modal -->
+    <button onclick="openAddModal()"
+            class="border border-white/10 text-white px-5 py-2 text-sm tracking-widest">
+      + Add New
+    </button>
+  </div>
+
+  <!-- ── Sections: one per category ── -->
+  {% for section in sections %}
+  <div class="mb-10">
+
+    <!-- Category label -->
+    <div class="mb-4">
+      <span class="font-mono text-sm text-white border-b border-white pb-1 tracking-wide">
+        Category - {{ section.category.name }}
+      </span>
+    </div>
+
+    <!-- Per-category search -->
+    <form method="GET" action="" class="mb-4">
+      <!-- Preserve other categories' query params -->
+      {% for other in sections %}
+        {% if other.category.id != section.category.id %}
+          <input type="hidden" name="q_{{ other.category.id }}" value="{{ other.query }}">
+          <input type="hidden" name="page_{{ other.category.id }}" value="{{ other.subcategories.number }}">
+        {% endif %}
+      {% endfor %}
+
+      <div class="relative mb-4">
+        <input
+          type="text"
+          name="q_{{ section.category.id }}"
+          value="{{ section.query }}"
+          placeholder="Search by Name or ID ..."
+          class="bg-black border border-white/10 px-4 py-2 text-sm placeholder-[#2e2e2e]"
+        >
+        <button type="submit" class="hidden"></button>
+        {% if section.query %}
+          <a href="{% url 'subcategories' %}" class="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-sm">✕</a>
+        {% endif %}
+      </div>
+    </form>
+
+    <!-- Table -->
+    <div class="border border-white/10 rounded-sm overflow-hidden max-w-5xl">
+
+      <!-- Header -->
+      <div class="grid grid-cols-[140px_1fr_200px] px-6 py-3 border-b border-white/10 border-[#1f1f1f] bg-[#141414]">
+        <span class="text-left mono text-xs text-white font-semibold">Subcat ID</span>
+        <span class="text-left mono text-xs text-white font-semibold">Name</span>
+        <span class="text-left mono text-xs text-white font-semibold">Actions</span>
+      </div>
+
+      {% for subcat in section.subcategories %}
+      <div class="grid grid-cols-[140px_1fr_200px] items-center px-6 py-4 border-b border-[#141414] last:border-b-0 hover:bg-[#161616] transition-colors">
+
+        <!-- ID (truncated UUID) -->
+        <span class="font-mono text-xs text-gray-600 tracking-wider">
+          #{{ subcat.id|stringformat:"s"|slice:":8"|upper }}
+        </span>
+
+        <!-- Name -->
+        <span class="font-mono text-sm text-gray-200 tracking-wide">{{ subcat.name }}</span>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-2 justify-end">
+          <!-- Edit -->
+          <button
+            onclick="openEditModal('{{ subcat.id }}', '{{ subcat.name|escapejs }}', '{{ section.category.id }}')"
+            class="font-mono text-[0.7rem] tracking-widest text-gray-400 border border-[#1f1f1f] px-3 py-1 rounded hover:border-gray-500 hover:text-white transition-colors">
+            Edit
+          </button>
+          <!-- Delete -->
+          <button
+            onclick="openDeleteModal('{{ subcat.id }}', '{{ subcat.name|escapejs }}')"
+            class="font-mono text-[0.7rem] tracking-widest text-red-900 border border-[#2a1010] px-3 py-1 rounded hover:border-red-500 hover:text-red-400 hover:bg-[#1a0808] transition-colors">
+            Delete
+          </button>
+        </div>
+
+      </div>
+      {% empty %}
+      <div class="px-6 py-10 text-center font-mono text-xs text-gray-700 tracking-widest">
+        NO SUBCATEGORIES FOUND
+      </div>
+      {% endfor %}
+
+      <!-- Pagination -->
+      <div class="flex items-center justify-end gap-3 px-6 py-3 border-t border-[#181818] bg-[#0f0f0f]">
+        {% if section.subcategories.has_previous %}
+          <a href="?{% for other in sections %}{% if other.category.id == section.category.id %}page_{{ section.category.id }}={{ section.subcategories.previous_page_number }}&q_{{ section.category.id }}={{ section.query }}{% else %}&page_{{ other.category.id }}={{ other.subcategories.number }}&q_{{ other.category.id }}={{ other.query }}{% endif %}{% endfor %}"
+             class="font-mono text-xs text-gray-500 hover:text-white transition-colors">Prev</a>
+        {% else %}
+          <span class="font-mono text-xs text-gray-700 cursor-not-allowed">Prev</span>
+        {% endif %}
+
+        <span class="font-mono text-xs text-gray-300">
+          {{ section.subcategories.number|stringformat:"02d" }} / {{ section.subcategories.paginator.num_pages|stringformat:"02d" }}
+        </span>
+
+        {% if section.subcategories.has_next %}
+          <a href="?{% for other in sections %}{% if other.category.id == section.category.id %}page_{{ section.category.id }}={{ section.subcategories.next_page_number }}&q_{{ section.category.id }}={{ section.query }}{% else %}&page_{{ other.category.id }}={{ other.subcategories.number }}&q_{{ other.category.id }}={{ other.query }}{% endif %}{% endfor %}"
+             class="font-mono text-xs text-gray-500 hover:text-white transition-colors">Next</a>
+        {% else %}
+          <span class="font-mono text-xs text-gray-700 cursor-not-allowed">Next</span>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+  {% empty %}
+  <div class="text-center font-mono text-sm text-gray-700 tracking-widest py-20">
+    NO CATEGORIES AVAILABLE
+  </div>
+  {% endfor %}
+
+</div>
+
+
+<!-- ══════════ ADD MODAL ══════════ -->
+<div id="modal-add" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+  <div class="bg-[#0f0f0f] border border-[#1f1f1f] rounded-lg w-full max-w-md p-6">
+
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="font-mono text-white text-lg tracking-tight">Add Subcategory</h2>
+      <button onclick="closeAddModal()" class="text-gray-600 hover:text-white transition-colors font-mono text-lg">✕</button>
+    </div>
+
+    <form method="POST" action="{% url 'add_subcategory' %}">
+      {% csrf_token %}
+
+      <!-- Category select -->
+      <div class="mb-4">
+        <label class="font-mono text-xs text-gray-500 tracking-widest uppercase block mb-2">Category</label>
+        <select name="category_id" required
+                class="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-white font-mono text-sm px-4 py-2.5 rounded outline-none focus:border-white/30 transition-colors">
+          <option value="">— Select a category —</option>
+          {% for section in sections %}
+          <option value="{{ section.category.id }}">{{ section.category.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Name -->
+      <div class="mb-6">
+        <label class="font-mono text-xs text-gray-500 tracking-widest uppercase block mb-2">Name</label>
+        <input
+          type="text" name="name" required
+          placeholder="e.g. Formal, Crew Neck ..."
+          class="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-white font-mono text-sm px-4 py-2.5 rounded outline-none focus:border-white/30 placeholder-gray-700 transition-colors"
+        >
+      </div>
+
+      <div class="flex items-center gap-3 justify-end">
+        <button type="button" onclick="closeAddModal()"
+                class="font-mono text-xs tracking-widest text-gray-500 border border-[#1f1f1f] px-4 py-2 rounded hover:text-white hover:border-white/20 transition-colors">
+          Cancel
+        </button>
+        <button type="submit"
+                class="font-mono text-xs tracking-widest bg-white text-black px-5 py-2 rounded hover:bg-white/80 transition-colors">
+          Add Subcategory
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+
+<!-- ══════════ EDIT MODAL ══════════ -->
+<div id="modal-edit" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+  <div class="bg-[#0f0f0f] border border-[#1f1f1f] rounded-lg w-full max-w-md p-6">
+
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="font-mono text-white text-lg tracking-tight">Edit Subcategory</h2>
+      <button onclick="closeEditModal()" class="text-gray-600 hover:text-white transition-colors font-mono text-lg">✕</button>
+    </div>
+
+    <form method="POST" action="{% url 'edit_subcategory' %}">
+      {% csrf_token %}
+      <input type="hidden" name="subcat_id"   id="edit-subcat-id">
+      <input type="hidden" name="category_id" id="edit-category-id">
+
+      <div class="mb-6">
+        <label class="font-mono text-xs text-gray-500 tracking-widest uppercase block mb-2">Name</label>
+        <input
+          type="text" name="name" id="edit-name" required
+          class="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-white font-mono text-sm px-4 py-2.5 rounded outline-none focus:border-white/30 transition-colors"
+        >
+      </div>
+
+      <div class="flex items-center gap-3 justify-end">
+        <button type="button" onclick="closeEditModal()"
+                class="font-mono text-xs tracking-widest text-gray-500 border border-[#1f1f1f] px-4 py-2 rounded hover:text-white hover:border-white/20 transition-colors">
+          Cancel
+        </button>
+        <button type="submit"
+                class="font-mono text-xs tracking-widest bg-white text-black px-5 py-2 rounded hover:bg-white/80 transition-colors">
+          Save Changes
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+
+<!-- ══════════ DELETE CONFIRM MODAL ══════════ -->
+<div id="modal-delete" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+  <div class="bg-[#0f0f0f] border border-red-900/40 rounded-lg w-full max-w-sm p-6">
+
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-mono text-white text-lg tracking-tight">Delete Subcategory</h2>
+      <button onclick="closeDeleteModal()" class="text-gray-600 hover:text-white transition-colors font-mono text-lg">✕</button>
+    </div>
+
+    <p class="font-mono text-xs text-gray-500 mb-1 tracking-wide">You are about to delete:</p>
+    <p id="delete-name-display" class="font-mono text-sm text-red-400 mb-5 tracking-wide"></p>
+    <p class="font-mono text-xs text-gray-600 mb-6">
+    This cannot be undone. Subcategories with products assigned cannot be deleted.
+    </p>
+
+    <form method="POST" action="{% url 'delete_subcategory' %}">
+      {% csrf_token %}
+      <input type="hidden" name="subcat_id" id="delete-subcat-id">
+
+      <div class="flex items-center gap-3 justify-end">
+        <button type="button" onclick="closeDeleteModal()"
+                class="font-mono text-xs tracking-widest text-gray-500 border border-[#1f1f1f] px-4 py-2 rounded hover:text-white hover:border-white/20 transition-colors">
+          Cancel
+        </button>
+        <button type="submit"
+                class="font-mono text-xs tracking-widest bg-red-900 text-red-200 px-5 py-2 rounded hover:bg-red-800 transition-colors">
+          Confirm Delete
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+
+<script>
+  // ── Add modal ──
+  function openAddModal()  { document.getElementById('modal-add').classList.remove('hidden'); }
+  function closeAddModal() { document.getElementById('modal-add').classList.add('hidden'); }
+
+  // ── Edit modal ──
+  function openEditModal(id, name, categoryId) {
+    document.getElementById('edit-subcat-id').value   = id;
+    document.getElementById('edit-name').value         = name;
+    document.getElementById('edit-category-id').value = categoryId;
+    document.getElementById('modal-edit').classList.remove('hidden');
+  }
+  function closeEditModal() { document.getElementById('modal-edit').classList.add('hidden'); }
+
+  // ── Delete modal ──
+  function openDeleteModal(id, name) {
+    document.getElementById('delete-subcat-id').value      = id;
+    document.getElementById('delete-name-display').textContent = name;
+    document.getElementById('modal-delete').classList.remove('hidden');
+  }
+  function closeDeleteModal() { document.getElementById('modal-delete').classList.add('hidden'); }
+
+  // Close modals on backdrop click
+  ['modal-add', 'modal-edit', 'modal-delete'].forEach(id => {
+    document.getElementById(id).addEventListener('click', function(e) {
+      if (e.target === this) this.classList.add('hidden');
+    });
+  });
+</script>
+
+{% endblock %}

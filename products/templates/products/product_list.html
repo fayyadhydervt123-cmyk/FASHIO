@@ -1,0 +1,1171 @@
+{% extends 'user_base/base.html' %}
+
+{% block title %}
+Products
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: #fff; color: #000; }
+    .mono  { font-family: 'Share Tech Mono', monospace; }
+    .bebas { font-family: 'Bebas Neue', sans-serif; }
+    .oswald { font-family: 'Oswald', sans-serif; }
+
+    @keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    }
+
+    .h-anim-1 { animation: fadeUp .7s cubic-bezier(.16,1,.3,1) .1s both; }
+    .h-anim-2 { animation: fadeUp .8s cubic-bezier(.16,1,.3,1) .25s both; }
+    .h-anim-3 { animation: fadeUp .8s cubic-bezier(.16,1,.3,1) .4s both; }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0; transform: translateY(22px);
+      transition: opacity .6s ease, transform .6s cubic-bezier(.16,1,.3,1);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-d1 { transition-delay: .05s; }
+    .reveal-d2 { transition-delay: .12s; }
+    .reveal-d3 { transition-delay: .19s; }
+    .reveal-d4 { transition-delay: .26s; }
+    .reveal-d5 { transition-delay: .08s; }
+    .reveal-d6 { transition-delay: .15s; }
+    .reveal-d7 { transition-delay: .22s; }
+    .reveal-d8 { transition-delay: .29s; }
+
+    /* Product card */
+
+    .product-card {
+    transition: transform .3s, box-shadow .3s, border-color .3s;
+    }
+
+    .product-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0,0,0,.28);
+    box-shadow: 0 20px 40px rgba(0,0,0,.08);
+    }
+
+    /* Add to cart btn shimmer */
+    .cart-btn { position: relative; overflow: hidden; }
+    .cart-btn::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.12) 50%, transparent 100%);
+      background-size: 200% 100%;
+      opacity: 0; transition: opacity .2s;
+    }
+    .cart-btn:hover::after { opacity: 1; animation: shimmer .5s ease; }
+    @keyframes shimmer {
+      0%   { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+
+    /* Nav */
+    nav { transition: background .3s, border-color .3s; }
+
+    /* Filter tab underline */
+    .tab-active {
+    border-bottom: 2px solid #000;
+    color: #000;
+    }
+
+    .tab-inactive {
+    color: rgba(0,0,0,.35);
+    }
+
+    .tab-inactive:hover {
+    color: rgba(0,0,0,.7);
+    }
+
+    /* Dropdown */
+    .filter-btn {
+    border: 1px solid rgba(0,0,0,0.08);
+    color: rgba(0,0,0,.6);
+    background: white;
+    }
+    .filter-btn:hover {  border-color: rgba(0,0,0,0.3);
+        background: #fff;}
+
+    /* Wishlist heart */
+    .wishlist-btn { transition: color .2s; }
+    .wishlist-btn:hover { color: #fff; }
+    .wishlist-btn.active { color: #fff; }
+
+    /* Pagination */
+    .page-btn { transition: background .2s, color .2s, border-color .2s; }
+    .page-btn:hover:not(.page-active) {  background: rgba(0,0,0,0.04); }
+    .page-active {background: #000;
+        color: #fff !important; }
+
+
+    /* Sold-out */
+    .sold-out-badge {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.45);
+      z-index: 10;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #fff; }
+    ::-webkit-scrollbar-thumb {  background: rgba(0,0,0,0.18);
+        border-radius: 2px; }
+
+    /* Category tab accent */
+    .cat-tab { cursor: pointer; }
+
+  </style>
+{% endblock %}
+
+{% block content %}
+<section class="bg-white pt-10 md:pt-12 px-8 md:px-16 pb-14 border-b border-black/10">
+
+  <div class="max-w-5xl">
+
+    <div class="h-anim-1 flex items-center gap-3 mb-4">
+      <div class="w-7 h-0.5 bg-black"></div>
+      <span class="mono text-black/45 text-[10px] tracking-[.3em] uppercase">
+        Fashio
+      </span>
+    </div>
+
+    <h1 class="h-anim-2 bebas text-black text-[80px] md:text-[120px] lg:text-[150px] leading-[0.85] tracking-wide mb-5">
+      {% if selected_category_obj %}
+        {{ selected_category_obj.name|upper }}
+      {% else %}
+        SHOP
+      {% endif %}
+    </h1>
+
+    <p class="h-anim-3 mono text-black/45 text-[10px] tracking-widest uppercase leading-relaxed max-w-xl">
+      {% if selected_category_obj and selected_category_obj.description %}
+        {{ selected_category_obj.description }}
+      {% else %}
+        Discover premium essentials crafted for confidence, comfort, and everyday style.
+      {% endif %}
+    </p>
+
+  </div>
+
+</section>
+
+<!-- FILTER BAR -->
+<div class="sticky top-14 z-40 bg-white/95 border-black/10 backdrop-blur-sm border-b border-black/10">
+  <form method="GET" action="{% url 'product_list' %}" class="px-8 md:px-12">
+
+    <div class="flex items-center justify-between gap-4 py-0">
+
+      <!-- Category tabs -->
+      <div class="flex items-stretch gap-0 overflow-x-auto">
+        <a href="{% url 'product_list' %}"
+           class="cat-tab mono text-[10px] tracking-widest px-5 py-4 whitespace-nowrap
+                  {% if not selected_category %}tab-active{% else %}tab-inactive{% endif %}">
+          ALL
+        </a>
+
+        {% for category in categories %}
+          <a href="{% url 'product_list' %}?category={{ category.id }}"
+             class="cat-tab mono text-[10px] tracking-widest px-5 py-4 whitespace-nowrap transition-colors
+                    {% if selected_category == category.id|stringformat:'s' %}tab-active{% else %}tab-inactive{% endif %}">
+            {{ category.name|upper }}
+          </a>
+        {% endfor %}
+      </div>
+
+      <!-- Right filters -->
+      <div class="hidden md:flex items-center gap-2 shrink-0 flex-wrap">
+
+        <!-- Search -->
+        <div class="relative hidden md:block">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-black/40"
+               fill="none"
+               stroke="currentColor"
+               stroke-width="2"
+               viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="M21 21l-4.35-4.35"/>
+          </svg>
+
+          <input type="text"
+                 name="q"
+                 value="{{ query }}"
+                 placeholder="SEARCH PRODUCTS"
+                 class="mono text-[10px] tracking-widest border border-black/10 bg-white text-black pl-8 pr-3 py-2 w-44 outline-none placeholder-black/30 focus:border-black/30 transition-colors"/>
+
+            {% if query %}
+              <a href="?{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_size %}size={{ selected_size }}&{% endif %}{% if selected_price %}price={{ selected_price }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}{% endif %}"
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-black/40 hover:text-black text-sm">
+                ✕
+              </a>
+            {% endif %}
+        </div>
+
+        <!-- Size filter -->
+        <select name="size"
+                class="filter-btn mono text-[10px] tracking-widest bg-white text-black px-3 py-2 cursor-pointer outline-none appearance-none pr-6">
+          <option value="">SIZE:ALL</option>
+          <option value="S" {% if selected_size == 'S' %}selected{% endif %}>S</option>
+          <option value="M" {% if selected_size == 'M' %}selected{% endif %}>M</option>
+          <option value="L" {% if selected_size == 'L' %}selected{% endif %}>L</option>
+          <option value="XL" {% if selected_size == 'XL' %}selected{% endif %}>XL</option>
+        </select>
+
+        <!-- Sort filter -->
+        <select name="price"
+                class="filter-btn mono text-[10px] tracking-widest bg-white text-black px-3 py-2 cursor-pointer outline-none appearance-none pr-6">
+        <option value="">PRICE:ALL</option>
+        <option value="under_1000" {% if selected_price == 'under_1000' %}selected{% endif %}>
+            UNDER ₹1000
+        </option>
+        <option value="1000_2000" {% if selected_price == '1000_2000' %}selected{% endif %}>
+            ₹1000 - ₹2000
+        </option>
+        <option value="2000_3000" {% if selected_price == '2000_3000' %}selected{% endif %}>
+            ₹2000 - ₹3000
+        </option>
+        <option value="above_3000" {% if selected_price == 'above_3000' %}selected{% endif %}>
+            ABOVE ₹3000
+        </option>
+        </select>
+
+        <select name="sort"
+              class="filter-btn mono text-[10px] tracking-widest bg-white text-black px-3 py-2 cursor-pointer outline-none appearance-none pr-6">
+        <option value="">SORT:NEWEST</option>
+
+        <option value="price_low_high" {% if selected_sort == 'price_low_high' %}selected{% endif %}>
+          PRICE LOW TO HIGH
+        </option>
+
+        <option value="price_high_low" {% if selected_sort == 'price_high_low' %}selected{% endif %}>
+          PRICE HIGH TO LOW
+        </option>
+
+        <option value="az" {% if selected_sort == 'az' %}selected{% endif %}>
+          A-Z
+        </option>
+
+        <option value="za" {% if selected_sort == 'za' %}selected{% endif %}>
+          Z-A
+        </option>
+        </select>
+
+        {% if selected_category %}
+          <input type="hidden" name="category" value="{{ selected_category }}">
+        {% endif %}
+
+        <button type="submit"
+                class="mono text-[10px] tracking-widest px-4 py-2 bg-black text-white font-bold hover:bg-black/80 transition-colors">
+          APPLY
+        </button>
+
+        <a href="{% url 'product_list' %}"
+           class="mono text-[10px] tracking-widest px-4 py-2 border border-black/15 text-black/50 hover:text-black hover:border-black/40 transition-colors">
+          RESET
+        </a>
+
+      </div>
+
+    </div>
+
+  </form>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PRODUCT GRID
+══════════════════════════════════════════ -->
+<section class="bg-white px-8 md:px-12 py-16">
+
+  <!-- Results count -->
+  <div class="reveal flex items-center justify-between mb-8">
+    <div class="flex items-center gap-3">
+        <div class="w-5 h-0.5 bg-black/30"></div>
+        <span class="mono text-black/40 text-[10px] tracking-widest">
+        {{ products.paginator.count }} RESULTS
+        </span>
+    </div>
+
+    <span class="mono text-black/25 text-[9px] tracking-widest">
+        PAGE {{ products.number }} OF {{ products.paginator.num_pages }}
+    </span>
+  </div>
+
+  <!-- Grid -->
+  <div id="product-grid" class="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-6">
+
+        <!-- ── Card 1 ── -->
+        {% for product in products %}
+
+    <div class="product-card bg-white border border-black/15 overflow-hidden reveal reveal-d1">
+
+    <!-- Product Image -->
+    <a href="{% url 'product_detail' product.id %}">
+        <div class="relative h-64 md:h-72 overflow-hidden bg-neutral-100">
+
+        {% if product.thumbnail %}
+            <img src="{{ product.thumbnail }}"
+                alt="{{ product.name }}"
+                class="product-img w-full h-full object-cover"/>
+        {% else %}
+            <div class="w-full h-full flex items-center justify-center bg-neutral-100">
+            <span class="mono text-[10px] tracking-widest text-black/30">
+                NO IMAGE
+            </span>
+            </div>
+        {% endif %}
+
+        {% if product.total_stock <= 0 %}
+            <div class="sold-out-badge">
+            <span class="bebas text-white/80 text-3xl tracking-widest">
+                SOLD OUT
+            </span>
+            </div>
+        {% endif %}
+
+        <button type="button"
+                class="wishlist-btn absolute top-3 right-3 z-10 text-white/70 bg-black/30 w-8 h-8 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+        </button>
+
+        </div>
+    </a>
+
+    <!-- Product Info -->
+    <div class="p-4">
+
+        <p class="mono text-black/40 text-[9px] tracking-widest mb-1.5">
+        {% if product.subcategory %}
+            {{ product.subcategory.name|upper }}
+        {% else %}
+            PRODUCT
+        {% endif %}
+        </p>
+
+        <a href="{% url 'product_detail' product.id %}" class="flex items-start justify-between mb-1">
+        <p class="text-black text-sm font-medium leading-snug">
+            {{ product.name }}
+        </p>
+
+        <div class="text-right shrink-0 ml-2">
+            <p class="mono text-black text-sm font-bold">
+            ₹{{ product.display_price|floatformat:0 }}
+            </p>
+
+            {% if product.default_variant.discount > 0 %}
+            <p class="mono text-black/35 text-[10px] line-through">
+                ₹{{ product.original_price|floatformat:0 }}
+            </p>
+            {% endif %}
+        </div>
+        </a>
+
+        <!-- Size pills -->
+        <div class="flex items-center gap-1 mb-3 mt-2">
+        {% for size in product.available_sizes %}
+            <span class="mono text-[8px] tracking-wider px-1.5 py-0.5 border border-black/15 text-black/40">
+            {{ size }}
+            </span>
+        {% endfor %}
+        </div>
+
+        {% if product.total_stock > 0 %}
+        <button type="button"
+                data-product-id="{{ product.id }}"
+                class="open-cart-modal cart-btn w-full mono text-[10px] border border-black/15 tracking-widest py-3 bg-white text-black font-bold hover:bg-gray-100 active:scale-[0.98] transition-all">
+            ADD TO CART
+        </button>
+        {% else %}
+        <button disabled
+                class="w-full mono text-[10px] border border-black/10 tracking-widest py-3 bg-white text-black/30 font-bold cursor-not-allowed">
+            SOLD OUT
+        </button>
+        {% endif %}
+
+    </div>
+    </div>
+
+    {% empty %}
+
+    <div class="col-span-full py-24 text-center">
+    <p class="mono text-black/40 text-[10px] tracking-widest">
+        NO PRODUCTS FOUND
+    </p>
+    </div>
+
+    {% endfor %}
+</div>
+
+
+  <!-- ══════════════════════════════════════════
+       PAGINATION
+  ══════════════════════════════════════════ -->
+  {% if products.has_other_pages %}
+    <div class="reveal mt-16 flex items-center justify-center gap-2">
+
+    {% if products.has_previous %}
+        <a href="?page={{ products.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_size %}&size={{ selected_size }}{% endif %}{% if selected_price %}&price={{ selected_price }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}"
+        class="page-btn mono text-[10px] tracking-widest px-3 py-2 border border-black/15 text-black/40 flex items-center gap-2 hover:border-black/30 transition-all">
+        PREV
+        </a>
+    {% endif %}
+
+    <div class="flex items-center gap-1.5">
+        {% for num in products.paginator.page_range %}
+        {% if products.number == num %}
+            <span class="page-btn page-active mono text-[10px] tracking-widest w-9 h-9 border border-black/15 flex items-center justify-center">
+            {{ num }}
+            </span>
+        {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+            <a href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_size %}&size={{ selected_size }}{% endif %}{% if selected_price %}&price={{ selected_price }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}"
+            class="page-btn mono text-[10px] tracking-widest w-9 h-9 border border-black/15 text-black/40 flex items-center justify-center transition-all">
+            {{ num }}
+            </a>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    {% if products.has_next %}
+        <a href="?page={{ products.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_size %}&size={{ selected_size }}{% endif %}{% if selected_price %}&price={{ selected_price }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}"
+        class="page-btn mono text-[10px] tracking-widest px-3 py-2 border border-black/15 text-black/40 flex items-center gap-2 hover:border-black/30 transition-all">
+        NEXT
+        </a>
+    {% endif %}
+
+    </div>
+    {% endif %}
+
+</section>
+
+
+<!-- Add To Cart Variant Modal -->
+<div id="cart-modal"
+     class="fixed inset-0 z-[999] hidden">
+
+  <!-- Overlay -->
+  <div id="cart-modal-overlay"
+       class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+  <!-- Modal Box -->
+  <div class="relative z-10 min-h-screen flex items-center justify-center px-4">
+
+    <div class="bg-white border border-black/10 w-full max-w-xl shadow-2xl">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between px-5 py-4 border-b border-black/10">
+        <div>
+          <p class="mono text-[9px] tracking-[.25em] text-black/35 uppercase">
+            Select Variant
+          </p>
+          <h2 id="modal-product-name"
+              class="bebas text-4xl text-black leading-none mt-1">
+            Product
+          </h2>
+        </div>
+
+        <button type="button"
+                id="close-cart-modal"
+                class="mono text-xl text-black/40 hover:text-black transition-colors">
+          ×
+        </button>
+      </div>
+
+      <!-- Body -->
+      <form id="modal-add-to-cart-form" method="POST" action="{% url 'add_to_cart' %}" class="p-5">
+        {% csrf_token %}
+
+        <input type="hidden" name="variant_id" id="modal-variant-id">
+        <input type="hidden" name="quantity" id="modal-form-quantity" value="1">
+
+        <div class="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-5">
+
+          <!-- Image -->
+          <div class="aspect-square bg-neutral-100 border border-black/10 overflow-hidden">
+            <img id="modal-product-image"
+                 src=""
+                 alt="Product"
+                 class="w-full h-full object-cover hidden">
+
+            <div id="modal-no-image"
+                 class="w-full h-full flex items-center justify-center">
+              <span class="mono text-[10px] tracking-widest text-black/30">
+                NO IMAGE
+              </span>
+            </div>
+          </div>
+
+          <!-- Info -->
+          <div>
+
+            <!-- Price -->
+            <div class="mb-5">
+              <p class="mono text-[10px] tracking-widest text-black/40 mb-1">
+                PRICE
+              </p>
+
+              <div class="flex items-end gap-3">
+                <p id="modal-price"
+                   class="mono text-xl font-bold text-black">
+                  ₹0
+                </p>
+
+                <p id="modal-original-price"
+                   class="mono text-xs text-black/35 line-through hidden">
+                  ₹0
+                </p>
+
+                <span id="modal-discount"
+                      class="mono text-[8px] tracking-widest bg-black text-white px-2 py-1 hidden">
+                  0% OFF
+                </span>
+              </div>
+            </div>
+
+            <!-- Size -->
+            <div class="mb-5">
+              <p class="mono text-[10px] tracking-widest text-black/50 uppercase mb-3">
+                Size
+              </p>
+
+              <div id="modal-size-list"
+                   class="grid grid-cols-4 gap-2">
+              </div>
+            </div>
+
+            <!-- Color -->
+            <div class="mb-5">
+              <p class="mono text-[10px] tracking-widest text-black/50 uppercase mb-3">
+                Color
+              </p>
+
+              <div id="modal-color-list"
+                   class="flex items-start gap-4 flex-wrap">
+              </div>
+            </div>
+
+            <!-- Stock -->
+            <p id="modal-stock"
+               class="mono text-[10px] tracking-widest text-green-700 mb-5">
+              IN STOCK
+            </p>
+
+            <!-- Quantity -->
+            <div class="mb-6">
+              <div class="flex items-center justify-between mb-3">
+                <p class="mono text-[10px] tracking-widest text-black/50 uppercase">
+                  Quantity
+                </p>
+
+                <p id="modal-quantity-help"
+                   class="mono text-[9px] tracking-widest text-black/35">
+                  MAX 5 PER ORDER
+                </p>
+              </div>
+
+              <div class="flex items-center border border-black/15 w-fit">
+                <button id="modal-qty-minus"
+                        type="button"
+                        class="w-10 h-10 mono text-black/50 border-r border-black/10 hover:bg-black/5">
+                  −
+                </button>
+
+                <input id="modal-quantity"
+                       type="text"
+                       value="1"
+                       readonly
+                       class="w-12 h-10 text-center mono text-[11px] outline-none">
+
+                <button id="modal-qty-plus"
+                        type="button"
+                        class="w-10 h-10 mono text-black/50 border-l border-black/10 hover:bg-black/5">
+                  +
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button id="modal-submit-btn"
+                type="submit"
+                class="w-full mt-6 mono text-[10px] tracking-[.3em] bg-black text-white py-4 font-bold hover:bg-black/80 active:scale-[0.98] transition-all">
+          ADD TO CART
+        </button>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="cart-toast"
+     class="fixed top-20 right-6 z-[1000] hidden border border-black/10 bg-white shadow-xl px-5 py-4">
+  <p id="cart-toast-message"
+     class="mono text-[10px] tracking-widest text-black uppercase">
+    Added to cart
+  </p>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════ -->
+<footer class="relative bg-white border-t border-black/10 px-8 md:px-12 pt-14 pb-8">
+  <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-black/5 to-transparent pointer-events-none"></div>
+  <div class="flex flex-col md:flex-row justify-between gap-12 mb-12">
+
+    <!-- Brand column -->
+    <div class="max-w-xs">
+      <div class="flex items-center gap-2.5 mb-4">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect x="6" y="6" width="9" height="2.5" fill="black"/>
+          <rect x="6" y="6" width="2.5" height="15" fill="black"/>
+          <rect x="6" y="13" width="7" height="2.5" fill="black"/>
+        </svg>
+        <span class="mono text-black text-base font-bold tracking-widest">FASHIO</span>
+      </div>
+      <p class="mono text-black/30 text-[10px] tracking-wider leading-loose">Premium essentials built for those who refuse to blend in. Every piece, intentionally crafted.</p>
+    </div>
+
+    <!-- Help links -->
+    <div>
+      <p class="mono text-black/40 text-[10px] tracking-widest mb-5">HELP</p>
+      <ul class="space-y-3">
+        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">ABOUT US</a></li>
+        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">CONTACT</a></li>
+        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">PRIVACY POLICY</a></li>
+        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">TERMS OF SERVICE</a></li>
+      </ul>
+    </div>
+
+    <!-- Shop links -->
+    <div>
+      <p class="mono text-black/40 text-[10px] tracking-widest mb-5">SHOP</p>
+      <ul class="space-y-3">
+        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">T-SHIRTS</a></li>
+        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">SHIRTS</a></li>
+        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">BOTTOMS</a></li>
+        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">ACCESSORIES</a></li>
+      </ul>
+    </div>
+
+    <!-- Social -->
+    <div>
+      <p class="mono text-black/40 text-[10px] tracking-widest mb-5">SOCIAL</p>
+      <div class="flex items-center gap-5">
+        <a href="#" class="text-black/40 hover:text-black transition-colors">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+        <a href="#" class="text-black/40 hover:text-black transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+            <circle cx="12" cy="12" r="4"/>
+            <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/>
+          </svg>
+        </a>
+        <a href="#" class="text-black/40 hover:text-black transition-colors">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.87a8.18 8.18 0 004.78 1.52V6.93a4.85 4.85 0 01-1.01-.24z"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="border-t border-black/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+    <p class="mono text-black/20 text-[10px] tracking-wider text-center">© 2024 FASHIO. ALL RIGHTS RESERVED. BUILT DIFFERENT.</p>
+  </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+{{ modal_products_data|json_script:"modal-products-data" }}
+<script>
+
+  const modalProducts = JSON.parse(document.getElementById('modal-products-data').textContent);
+
+  const MAX_PER_ORDER = 5;
+
+  const cartModal = document.getElementById('cart-modal');
+  const modalOverlay = document.getElementById('cart-modal-overlay');
+  const closeModalBtn = document.getElementById('close-cart-modal');
+
+  const modalProductName = document.getElementById('modal-product-name');
+  const modalProductImage = document.getElementById('modal-product-image');
+  const modalNoImage = document.getElementById('modal-no-image');
+
+  const modalVariantId = document.getElementById('modal-variant-id');
+  const modalPrice = document.getElementById('modal-price');
+  const modalOriginalPrice = document.getElementById('modal-original-price');
+  const modalDiscount = document.getElementById('modal-discount');
+  const modalStock = document.getElementById('modal-stock');
+
+  const modalSizeList = document.getElementById('modal-size-list');
+  const modalColorList = document.getElementById('modal-color-list');
+
+  const modalQuantity = document.getElementById('modal-quantity');
+  const modalFormQuantity = document.getElementById('modal-form-quantity');
+  const modalQuantityHelp = document.getElementById('modal-quantity-help');
+  const modalQtyMinus = document.getElementById('modal-qty-minus');
+  const modalQtyPlus = document.getElementById('modal-qty-plus');
+  const modalSubmitBtn = document.getElementById('modal-submit-btn');
+
+  let currentProduct = null;
+  let currentVariant = null;
+  let selectedSize = null;
+  let selectedColor = null;
+
+  function formatPrice(value) {
+    return `₹${Math.round(Number(value))}`;
+  }
+
+  function getMaxQuantity(variant) {
+    const stock = Number(variant?.stock || 0);
+    return Math.min(stock, MAX_PER_ORDER);
+  }
+
+  function openModal() {
+    cartModal.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+  }
+
+  function closeModal() {
+    cartModal.classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+  }
+
+  function getUniqueSizes(variants) {
+    return [...new Set(variants.map(v => v.size).filter(Boolean))];
+  }
+
+  function getUniqueColors(variants) {
+    const colors = [];
+
+    variants.forEach(variant => {
+      if (!variant.color) return;
+
+      const exists = colors.some(color => color.name === variant.color);
+
+      if (!exists) {
+        colors.push({
+          name: variant.color,
+          hex: variant.color_hex || '#ddd',
+        });
+      }
+    });
+
+    return colors;
+  }
+
+  function findMatchingVariant() {
+    return currentProduct.variants.find(v => {
+      return v.size === selectedSize && v.color === selectedColor;
+    });
+  }
+
+  function updateQuantityUI() {
+    const maxQuantity = getMaxQuantity(currentVariant);
+
+    if (maxQuantity <= 0) {
+      modalQuantity.value = 0;
+      modalFormQuantity.value = 0;
+
+      modalQtyMinus.disabled = true;
+      modalQtyPlus.disabled = true;
+      modalSubmitBtn.disabled = true;
+
+      modalSubmitBtn.textContent = 'SOLD OUT';
+      modalSubmitBtn.className = 'w-full mt-6 mono text-[10px] tracking-[.3em] border border-black/15 text-black/30 py-4 font-bold cursor-not-allowed';
+      modalQuantityHelp.textContent = 'SOLD OUT';
+
+      return;
+    }
+
+    let qty = parseInt(modalQuantity.value) || 1;
+
+    if (qty < 1) qty = 1;
+    if (qty > maxQuantity) qty = maxQuantity;
+
+    modalQuantity.value = qty;
+    modalFormQuantity.value = qty;
+
+    modalQtyMinus.disabled = qty <= 1;
+    modalQtyPlus.disabled = qty >= maxQuantity;
+
+    modalQtyMinus.classList.toggle('opacity-30', qty <= 1);
+    modalQtyPlus.classList.toggle('opacity-30', qty >= maxQuantity);
+
+    modalSubmitBtn.disabled = false;
+    modalSubmitBtn.textContent = 'ADD TO CART';
+    modalSubmitBtn.className = 'w-full mt-6 mono text-[10px] tracking-[.3em] bg-black text-white py-4 font-bold hover:bg-black/80 active:scale-[0.98] transition-all';
+
+    if (Number(currentVariant.stock) < MAX_PER_ORDER) {
+      modalQuantityHelp.textContent = `ONLY ${currentVariant.stock} AVAILABLE`;
+    } else {
+      modalQuantityHelp.textContent = `MAX ${MAX_PER_ORDER} PER ORDER`;
+    }
+  }
+
+  function renderVariantUI() {
+    if (!currentVariant) return;
+
+    modalVariantId.value = currentVariant.id;
+
+    modalPrice.textContent = formatPrice(currentVariant.discounted_price);
+
+    if (Number(currentVariant.discount) > 0) {
+      modalOriginalPrice.textContent = formatPrice(currentVariant.price);
+      modalOriginalPrice.classList.remove('hidden');
+
+      modalDiscount.textContent = `${Math.round(Number(currentVariant.discount))}% OFF`;
+      modalDiscount.classList.remove('hidden');
+    } else {
+      modalOriginalPrice.classList.add('hidden');
+      modalDiscount.classList.add('hidden');
+    }
+
+    if (currentVariant.image) {
+      modalProductImage.src = currentVariant.image;
+      modalProductImage.classList.remove('hidden');
+      modalNoImage.classList.add('hidden');
+    } else {
+      modalProductImage.classList.add('hidden');
+      modalNoImage.classList.remove('hidden');
+    }
+
+    if (Number(currentVariant.stock) > 0) {
+      modalStock.textContent = `IN STOCK · ${currentVariant.stock} AVAILABLE`;
+      modalStock.classList.remove('text-red-600');
+      modalStock.classList.add('text-green-700');
+    } else {
+      modalStock.textContent = 'SOLD OUT';
+      modalStock.classList.remove('text-green-700');
+      modalStock.classList.add('text-red-600');
+    }
+
+    document.querySelectorAll('.modal-size-btn').forEach(btn => {
+      const isActive = btn.dataset.size === selectedSize;
+
+      btn.classList.toggle('border-black', isActive);
+      btn.classList.toggle('text-black', isActive);
+      btn.classList.toggle('bg-neutral-100', isActive);
+
+      btn.classList.toggle('border-black/15', !isActive);
+      btn.classList.toggle('text-black/45', !isActive);
+    });
+
+    document.querySelectorAll('.modal-color-btn').forEach(btn => {
+      const isActive = btn.dataset.color === selectedColor;
+
+      const dot = btn.querySelector('.modal-color-dot');
+      const name = btn.querySelector('.modal-color-name');
+
+      dot.classList.toggle('border-black', isActive);
+      dot.classList.toggle('border-black/20', !isActive);
+
+      name.classList.toggle('text-black', isActive);
+      name.classList.toggle('text-black/35', !isActive);
+    });
+
+    updateQuantityUI();
+  }
+
+  function buildSizeButtons() {
+    modalSizeList.innerHTML = '';
+
+    getUniqueSizes(currentProduct.variants).forEach(size => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.size = size;
+      button.className = 'modal-size-btn mono text-[10px] tracking-widest border border-black/15 text-black/45 py-3';
+      button.textContent = size;
+
+      button.addEventListener('click', () => {
+        selectedSize = size;
+
+        let matchedVariant = findMatchingVariant();
+
+        if (!matchedVariant) {
+          matchedVariant = currentProduct.variants.find(v => v.size === selectedSize);
+
+          if (matchedVariant) {
+            selectedColor = matchedVariant.color;
+          }
+        }
+
+        currentVariant = matchedVariant;
+        modalQuantity.value = 1;
+        renderVariantUI();
+      });
+
+      modalSizeList.appendChild(button);
+    });
+  }
+
+  function buildColorButtons() {
+    modalColorList.innerHTML = '';
+
+    getUniqueColors(currentProduct.variants).forEach(color => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.color = color.name;
+      button.className = 'modal-color-btn flex flex-col items-center gap-2';
+
+      button.innerHTML = `
+        <span class="modal-color-dot w-8 h-8 border border-black/20 block" style="background:${color.hex};"></span>
+        <span class="modal-color-name mono text-[8px] tracking-widest uppercase text-black/35">${color.name}</span>
+      `;
+
+      button.addEventListener('click', () => {
+        selectedColor = color.name;
+
+        let matchedVariant = findMatchingVariant();
+
+        if (!matchedVariant) {
+          matchedVariant = currentProduct.variants.find(v => v.color === selectedColor);
+
+          if (matchedVariant) {
+            selectedSize = matchedVariant.size;
+          }
+        }
+
+        currentVariant = matchedVariant;
+        modalQuantity.value = 1;
+        renderVariantUI();
+      });
+
+      modalColorList.appendChild(button);
+    });
+  }
+
+  document.querySelectorAll('.open-cart-modal').forEach(button => {
+    button.addEventListener('click', () => {
+      const productId = button.dataset.productId;
+
+      currentProduct = modalProducts.find(product => product.id === productId);
+
+      if (!currentProduct || !currentProduct.variants.length) {
+        return;
+      }
+
+      currentVariant = currentProduct.variants.find(v => Number(v.stock) > 0) || currentProduct.variants[0];
+
+      selectedSize = currentVariant.size;
+      selectedColor = currentVariant.color;
+
+      modalProductName.textContent = currentProduct.name;
+      modalQuantity.value = 1;
+      modalFormQuantity.value = 1;
+
+      buildSizeButtons();
+      buildColorButtons();
+      renderVariantUI();
+      openModal();
+    });
+  });
+
+  modalQtyMinus.addEventListener('click', () => {
+    const currentQty = parseInt(modalQuantity.value) || 1;
+
+    if (currentQty > 1) {
+      modalQuantity.value = currentQty - 1;
+    }
+
+    updateQuantityUI();
+  });
+
+  modalQtyPlus.addEventListener('click', () => {
+    const currentQty = parseInt(modalQuantity.value) || 1;
+    const maxQty = getMaxQuantity(currentVariant);
+
+    if (currentQty < maxQty) {
+      modalQuantity.value = currentQty + 1;
+    }
+
+    updateQuantityUI();
+  });
+
+  closeModalBtn.addEventListener('click', closeModal);
+  modalOverlay.addEventListener('click', closeModal);
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeModal();
+    }
+  });
+
+  const modalAddToCartForm = document.getElementById('modal-add-to-cart-form');
+  const cartBadge = document.getElementById('cart-notification-badge');
+  const cartToast = document.getElementById('cart-toast');
+  const cartToastMessage = document.getElementById('cart-toast-message');
+
+  function showCartToast(message) {
+    if (!cartToast || !cartToastMessage) return;
+
+    cartToastMessage.textContent = message;
+    cartToast.classList.remove('hidden');
+
+    setTimeout(() => {
+      cartToast.classList.add('hidden');
+    }, 1800);
+  }
+
+  function updateCartBadge(count) {
+  const cartBadge = document.getElementById('cart-notification-badge');
+
+  if (!cartBadge) {
+    console.log('Cart badge not found');
+    return;
+  }
+
+  if (Number(count) > 0) {
+    cartBadge.textContent = count;
+    cartBadge.classList.remove('hidden');
+    cartBadge.classList.add('flex');
+  } else {
+    cartBadge.textContent = '';
+    cartBadge.classList.remove('flex');
+    cartBadge.classList.add('hidden');
+  }
+}
+
+  if (modalAddToCartForm) {
+    modalAddToCartForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      const formData = new FormData(modalAddToCartForm);
+
+      fetch(modalAddToCartForm.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          updateCartBadge(data.cart_notification_count);
+          showCartToast(data.message || 'Product added to cart.');
+
+          if (typeof closeModal === 'function') {
+            closeModal();
+          }
+        } else {
+          showCartToast(data.message || 'Something went wrong.');
+        }
+      })
+      .catch(() => {
+        showCartToast('Could not add product.');
+      });
+    });
+  }
+
+  /* ── Scroll reveal ── */
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+
+  /* ── Wishlist toggle ── */
+  document.querySelectorAll('.wishlist-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      btn.classList.toggle('active');
+      const svg = btn.querySelector('path');
+      if (btn.classList.contains('active')) {
+        btn.querySelector('svg').setAttribute('fill', 'white');
+      } else {
+        btn.querySelector('svg').setAttribute('fill', 'none');
+      }
+    });
+  });
+
+</script>
+{% endblock %}
+
+
+
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FASHIO | Shirts</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=DM+Sans:wght@300;400;500;600&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+</head>
+<body class="bg-white text-black">
+
+<!-- ══════════════════════════════════════════
+     NAVBAR
+══════════════════════════════════════════ -->
+<nav class="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-sm border-b border-white/8">
+  <div class="px-8 md:px-12 h-14 flex items-center justify-between gap-6">
+
+    <!-- Logo -->
+    <a href="#" class="flex items-center gap-2.5 shrink-0">
+      <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+        <rect x="6" y="6" width="9" height="2.5" fill="white"/>
+        <rect x="6" y="6" width="2.5" height="15" fill="white"/>
+        <rect x="6" y="13" width="7" height="2.5" fill="white"/>
+      </svg>
+      <span class="mono text-white text-sm font-bold tracking-widest">FASHIO</span>
+    </a>
+
+    <!-- Nav links -->
+    <div class="hidden md:flex items-center gap-8">
+      <a href="#" class="mono text-white/40 text-[10px] tracking-widest hover:text-white transition-colors">HOME</a>
+      <a href="#" class="mono text-white text-[10px] tracking-widest border-b border-white pb-0.5">SHOP</a>
+      <a href="#" class="mono text-white/40 text-[10px] tracking-widest hover:text-white transition-colors">ABOUT</a>
+      <a href="#" class="mono text-white/40 text-[10px] tracking-widest hover:text-white transition-colors">CONTACT</a>
+    </div>
+
+    <!-- Right actions -->
+    <div class="flex items-center gap-4">
+      <!-- Search -->
+      <div class="hidden md:flex items-center gap-2 border border-white/15 px-3 py-1.5 bg-white/3">
+        <svg class="w-3 h-3 text-white/40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="SEARCH" class="mono text-[10px] tracking-widest bg-transparent text-white/50 placeholder-white/25 outline-none w-28"/>
+      </div>
+      <!-- Icons -->
+      <button class="text-white/40 hover:text-white transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </button>
+      <button class="text-white/40 hover:text-white transition-colors relative">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-white text-black mono text-[8px] flex items-center justify-center rounded-full font-bold">2</span>
+      </button>
+      <button class="text-white/40 hover:text-white transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+
+<!-- ══════════════════════════════════════════
+     CATEGORY HERO — Full-bleed B&W editorial
+══════════════════════════════════════════ -->
+
+
+
+
+</body>
+</html> {% endcomment %}
