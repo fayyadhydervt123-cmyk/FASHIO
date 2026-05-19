@@ -1527,3 +1527,254 @@ def buy_now(request):
 
     checkout_url = reverse('checkout_page')
     return redirect(f'{checkout_url}?source=buy_now')
+
+@login_required(login_url='user_login')
+def wishlist_page(request):
+    request.session['wishlist_notification_count'] = 0
+    request.session.modified = True
+
+    wishlist_items = (
+        Wishlist.objects
+        .filter(user=request.user)
+        .select_related(
+            'product',
+            'variant',
+            'product__subcategory',
+            'product__subcategory__category'
+        )
+        .prefetch_related('variant__images')
+        .order_by('-created_at')
+    )
+
+    for item in wishlist_items:
+        first_image = item.variant.images.first()
+        item.thumbnail = first_image.image.url if first_image else None
+
+        item.is_available = (
+            item.product.is_active and
+            item.product.subcategory is not None and
+            item.product.subcategory.category.is_blocked is False and
+            item.variant.status == 'ACTIVE' and
+            item.variant.stock > 0
+        )
+
+        item.max_quantity = min(item.variant.stock, MAX_QUANTITY_PER_ORDER)
+
+        if not item.is_available:
+            item.unavailable_reason = 'This product is currently unavailable.'
+        else:
+            item.unavailable_reason = ''
+
+        item.display_price = item.variant.discounted_price
+
+    return render(request, 'wishlist/wishlist.html', {
+        'wishlist_items': wishlist_items,
+    })
+
+@login_required(login_url='user_login')
+def add_to_wishlist(request):
+    if request.method != 'POST':
+        return redirect('product_list')
+
+    is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+
+    variant_id = request.POST.get('variant_id', '').strip()
+
+    if not variant_id:
+        if is_ajax:
+            return JsonResponse({
+                'success': False,
+                'message': 'Please select a product option.'
+            }, status=400)
+
+        messages.error(request, 'Please select a product option.')
+        return redirect(request.META.get('HTTP_REFERER', 'product_list'))
+
+    variant = get_object_or_404(
+        ProductVariant.objects.select_related(
+            'product',
+            'product__subcategory',
+            'product__subcategory__category'
+        ),
+        id=variant_id,
+        status='ACTIVE',
+        product__is_active=True,
+        product__subcategory__isnull=False,
+        product__subcategory__category__is_blocked=False
+    )
+
+    wishlist_item, created = Wishlist.objects.get_or_create(
+        user=request.user,
+        variant=variant,
+        defaults={
+            'product': variant.product
+        }
+    )
+
+    if created:
+        current_count = request.session.get('wishlist_notification_count', 0)
+        request.session['wishlist_notification_count'] = current_count + 1
+        request.session.modified = True
+
+        message = 'Product added to wishlist.'
+    else:
+        message = 'Product is already in your wishlist.'
+
+    if is_ajax:
+        return JsonResponse({
+            'success': True,
+            'message': message,
+            'created': created,
+            'wishlist_notification_count': request.session.get('wishlist_notification_count', 0)
+        })
+
+    if created:
+        messages.success(request, message)
+    else:
+        messages.info(request, message)
+
+    return redirect(request.META.get('HTTP_REFERER', 'product_list'))
+
+@login_required(login_url='user_login')
+def remove_wishlist_item(request, item_id):
+    if request.method != 'POST':
+        return redirect('wishlist_page')
+
+    wishlist_item = get_object_or_404(
+        Wishlist,
+        id=item_id,
+        user=request.user
+    )
+
+    wishlist_item.delete()
+    messages.success(request, 'Item removed from wishlist.')
+
+    return redirect('wishlist_page')
+
+@login_required(login_url='user_login')
+def add_wishlist_to_cart(request, item_id):
+    if request.method != 'POST':
+        return redirect('wishlist_page')
+
+    wishlist_item = get_object_or_404(
+        Wishlist.objects.select_related(
+            'product',
+            'variant',
+            'product__subcategory',
+            'product__subcategory__category'
+        ),
+        id=item_id,
+        user=request.user
+    )
+
+    product_available = (
+        wishlist_item.product.is_active and
+        wishlist_item.product.subcategory is not None and
+        wishlist_item.product.subcategory.category.is_blocked is False and
+        wishlist_item.variant.status == 'ACTIVE' and
+        wishlist_item.variant.stock > 0
+    )
+
+    if not product_available:
+        messages.error(request, 'This product is no longer available.')
+        return redirect('wishlist_page')
+
+    max_allowed = min(wishlist_item.variant.stock, MAX_QUANTITY_PER_ORDER)
+
+    if max_allowed <= 0:
+        messages.error(request, 'This product is out of stock.')
+        return redirect('wishlist_page')
+
+    cart_item, created = Cart.objects.get_or_create(
+        user=request.user,
+        variant=wishlist_item.variant,
+        defaults={
+            'product': wishlist_item.product,
+            'quantity': 1
+        }
+    )
+
+    if not created:
+        if cart_item.quantity >= max_allowed:
+            messages.error(
+                request,
+                f'You can only add up to {max_allowed} item(s) for this variant.'
+            )
+            return redirect('wishlist_page')
+
+        cart_item.quantity += 1
+        cart_item.save()
+
+    wishlist_item.delete()
+
+    messages.success(request, 'Product moved to cart.')
+    return redirect('wishlist_page')
+
+@login_required(login_url='user_login')
+def add_all_wishlist_to_cart(request):
+    if request.method != 'POST':
+        return redirect('wishlist_page')
+
+    wishlist_items = (
+        Wishlist.objects
+        .filter(user=request.user)
+        .select_related(
+            'product',
+            'variant',
+            'product__subcategory',
+            'product__subcategory__category'
+        )
+    )
+
+    moved_count = 0
+    skipped_count = 0
+
+    for item in wishlist_items:
+        product_available = (
+            item.product.is_active and
+            item.product.subcategory is not None and
+            item.product.subcategory.category.is_blocked is False and
+            item.variant.status == 'ACTIVE' and
+            item.variant.stock > 0
+        )
+
+        if not product_available:
+            skipped_count += 1
+            continue
+
+        max_allowed = min(item.variant.stock, MAX_QUANTITY_PER_ORDER)
+
+        if max_allowed <= 0:
+            skipped_count += 1
+            continue
+
+        cart_item, created = Cart.objects.get_or_create(
+            user=request.user,
+            variant=item.variant,
+            defaults={
+                'product': item.product,
+                'quantity': 1
+            }
+        )
+
+        if not created:
+            if cart_item.quantity >= max_allowed:
+                skipped_count += 1
+                continue
+
+            cart_item.quantity += 1
+            cart_item.save()
+
+        item.delete()
+        moved_count += 1
+
+    if moved_count > 0:
+        messages.success(request, f'{moved_count} item(s) moved to cart.')
+
+    if skipped_count > 0:
+        messages.error(request, f'{skipped_count} item(s) could not be moved.')
+
+    if moved_count == 0 and skipped_count == 0:
+        messages.info(request, 'Your wishlist is empty.')
+
+    return redirect('wishlist_page')

@@ -398,10 +398,30 @@
             </button>
             </form>
 
-        <button type="button"
-                class="w-full mono text-[10px] tracking-widest border border-black/15 text-black/60 py-4 font-bold hover:border-black hover:text-black transition-colors">
-            ADD TO WISHLIST
-        </button>
+        <form id="detail-add-to-wishlist-form" method="POST" action="{% url 'add_to_wishlist' %}">
+          {% csrf_token %}
+
+          <input type="hidden"
+                name="variant_id"
+                id="wishlist-variant-id"
+                value="{% if default_variant %}{{ default_variant.id }}{% endif %}">
+
+          <button id="add-to-wishlist-btn"
+                  type="submit"
+                  {% if not default_variant or default_variant.stock <= 0 %}disabled{% endif %}
+                  class="w-full mono text-[10px] tracking-widest border py-4 font-bold transition-colors
+                  {% if default_variant and default_variant.stock > 0 %}
+                      border-black/15 text-black/60 hover:border-black hover:text-black
+                  {% else %}
+                      border-black/15 text-black/30 cursor-not-allowed
+                  {% endif %}">
+              {% if default_variant and default_variant.stock > 0 %}
+                ADD TO WISHLIST
+              {% else %}
+                SOLD OUT
+              {% endif %}
+          </button>
+        </form>
         </div>
 
     </div>
@@ -713,6 +733,7 @@
     const selectedVariantInput = document.getElementById('selected-variant-id');
     const buyNowVariantInput = document.getElementById('buy-now-variant-id');
     const cartVariantInput = document.getElementById('cart-variant-id');
+    const wishlistVariantInput = document.getElementById('wishlist-variant-id');
     const priceEl = document.getElementById('variant-price');
     const originalPriceEl = document.getElementById('variant-original-price');
     const discountEl = document.getElementById('variant-discount');
@@ -731,6 +752,10 @@
 
     if (cartVariantInput) {
       cartVariantInput.value = variant.id;
+    }
+
+    if (wishlistVariantInput) {
+      wishlistVariantInput.value = variant.id;
     }
 
     if (priceEl) {
@@ -991,6 +1016,68 @@
       });
     });
   }
+
+  const detailAddToWishlistForm = document.getElementById('detail-add-to-wishlist-form');
+const wishlistToast = document.getElementById('cart-toast');
+const wishlistToastMessage = document.getElementById('cart-toast-message');
+
+function updateWishlistBadge(count) {
+  const wishlistBadge = document.getElementById('wishlist-notification-badge');
+
+  if (!wishlistBadge) {
+    console.log('Wishlist badge not found');
+    return;
+  }
+
+  if (Number(count) > 0) {
+    wishlistBadge.textContent = count;
+    wishlistBadge.classList.remove('hidden');
+    wishlistBadge.classList.add('flex');
+  } else {
+    wishlistBadge.textContent = '';
+    wishlistBadge.classList.remove('flex');
+    wishlistBadge.classList.add('hidden');
+  }
+}
+
+function showWishlistToast(message) {
+  if (!wishlistToast || !wishlistToastMessage) return;
+
+  wishlistToastMessage.textContent = message;
+  wishlistToast.classList.remove('hidden');
+
+  setTimeout(() => {
+    wishlistToast.classList.add('hidden');
+  }, 1800);
+}
+
+if (detailAddToWishlistForm) {
+  detailAddToWishlistForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const formData = new FormData(detailAddToWishlistForm);
+
+    fetch(detailAddToWishlistForm.action, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        updateWishlistBadge(data.wishlist_notification_count);
+        showWishlistToast(data.message || 'Product added to wishlist.');
+      } else {
+        showWishlistToast(data.message || 'Something went wrong.');
+      }
+    })
+    .catch(() => {
+      showWishlistToast('Could not add product.');
+    });
+  });
+}
 
 </script>
 {% endblock %}

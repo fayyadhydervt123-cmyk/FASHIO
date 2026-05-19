@@ -1,0 +1,282 @@
+{% extends 'user_base/base.html' %}
+
+{% block title %}
+Wishlist | FASHIO
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #fff;
+    color: #000;
+  }
+
+  .mono {
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .bebas {
+    font-family: 'Bebas Neue', sans-serif;
+  }
+
+  .wishlist-card {
+    transition: border-color .25s ease, transform .25s ease;
+  }
+
+  .wishlist-card:hover {
+    border-color: rgba(0,0,0,.28);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="bg-white pt-10 md:pt-12 px-6 md:px-12 pb-20">
+
+  <!-- Breadcrumb -->
+  <div class="mb-8 flex items-center gap-2">
+    <a href="{% url 'product_list' %}"
+       class="mono text-[10px] tracking-widest text-black/40 hover:text-black transition-colors uppercase">
+      SHOP
+    </a>
+
+    <span class="mono text-[10px] tracking-widest text-black/25">/</span>
+
+    <span class="mono text-[10px] tracking-widest text-black/35 uppercase">
+      WISHLIST
+    </span>
+  </div>
+
+  <!-- Page Header -->
+  <div class="mb-12">
+    <div class="flex items-center gap-4 mb-4">
+      <div class="w-1 h-12 bg-black"></div>
+
+      <div>
+        <p class="mono text-[10px] tracking-[.3em] text-black/40 uppercase mb-2">
+          SAVED ITEMS
+        </p>
+
+        <h1 class="bebas text-black text-6xl md:text-8xl leading-none tracking-wide">
+          MY WISHLIST
+        </h1>
+      </div>
+    </div>
+
+    <p class="mono text-[10px] tracking-widest text-black/40 uppercase">
+      {{ wishlist_items|length }} ITEM{% if wishlist_items|length != 1 %}S{% endif %} SAVED
+    </p>
+  </div>
+
+  {% if wishlist_items %}
+
+  <!-- Table Header Desktop -->
+  <div class="hidden md:grid grid-cols-[1fr_160px_180px_90px] gap-6 border border-black/10 bg-neutral-50 px-6 py-4">
+    <p class="mono text-[10px] tracking-widest text-black/60 uppercase">
+      Product Details
+    </p>
+
+    <p class="mono text-[10px] tracking-widest text-black/60 uppercase text-right">
+      Price
+    </p>
+
+    <p class="mono text-[10px] tracking-widest text-black/60 uppercase text-center">
+      Add Cart
+    </p>
+
+    <p class="mono text-[10px] tracking-widest text-black/60 uppercase text-right">
+      Remove
+    </p>
+  </div>
+
+  <!-- Wishlist Items -->
+  <div class="border-x border-b border-black/10">
+
+    {% for item in wishlist_items %}
+    <div class="wishlist-card border-t border-black/10 px-4 md:px-6 py-6">
+
+      <div class="grid grid-cols-1 md:grid-cols-[1fr_160px_180px_90px] gap-6 items-center">
+
+        <!-- Product -->
+        <div class="flex gap-4">
+
+          <a href="{% url 'product_detail' item.product.id %}"
+             class="w-28 h-28 md:w-32 md:h-32 bg-neutral-100 border border-black/10 overflow-hidden shrink-0">
+            {% if item.thumbnail %}
+              <img src="{{ item.thumbnail }}"
+                   alt="{{ item.product.name }}"
+                   class="w-full h-full object-cover">
+            {% elif item.product.thumbnail %}
+              <img src="{{ item.product.thumbnail.url }}"
+                   alt="{{ item.product.name }}"
+                   class="w-full h-full object-cover">
+            {% else %}
+              <div class="w-full h-full flex items-center justify-center">
+                <span class="mono text-[9px] tracking-widest text-black/30">
+                  NO IMAGE
+                </span>
+              </div>
+            {% endif %}
+          </a>
+
+          <div class="min-w-0">
+
+            <a href="{% url 'product_detail' item.product.id %}"
+               class="block text-black hover:text-black/60 transition-colors">
+              <h2 class="text-base md:text-lg font-semibold leading-snug mb-2">
+                {{ item.product.name }}
+              </h2>
+            </a>
+
+            {% if item.product.subcategory %}
+              <p class="mono text-[9px] tracking-widest text-black/35 uppercase mb-3">
+                {{ item.product.subcategory.category.name }} / {{ item.product.subcategory.name }}
+              </p>
+            {% endif %}
+
+            <div class="flex flex-wrap gap-2">
+              {% if item.variant %}
+                <span class="mono text-[9px] tracking-widest border border-black/10 px-2 py-1 text-black/45 uppercase">
+                  Size: {{ item.variant.size }}
+                </span>
+
+                <span class="mono text-[9px] tracking-widest border border-black/10 px-2 py-1 text-black/45 uppercase">
+                  Color: {{ item.variant.color }}
+                </span>
+              {% else %}
+                <span class="mono text-[9px] tracking-widest border border-black/10 px-2 py-1 text-black/35 uppercase">
+                  Select options before adding
+                </span>
+              {% endif %}
+            </div>
+
+            {%if not item.product.is_active %}
+              <p class="mono text-[9px] tracking-widest text-red-600 mt-3 uppercase">
+                Product currently unavailable
+              </p>
+            {% elif item.variant and item.variant.stock <= 0 %}
+              <p class="mono text-[9px] tracking-widest text-red-600 mt-3 uppercase">
+                Out of stock
+              </p>
+            {% else %}
+              <p class="mono text-[9px] tracking-widest text-black/30 mt-3 uppercase">
+                Saved for later
+              </p>
+            {% endif %}
+
+          </div>
+
+        </div>
+
+        <!-- Price -->
+        <!-- Price -->
+        <div class="md:text-right">
+        <p class="mono text-base font-bold text-black">
+            ₹{{ item.display_price|floatformat:0 }}
+        </p>
+
+        {% if item.variant.discount > 0 %}
+            <p class="mono text-[10px] text-black/35 line-through mt-1">
+            ₹{{ item.variant.price|floatformat:0 }}
+            </p>
+        {% endif %}
+
+        <p class="mono text-[9px] tracking-widest text-black/30 mt-1 uppercase">
+            Unit price
+        </p>
+        </div>
+
+        <!-- Add To Cart -->
+        <div class="flex md:justify-center">
+
+          {% if item.variant and item.product.is_active and item.variant.stock > 0 %}
+            <form method="POST" action="{% url 'add_wishlist_to_cart' item.id %}">
+              {% csrf_token %}
+
+              <button type="submit"
+                      class="inline-flex items-center justify-center gap-3 mono text-[10px] tracking-widest bg-black text-white px-8 py-4 font-bold hover:bg-black/80 active:scale-[0.98] transition-all uppercase">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12A1.5 1.5 0 0119.376 22H4.624a1.5 1.5 0 01-1.493-1.493l1.263-12A1.5 1.5 0 015.887 7.5h12.226a1.5 1.5 0 011.493 1.007z" />
+                </svg>
+                Add
+              </button>
+            </form>
+          {% else %}
+            <button type="button"
+                    disabled
+                    class="inline-flex items-center justify-center mono text-[10px] tracking-widest border border-black/15 text-black/30 px-8 py-4 font-bold cursor-not-allowed uppercase">
+              Unavailable
+            </button>
+          {% endif %}
+
+        </div>
+
+        <!-- Remove -->
+        <div class="md:text-right">
+          <form method="POST" action="{% url 'remove_wishlist_item' item.id %}">
+            {% csrf_token %}
+
+            <button type="submit"
+                    class="mono text-[9px] tracking-widest text-black/35 hover:text-red-600 transition-colors uppercase">
+              Remove
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+    </div>
+    {% endfor %}
+
+  </div>
+
+  <!-- Bottom Actions -->
+  <div class="mt-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+    <a href="{% url 'product_list' %}"
+       class="inline-flex items-center justify-center mono text-[10px] tracking-widest border border-black/15 text-black/60 px-8 py-4 hover:border-black hover:text-black transition-colors uppercase">
+      Continue Shopping
+    </a>
+
+    <form method="POST" action="{% url 'add_all_wishlist_to_cart' %}">
+      {% csrf_token %}
+
+      <button type="submit"
+              class="inline-flex items-center justify-center gap-3 mono text-[10px] tracking-[.3em] bg-black text-white px-10 py-4 font-bold hover:bg-black/80 active:scale-[0.98] transition-all uppercase">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12A1.5 1.5 0 0119.376 22H4.624a1.5 1.5 0 01-1.493-1.493l1.263-12A1.5 1.5 0 015.887 7.5h12.226a1.5 1.5 0 011.493 1.007z" />
+        </svg>
+        Add All To Cart
+      </button>
+    </form>
+
+  </div>
+
+  {% else %}
+
+  <!-- Empty Wishlist -->
+  <div class="border border-black/10 py-24 px-6 text-center">
+
+    <h2 class="bebas text-5xl md:text-7xl text-black leading-none mb-4">
+      EMPTY WISHLIST
+    </h2>
+
+    <p class="mono text-[10px] tracking-widest text-black/40 uppercase mb-8">
+      Save your favorite pieces and find them here later.
+    </p>
+
+    <a href="{% url 'product_list' %}"
+       class="inline-flex mono text-[10px] tracking-widest bg-black text-white px-8 py-4 font-bold hover:bg-black/80 transition-colors uppercase">
+      Start Shopping
+    </a>
+
+  </div>
+
+  {% endif %}
+
+</section>
+
+{% endblock %}
