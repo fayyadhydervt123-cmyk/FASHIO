@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Invoice</title>
+
+  <style>
+    @page {
+      size: A4;
+      margin: 28px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      color: #111;
+      font-size: 12px;
+      line-height: 1.5;
+      margin: 0;
+      background: #fff;
+    }
+
+    .mono {
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      font-size: 10px;
+    }
+
+    .invoice {
+      width: 100%;
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid #111;
+      padding-bottom: 22px;
+      margin-bottom: 24px;
+    }
+
+    .brand {
+      font-size: 34px;
+      letter-spacing: 4px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .invoice-title {
+      font-size: 22px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      font-weight: 700;
+      text-align: right;
+      margin-bottom: 8px;
+    }
+
+    .muted {
+      color: #666;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .box {
+      border: 1px solid #ddd;
+      padding: 14px;
+    }
+
+    .box-title {
+      font-size: 10px;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      color: #666;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .strong {
+      font-weight: 700;
+      color: #111;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      margin-bottom: 24px;
+    }
+
+    th {
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      padding: 9px;
+      text-align: left;
+      font-size: 9px;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      color: #555;
+    }
+
+    td {
+      border: 1px solid #ddd;
+      padding: 9px;
+      vertical-align: top;
+      font-size: 11px;
+    }
+
+    .right {
+      text-align: right;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 3px 7px;
+      font-size: 8px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #111;
+    }
+
+    .status-cancelled {
+      color: #dc2626;
+    }
+
+    .status-return {
+      color: #2563eb;
+    }
+
+    .status-returned {
+      color: #16a34a;
+    }
+
+    .summary-wrap {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .summary {
+      width: 300px;
+      border: 1px solid #ddd;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 9px 12px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .summary-row:last-child {
+      border-bottom: none;
+    }
+
+    .summary-total {
+      background: #111;
+      color: #fff;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .negative {
+      color: #16a34a;
+    }
+
+    .cancelled {
+      color: #dc2626;
+      text-decoration: line-through;
+    }
+
+    .footer {
+      margin-top: 36px;
+      padding-top: 18px;
+      border-top: 1px solid #ddd;
+      color: #666;
+      font-size: 10px;
+      text-align: center;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="invoice">
+
+    <!-- Header -->
+    <div class="top">
+      <div>
+        <div class="brand">FASHIO</div>
+        <div class="mono muted">Built for the future</div>
+      </div>
+
+      <div>
+        <div class="invoice-title">Invoice</div>
+        <div class="mono muted">Invoice No: INV-{{ order.id|stringformat:"04d" }}</div>
+        <div class="mono muted">Order ID: ORD-{{ order.id|stringformat:"04d" }}</div>
+        <div class="mono muted">Invoice Date: {% now "Y.m.d" %}</div>
+      </div>
+    </div>
+
+    <!-- Seller + Customer -->
+    <div class="grid">
+
+      <div class="box">
+        <div class="box-title">Seller Details</div>
+        <div class="strong">FASHIO</div>
+        <div>Kottayam, Kerala, India</div>
+        <div>Email: support@fashio.com</div>
+        <div>Phone: +91 99999 99999</div>
+      </div>
+
+      <div class="box">
+        <div class="box-title">Bill To</div>
+
+        <div class="strong">
+          {{ order.user.fullname|default:order.user.email }}
+        </div>
+
+        <div>{{ order.user.email }}</div>
+
+        {% if order.address %}
+          <div>{{ order.address.name }}</div>
+          <div>Phone: {{ order.address.phone }}</div>
+          <div>{{ order.address.line1 }}</div>
+          <div>
+            {{ order.address.city }},
+            {{ order.address.state }} -
+            {{ order.address.postal_code }}
+          </div>
+          <div>India</div>
+        {% else %}
+          <div class="muted">No address found</div>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <!-- Order Info -->
+    <div class="grid">
+
+      <div class="box">
+        <div class="box-title">Order Details</div>
+        <div>Order Date: {{ order.created_at|date:"Y.m.d" }}</div>
+        <div>Order Time: {{ order.created_at|time:"h:i A" }}</div>
+        <div>Order Status: {{ order.get_order_status_display }}</div>
+      </div>
+
+      <div class="box">
+        <div class="box-title">Payment Details</div>
+        <div>Payment Method: {{ order.get_payment_method_display }}</div>
+        <div>Payment Status: {{ order.get_payment_status_display }}</div>
+      </div>
+
+    </div>
+
+    <!-- Items Table -->
+    <div class="box-title">Product Details</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 35px;">No</th>
+          <th>Product</th>
+          <th style="width: 95px;">Variant</th>
+          <th style="width: 45px;" class="center">Qty</th>
+          <th style="width: 80px;" class="right">Unit</th>
+          <th style="width: 90px;" class="right">Amount</th>
+          <th style="width: 105px;">Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for item in order.items.all %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+
+            <td>
+              <strong>{{ item.product_name }}</strong>
+
+              {% if item.variant and item.variant.sku %}
+                <br>
+                <span class="muted">SKU: {{ item.variant.sku }}</span>
+              {% endif %}
+            </td>
+
+            <td>
+              {% if item.size %}{{ item.size }}{% else %}-{% endif %}
+              {% if item.color %} / {{ item.color }}{% endif %}
+            </td>
+
+            <td class="center">{{ item.quantity }}</td>
+
+            <td class="right">Rs. {{ item.price|floatformat:0 }}</td>
+
+            <td class="right">
+              Rs. {{ item.subtotal|floatformat:0 }}
+            </td>
+
+            <td>
+              {% if item.item_status == "CANCELLED" %}
+                <span class="status status-cancelled">Cancelled</span>
+              {% elif item.item_status == "RETURN_REQUESTED" %}
+                <span class="status status-return">Return Requested</span>
+              {% comment %} {% elif item.item_status == "RETURNED" %}
+                <span class="status status-returned">Returned</span> {% endcomment %}
+              {% else %}
+                <span class="status">Ordered</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Summary -->
+    <div class="summary-wrap">
+      <div class="summary">
+
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <strong>Rs. {{ billable_subtotal|floatformat:0 }}</strong>
+        </div>
+
+        <div class="summary-row">
+          <span>Delivery Fee</span>
+          <strong>
+            {% if display_delivery_fee > 0 %}
+              Rs. {{ display_delivery_fee|floatformat:0 }}
+            {% else %}
+              Free
+            {% endif %}
+          </strong>
+        </div>
+
+        <div class="summary-row">
+          <span>Discount</span>
+          <strong class="negative">- Rs. {{ display_discount_amount|floatformat:0 }}</strong>
+        </div>
+
+        <div class="summary-row">
+          <span>GST and Taxes</span>
+          <strong>Rs. {{ display_tax_amount|floatformat:0 }}</strong>
+        </div>
+
+        {% if cancelled_subtotal > 0 %}
+          <div class="summary-row">
+            <span>Cancelled Amount</span>
+            <strong class="cancelled">Rs. {{ cancelled_subtotal|floatformat:0 }}</strong>
+          </div>
+        {% endif %}
+
+        {% if returned_subtotal > 0 %}
+          <div class="summary-row">
+            <span>Returned Amount</span>
+            <strong class="cancelled">Rs. {{ returned_subtotal|floatformat:0 }}</strong>
+          </div>
+        {% endif %}
+
+        <div class="summary-row summary-total">
+          <span>Total</span>
+          <span>Rs. {{ display_total_amount|floatformat:0 }}</span>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="footer">
+      This is a computer generated invoice. No signature required.
+    </div>
+
+  </div>
+
+</body>
+</html>

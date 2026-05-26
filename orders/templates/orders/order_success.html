@@ -1,0 +1,342 @@
+{% extends 'user_base/base.html' %}
+
+{% block title %}
+Order Confirmed
+{% endblock %}
+
+{% block content %}
+
+<section class="bg-white min-h-screen px-8 md:px-12 py-14">
+
+  <div class="max-w-5xl mx-auto">
+
+    <!-- Top Back Link -->
+    <div class="mb-10">
+      <a href="{% url 'product_list' %}"
+         class="inline-flex items-center gap-3 mono text-[10px] tracking-widest text-black/50 hover:text-black uppercase transition-colors">
+        <span class="text-xl leading-none">←</span>
+        Continue Shopping
+      </a>
+    </div>
+
+    <!-- Main Success Card -->
+    <div class="border border-black/10 bg-white">
+
+      <!-- Header -->
+      <div class="px-6 md:px-10 py-10 border-b border-black/10 text-center">
+
+        <div class="w-16 h-16 bg-black text-white mx-auto mb-6 flex items-center justify-center">
+          <svg class="w-8 h-8"
+               fill="none"
+               stroke="currentColor"
+               stroke-width="2.2"
+               viewBox="0 0 24 24">
+            <path stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+
+        <p class="mono text-[9px] tracking-[.35em] text-black/35 uppercase mb-3">
+          Order Placed
+        </p>
+
+        <h1 class="bebas text-6xl md:text-7xl leading-none text-black tracking-wide mb-4">
+          Thank You
+        </h1>
+
+        <p class="text-sm md:text-base text-black/50 max-w-xl mx-auto leading-relaxed">
+          Your order has been placed successfully. We will start processing it soon.
+        </p>
+
+      </div>
+
+      <!-- Order Basic Info -->
+      <div class="grid grid-cols-1 md:grid-cols-3 border-b border-black/10">
+
+        <div class="p-6 border-b md:border-b-0 md:border-r border-black/10">
+          <p class="mono text-[9px] tracking-[.25em] text-black/35 uppercase mb-2">
+            Order ID
+          </p>
+          <p class="mono text-sm font-bold text-black">
+            #{{ order.id }}
+          </p>
+        </div>
+
+        <div class="p-6 border-b md:border-b-0 md:border-r border-black/10">
+          <p class="mono text-[9px] tracking-[.25em] text-black/35 uppercase mb-2">
+            Payment Method
+          </p>
+          <p class="mono text-sm font-bold text-black uppercase">
+            {{ order.payment_method }}
+          </p>
+        </div>
+
+        <div class="p-6">
+          <p class="mono text-[9px] tracking-[.25em] text-black/35 uppercase mb-2">
+            Total Amount
+          </p>
+          <p class="mono text-sm font-bold text-black">
+            ₹{{ order.total_amount|floatformat:0 }}
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Content Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-[1.2fr_.8fr]">
+
+        <!-- Left: Order Items -->
+        <div class="p-6 md:p-8 border-b lg:border-b-0 lg:border-r border-black/10">
+
+          <div class="flex items-center gap-3 mb-7">
+            <div class="w-1 h-7 bg-black"></div>
+            <h2 class="bebas text-4xl text-black leading-none">
+              Ordered Items
+            </h2>
+          </div>
+
+          <div class="space-y-5">
+
+            {% for item in order.items.all %}
+            <div class="flex gap-4 border border-black/10 p-4">
+
+              <!-- Product Image -->
+              <a href="{% if item.product %}{% url 'product_detail' item.product.id %}{% else %}#{% endif %}"
+                 class="w-20 h-20 bg-neutral-100 border border-black/10 overflow-hidden shrink-0">
+
+                {% if item.variant and item.variant.images.first %}
+                  <img src="{{ item.variant.images.first.image.url }}"
+                       alt="{{ item.product_name }}"
+                       class="w-full h-full object-cover">
+                {% else %}
+                  <div class="w-full h-full flex items-center justify-center">
+                    <span class="mono text-[8px] tracking-widest text-black/30">
+                      NO IMAGE
+                    </span>
+                  </div>
+                {% endif %}
+
+              </a>
+
+              <!-- Product Info -->
+              <div class="flex-1 min-w-0">
+
+                <p class="text-sm font-medium text-black leading-snug">
+                  {{ item.product_name }}
+                </p>
+
+                <div class="flex flex-wrap gap-2 mt-2">
+                  {% if item.size %}
+                  <span class="mono text-[8px] tracking-widest border border-black/10 px-2 py-1 text-black/40 uppercase">
+                    Size: {{ item.size }}
+                  </span>
+                  {% endif %}
+
+                  {% if item.color %}
+                  <span class="mono text-[8px] tracking-widest border border-black/10 px-2 py-1 text-black/40 uppercase">
+                    Color: {{ item.color }}
+                  </span>
+                  {% endif %}
+
+                  <span class="mono text-[8px] tracking-widest border border-black/10 px-2 py-1 text-black/40 uppercase">
+                    Qty: {{ item.quantity }}
+                  </span>
+                </div>
+
+                <p class="mono text-[10px] tracking-widest text-black/35 mt-3">
+                  ₹{{ item.price|floatformat:0 }} × {{ item.quantity }}
+                </p>
+
+              </div>
+
+              <!-- Item Total -->
+              <div class="text-right shrink-0">
+                <p class="mono text-sm font-bold text-black">
+                  ₹{{ item.subtotal|floatformat:0 }}
+                </p>
+              </div>
+
+            </div>
+            {% empty %}
+
+            <div class="border border-black/10 p-8 text-center">
+              <p class="mono text-[10px] tracking-widest text-black/35 uppercase">
+                No items found
+              </p>
+            </div>
+
+            {% endfor %}
+
+          </div>
+
+        </div>
+
+        <!-- Right: Summary + Address -->
+        <div class="p-6 md:p-8">
+
+          <!-- Delivery Address -->
+          {% if order.address %}
+          <div class="mb-8">
+
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-1 h-7 bg-black"></div>
+              <h2 class="bebas text-4xl text-black leading-none">
+                Delivery
+              </h2>
+            </div>
+
+            <div class="border border-black/10 p-5">
+              <p class="text-black font-semibold mb-2">
+                {{ order.address.name }}
+              </p>
+
+              <p class="text-sm text-black/55 leading-relaxed">
+                {{ order.address.line1 }}<br>
+                {{ order.address.city }},
+                {{ order.address.get_state_display }} -
+                {{ order.address.postal_code }}<br>
+                India<br>
+                +91 {{ order.address.phone }}
+              </p>
+            </div>
+
+          </div>
+          {% endif %}
+
+          <!-- Payment Status -->
+          <div class="mb-8">
+
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-1 h-7 bg-black"></div>
+              <h2 class="bebas text-4xl text-black leading-none">
+                Payment
+              </h2>
+            </div>
+
+            <div class="border border-black/10 p-5 bg-neutral-50">
+              <div class="flex items-center justify-between mb-4">
+                <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
+                  Method
+                </span>
+                <span class="mono text-[10px] tracking-widest text-black font-bold uppercase">
+                  {{ order.payment_method }}
+                </span>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
+                  Status
+                </span>
+
+                {% if order.payment_status == "PENDING" %}
+                  <span class="mono text-[10px] tracking-widest text-black font-bold uppercase">
+                    Pending
+                  </span>
+                {% elif order.payment_status == "PAID" %}
+                  <span class="mono text-[10px] tracking-widest text-green-700 font-bold uppercase">
+                    Paid
+                  </span>
+                {% else %}
+                  <span class="mono text-[10px] tracking-widest text-red-600 font-bold uppercase">
+                    {{ order.payment_status }}
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Price Summary -->
+          <div>
+
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-1 h-7 bg-black"></div>
+              <h2 class="bebas text-4xl text-black leading-none">
+                Summary
+              </h2>
+            </div>
+
+            <div class="border border-black/10 p-5 space-y-4">
+
+              <div class="flex items-center justify-between">
+                <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
+                  Subtotal
+                </span>
+                <span class="mono text-sm text-black">
+                  ₹{{ order.subtotal|floatformat:0 }}
+                </span>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
+                  Discount
+                </span>
+                <span class="mono text-sm text-green-700">
+                  - ₹{{ order.discount_amount|floatformat:0 }}
+                </span>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
+                  Tax
+                </span>
+                <span class="mono text-sm text-black">
+                  ₹{{ order.tax_amount|floatformat:0 }}
+                </span>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
+                  Shipping
+                </span>
+                <span class="mono text-sm text-black">
+                  ₹{{ order.delivery_fee|floatformat:0 }}
+                </span>
+              </div>
+
+              <div class="border-t border-black/10 pt-5 flex items-center justify-between">
+                <span class="bebas text-3xl text-black">
+                  Total
+                </span>
+                <span class="mono text-2xl font-bold text-black">
+                  ₹{{ order.total_amount|floatformat:0 }}
+                </span>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="px-6 md:px-8 py-6 border-t border-black/10 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+
+        <p class="mono text-[9px] tracking-widest text-black/35 uppercase">
+          A confirmation message will be sent to your registered email or phone.
+        </p>
+
+        <div class="flex items-center gap-3">
+          <a href="{% url 'product_list' %}"
+             class="mono text-[10px] tracking-widest px-5 py-3 border border-black/15 text-black/50 hover:text-black hover:border-black/40 uppercase transition-colors">
+            Shop More
+          </a>
+
+          <a href="{% url 'user_orders' %}"
+             class="mono text-[10px] tracking-widest px-5 py-3 bg-black text-white hover:bg-black/80 uppercase transition-colors">
+            My Orders
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+{% endblock %}

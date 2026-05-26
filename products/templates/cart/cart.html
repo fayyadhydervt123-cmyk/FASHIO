@@ -1,7 +1,7 @@
 {% extends 'user_base/base.html' %}
 
 {% block title %}
-Cart | FASHIO
+SHOPPING BAG | FASHIO
 {% endblock %}
 
 {% block extra_css %}
@@ -53,7 +53,7 @@ Cart | FASHIO
     <span class="mono text-[10px] tracking-widest text-black/25">/</span>
 
     <span class="mono text-[10px] tracking-widest text-black/35 uppercase">
-      CART
+      SHOPPING BAG
     </span>
   </div>
 
@@ -63,18 +63,14 @@ Cart | FASHIO
       <div class="w-1 h-12 bg-black"></div>
 
       <div>
-        <p class="mono text-[10px] tracking-[.3em] text-black/40 uppercase mb-2">
-          SHOPPING BAG
-        </p>
-
         <h1 class="bebas text-black text-6xl md:text-8xl leading-none tracking-wide">
-          MY CART
+          MY SHOPPING BAG
         </h1>
       </div>
     </div>
 
     <p class="mono text-[10px] tracking-widest text-black/40 uppercase">
-      {{ total_items }} ITEM{% if total_items != 1 %}S{% endif %} IN YOUR CART
+      {{ total_items }} ITEM{% if total_items != 1 %}S{% endif %} IN YOUR SHOPPING BAG
     </p>
   </div>
 
@@ -369,11 +365,11 @@ Cart | FASHIO
   <div class="border border-black/10 py-24 px-6 text-center">
 
     <h2 class="bebas text-5xl md:text-7xl text-black leading-none mb-4">
-      EMPTY CART
+      YOUR SHOPPING BAG IS EMPTY
     </h2>
 
     <p class="mono text-[10px] tracking-widest text-black/40 uppercase mb-8">
-      Your cart is waiting for something good.
+      Your shopping bag is waiting for something good.
     </p>
 
     <a href="{% url 'product_list' %}"

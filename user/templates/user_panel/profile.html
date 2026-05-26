@@ -154,6 +154,37 @@
   
   .btn-outline{border:1px solid #d4d4d4;background:transparent;color:#111;padding:9px 18px;letter-spacing:.06em;font-weight:700;cursor:pointer;font-family:'Space Mono',monospace;display:flex;align-items:center;gap:7px;}
   .sidebar{border-right:1px solid #e5e5e5;padding:40px 24px;}
+
+
+.item-status-badge{
+  display:inline-block;
+  margin-left:6px;
+  font-size:8px;
+  letter-spacing:.08em;
+  padding:1px 6px;
+  font-weight:700;
+  vertical-align:middle;
+}
+
+.item-status-cancelled{
+  background:rgba(239,68,68,.10);
+  color:#dc2626;
+  border:1px solid rgba(239,68,68,.30);
+}
+
+.item-status-return-requested{
+  background:rgba(37,99,235,.10);
+  color:#2563eb;
+  border:1px solid rgba(37,99,235,.30);
+}
+
+.item-status-returned{
+  background:rgba(22,163,74,.10);
+  color:#16a34a;
+  border:1px solid rgba(22,163,74,.30);
+}
+
+
 </style>
 {% endblock %}
 
@@ -177,9 +208,9 @@
     <div class="profile-info">
         <div class="profile-name">{{ user.fullname }}</div>
         <div class="profile-btns">
-        <a href="{% url 'user_edit_profile' %}" ><button class="btn-outline">✎ &nbsp;Edit Profile</button></a>
-        <button class="btn-outline">▣ &nbsp;Wallet</button>
-        <button class="btn-logout" onclick="openModal('logout')">↪ &nbsp;Logout</button>
+        <a href="{% url 'user_edit_profile' %}" ><button class="inline-flex items-center justify-center gap-2 border border-black/15 px-8 py-3 mono text-[10px] tracking-widest font-bold text-black hover:bg-neutral-100 transition-colors">✎ &nbsp;Edit Profile</button></a>
+        <button class="inline-flex items-center justify-center gap-2 border border-black/15 px-8 py-3 mono text-[10px] tracking-widest font-bold text-black hover:bg-neutral-100 transition-colors">▣ &nbsp;Wallet</button>
+        <button class="inline-flex items-center justify-center gap-2 border border-black/15 px-8 py-3 mono text-[10px] tracking-widest font-bold text-red-600 hover:bg-red-50 transition-colors" onclick="openModal('logout')">↪ &nbsp;Logout</button>
         </div>
     </div>
     </div>
@@ -256,109 +287,253 @@
         <!-- My Orders -->
         <div class="section-header">
         <div class="section-header-title"><span>≡</span> My orders</div>
-        <button class="btn-see-all">SEE ALL</button>
+        <a href="{% url 'user_orders' %}" ><button class="btn-see-all">SEE ALL</button></a>
         </div>
         <table class="orders-table">
         <thead>
-            <tr>
+          <tr>
+            <th>ORDER ID</th>
             <th>PRODUCT DETAILS</th>
-            <th>DELIVERY DATE</th>
             <th>AMOUNT</th>
             <th>STATUS</th>
-            <th>ACTION</th>
-            </tr>
+            <th>ORDER DATE</th>
+          </tr>
         </thead>
+
         <tbody>
+          {% for order in orders %}
             <tr>
-            <td class="prod">CARGO UNIT<br>GREY</td>
-            <td class="date">2024.10.12</td>
-            <td>£450.00</td>
-            <td><span class="badge badge-d">DELIVERED</span></td>
-            <td><button class="btn-view">VIEW</button></td>
+
+              <!-- Order ID -->
+              <td class="prod">
+                #ORD-{{ order.id|stringformat:"04d" }}
+              </td>
+
+              <!-- Product Details -->
+              <td class="prod">
+                {% for item in order.items.all|slice:":2" %}
+                <span>
+                  {{ item.product_name }}
+
+                  {% if item.item_status == "CANCELLED" and order.has_active_items %}
+                    <span class="item-status-badge item-status-cancelled">
+                      CANCELLED
+                    </span>
+
+                  {% elif item.item_status == "RETURN_REQUESTED"%}
+                    <span class="item-status-badge item-status-return-requested">
+                      RETURN REQUESTED
+                    </span>
+
+                  {% elif item.item_status == "RETURNED"%}
+                    <span class="item-status-badge item-status-returned">
+                      RETURNED
+                    </span>
+                  {% endif %}
+                </span>
+
+                {% if item.size or item.color %}
+                  <br>
+                  <span style="color:#777;font-size:9px;font-weight:400;">
+                    {% if item.size %}{{ item.size }}{% endif %}
+                    {% if item.size and item.color %} / {% endif %}
+                    {% if item.color %}{{ item.color }}{% endif %}
+                  </span>
+                {% endif %}
+
+                {% if not forloop.last %}
+                  <br><br>
+                {% endif %}
+              {% endfor %}
+
+                {% if order.items.count > 2 %}
+                  <br>
+                  <span style="color:#777;font-size:9px;font-weight:400;">
+                    + {{ order.items.count|add:"-2" }} more
+                  </span>
+                {% endif %}
+              </td>
+
+              <!-- Amount -->
+              <td>
+                ₹{{ order.display_total_amount|floatformat:0 }}
+
+                {% comment %} {% if order.cancelled_subtotal > 0 %}
+                  <br>
+                  <span style="color:#dc2626;font-size:9px;text-decoration:line-through;">
+                    ₹{{ order.cancelled_subtotal|floatformat:0 }} cancelled
+                  </span>
+                {% endif %} {% endcomment %}
+              </td>
+
+              <!-- Status -->
+              <td>
+                {% if order.order_status == "CANCELLED" %}
+                  <span class="badge badge-c">CANCELLED</span>
+
+                {% elif order.order_status == "DELIVERED" %}
+                  <span class="badge badge-d">DELIVERED</span>
+
+                {% elif order.order_status == "SHIPPED" %}
+                  <span style="display:inline-block;font-size:9.5px;letter-spacing:.07em;padding:2px 9px;background:rgba(37,99,235,.10);color:#2563eb;border:1px solid rgba(37,99,235,.35);">
+                    SHIPPED
+                  </span>
+
+                {% elif order.order_status == "OUT_FOR_DELIVERY" %}
+                  <span style="display:inline-block;font-size:9.5px;letter-spacing:.07em;padding:2px 9px;background:rgba(14,165,233,.10);color:#0284c7;border:1px solid rgba(14,165,233,.35);">
+                    OUT FOR DELIVERY
+                  </span>
+
+                {% else %}
+                  <span class="badge badge-p">
+                    {{ order.get_order_status_display|upper }}
+                  </span>
+                {% endif %}
+              </td>
+
+              <!-- Order Date -->
+              <td class="date">
+                {{ order.created_at|date:"Y.m.d" }}
+              </td>
+
             </tr>
+
+          {% empty %}
             <tr>
-            <td class="prod">VOID TEK<br>JACKET</td>
-            <td class="date">2024.11.05</td>
-            <td>£1,290.00</td>
-            <td><span class="badge badge-p">PROCESSING</span></td>
-            <td><button class="btn-view">VIEW</button></td>
+              <td colspan="5" style="text-align:center;padding:40px 14px;color:#777;font-size:10px;letter-spacing:.14em;">
+                NO ORDERS FOUND
+              </td>
             </tr>
-            <tr>
-            <td class="prod">TECH CARGO<br>V2</td>
-            <td class="date">2024.08.30</td>
-            <td>£85.00</td>
-            <td><span class="badge badge-c">CANCELLED</span></td>
-            <td><button class="btn-view">VIEW</button></td>
-            </tr>
+          {% endfor %}
         </tbody>
-        </table>
+      </table>
 
         <!-- Wishlist -->
         <div class="section-header">
-        <div class="section-header-title"><span>♡</span> Wishlist</div>
-        <button class="btn-see-all">SEE ALL</button>
+        <div class="section-header-title"><span>♡</span>Favourites</div>
+        <a href="{% url 'wishlist_page' %}" ><button class="btn-see-all">SEE ALL</button></a>
         </div>
-        <div class="wishlist-grid">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-5 md:gap-6">
 
-        <!-- Card 1 – Cargo Shirt (dark grey shirt image recreation) -->
-        <div class="wish-card">
-            <div class="wish-img">
-            <button class="wish-close">✕</button>
-            <!-- Cargo shirt SVG recreation -->
-            <svg width="155" height="190" viewBox="0 0 155 190" fill="none">
-                <!-- body -->
-                <rect x="28" y="55" width="99" height="128" rx="2" fill="#3a3a3a"/>
-                <!-- left sleeve -->
-                <polygon points="0,30 28,55 28,100 0,85" fill="#3a3a3a"/>
-                <!-- right sleeve -->
-                <polygon points="155,30 127,55 127,100 155,85" fill="#3a3a3a"/>
-                <!-- collar -->
-                <path d="M55,55 Q77,40 100,55" stroke="#555" stroke-width="2" fill="none"/>
-                <!-- button placket -->
-                <rect x="74" y="55" width="7" height="128" fill="#333"/>
-                <!-- pocket left -->
-                <rect x="38" y="68" width="28" height="24" rx="1" fill="#333" stroke="#444" stroke-width="1"/>
-                <!-- pocket right -->
-                <rect x="89" y="68" width="28" height="24" rx="1" fill="#333" stroke="#444" stroke-width="1"/>
-                <!-- shirt bottom raw edge -->
-                <rect x="28" y="176" width="99" height="7" rx="1" fill="#2e2e2e"/>
-            </svg>
+        {% for item in wishlist_items %}
+
+        <div class="product-card bg-white border border-black/15 overflow-hidden reveal reveal-d1">
+
+          <!-- Product Image -->
+          <a href="{% url 'product_detail' item.product.id %}">
+            <div class="relative h-64 md:h-72 overflow-hidden bg-neutral-100">
+
+              {% if item.thumbnail %}
+                <img src="{{ item.thumbnail }}"
+                    alt="{{ item.product.name }}"
+                    class="product-img w-full h-full object-cover"/>
+              {% else %}
+                <div class="w-full h-full flex items-center justify-center bg-neutral-100">
+                  <span class="mono text-[10px] tracking-widest text-black/30">
+                    NO IMAGE
+                  </span>
+                </div>
+              {% endif %}
+
+              {% if item.variant.stock <= 0 %}
+                <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  <span class="bebas text-white/80 text-3xl tracking-widest">
+                    SOLD OUT
+                  </span>
+                </div>
+              {% endif %}
+
+              <!-- Remove wishlist -->
+              <form method="POST"
+                    action="{% url 'remove_wishlist_item' item.id %}"
+                    class="absolute top-3 right-3 z-10">
+                {% csrf_token %}
+
+                <input type="hidden" name="variant_id" value="{{ item.variant.id }}">
+
+                <button type="submit"
+                        class="text-white bg-black/50 w-4 h-4 flex items-center justify-center ">
+                  ✕
+                </button>
+              </form>
+
             </div>
-            <div class="wish-footer">
-            <span class="wish-name">Cargo Shirt</span>
-            <span class="wish-price">£380</span>
+          </a>
+
+          <!-- Product Info -->
+          <div class="p-4">
+
+            <p class="mono text-black/40 text-[9px] tracking-widest mb-1.5">
+              {% if item.product.subcategory %}
+                {{ item.product.subcategory.name|upper }}
+              {% else %}
+                PRODUCT
+              {% endif %}
+            </p>
+
+            <a href="{% url 'product_detail' item.product.id %}"
+              class="flex items-start justify-between mb-1">
+              <p class="text-black text-sm font-medium leading-snug">
+                {{ item.product.name }}
+              </p>
+
+              <div class="text-right shrink-0 ml-2">
+                <p class="mono text-black text-sm font-bold">
+                  ₹{{ item.display_price|floatformat:0 }}
+                </p>
+
+                {% if item.variant.discount > 0 %}
+                  <p class="mono text-black/35 text-[10px] line-through">
+                    ₹{{ item.variant.price|floatformat:0 }}
+                  </p>
+                {% endif %}
+              </div>
+            </a>
+
+            <!-- Variant pills -->
+            <div class="flex items-center gap-1 mb-3 mt-2">
+              <span class="mono text-[8px] tracking-wider px-1.5 py-0.5 border border-black/15 text-black/40">
+                {{ item.variant.size|default:"SIZE" }}
+              </span>
+
+              <span class="mono text-[8px] tracking-wider px-1.5 py-0.5 border border-black/15 text-black/40">
+                {{ item.variant.color|default:"COLOR" }}
+              </span>
             </div>
-            <button class="btn-cart">🛒 &nbsp;MOVE TO CART</button>
+
+            {% if item.variant.stock > 0 %}
+              <form method="POST" action="{% url 'add_to_cart' %}">
+                {% csrf_token %}
+
+                <input type="hidden" name="variant_id" value="{{ item.variant.id }}">
+                <input type="hidden" name="quantity" value="1">
+
+                <button type="submit"
+                        class="w-full mono text-[10px] border border-black/15 tracking-widest py-3 bg-white text-black font-bold hover:bg-gray-100 active:scale-[0.98] transition-all">
+                  ADD TO SHOPPING BAG
+                </button>
+              </form>
+            {% else %}
+              <button disabled
+                      class="w-full mono text-[10px] border border-black/10 tracking-widest py-3 bg-white text-black/30 font-bold cursor-not-allowed">
+                SOLD OUT
+              </button>
+            {% endif %}
+
+          </div>
         </div>
 
-        <!-- Card 2 – Oversized Tee (cream/beige long sleeve) -->
-        <div class="wish-card">
-            <div class="wish-img">
-            <button class="wish-close">✕</button>
-            <!-- Oversized tee SVG recreation -->
-            <svg width="155" height="175" viewBox="0 0 155 175" fill="none">
-                <!-- body -->
-                <rect x="28" y="50" width="99" height="118" rx="2" fill="#d4c89a"/>
-                <!-- left sleeve (long) -->
-                <polygon points="0,28 28,50 28,108 0,115" fill="#d4c89a"/>
-                <!-- right sleeve (long) -->
-                <polygon points="155,28 127,50 127,108 155,115" fill="#d4c89a"/>
-                <!-- collar neckline -->
-                <path d="M55,50 Q77,36 100,50" stroke="#bfb487" stroke-width="1.5" fill="none"/>
-                <!-- subtle seam -->
-                <line x1="28" y1="50" x2="127" y2="50" stroke="#bfb487" stroke-width="1"/>
-                <!-- small tag label at top center -->
-                <rect x="72" y="49" width="11" height="7" rx="1" fill="#c8bc8e"/>
-            </svg>
-            </div>
-            <div class="wish-footer">
-            <span class="wish-name">Oversized Tee</span>
-            <span class="wish-price">£210</span>
-            </div>
-            <button class="btn-cart">🛒 &nbsp;MOVE TO CART</button>
+        {% empty %}
+
+        <div class="col-span-full py-20 text-center">
+          <p class="mono text-black/40 text-[10px] tracking-widest">
+            NO FAVOURITES
+          </p>
         </div>
 
-        </div>
+        {% endfor %}
+
+      </div>
     </div>
     </div>
 </div>

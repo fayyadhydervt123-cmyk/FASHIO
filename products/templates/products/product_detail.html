@@ -65,6 +65,7 @@
     #zoom-container:hover .zoom-image {
     transform: scale(1.5);
     }
+
 </style>
 {% endblock %}
 
@@ -145,7 +146,6 @@
           <p class="mono text-[10px] tracking-widest text-black/60 uppercase">
             Product Details
           </p>
-          <span class="mono text-black/40 text-xs">+</span>
         </div>
 
         <div class="px-4 py-4 space-y-3">
@@ -155,7 +155,7 @@
                 <p class="mono text-[9px] tracking-widest text-black/35 uppercase">
                   {{ key|title }}
                 </p>
-                <p class="text-sm text-black/60 text-right">
+                <p class="mono text-[10px] tracking-widest text-black/50 text-right">
                   {{ value }}
                 </p>
               </div>
@@ -226,6 +226,46 @@
         </p>
         </div>
 
+
+            <!-- Colors -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between mb-3">
+          <p class="mono text-[10px] tracking-widest text-black/50 uppercase">
+            AVAILABLE COLORS
+          </p>
+        </div>
+
+        <div class="flex items-start gap-4">
+          {% for color in available_colors %}
+            <button type="button"
+                    data-color="{{ color.name }}"
+                    title="{{ color.name }}"
+                    class="variant-color-btn flex flex-col items-center gap-2 group">
+
+              <span class="color-dot w-9 h-9 border block
+                {% if default_variant and default_variant.color == color.name %}
+                  border-black
+                {% else %}
+                  border-black/20
+                {% endif %}"
+                style="background: {{ color.hex|default:'#ddd' }};">
+              </span>
+
+              <span class="color-name mono text-[8px] tracking-widest uppercase
+                {% if default_variant and default_variant.color == color.name %}
+                  text-black
+                {% else %}
+                  text-black/35
+                {% endif %}">
+                {{ color.name }}
+              </span>
+
+            </button>
+          {% endfor %}
+        </div>
+      </div>
+
+
       <!-- Sizes -->
     <div class="mb-8">
         <div class="flex items-center justify-between mb-3">
@@ -250,47 +290,10 @@
         </div>
         </div>
 
-      <!-- Colors -->
-<div class="mb-8">
-  <div class="flex items-center justify-between mb-3">
-    <p class="mono text-[10px] tracking-widest text-black/50 uppercase">
-      AVAILABLE COLORS
-    </p>
-  </div>
-
-  <div class="flex items-start gap-4">
-    {% for color in available_colors %}
-      <button type="button"
-              data-color="{{ color.name }}"
-              title="{{ color.name }}"
-              class="variant-color-btn flex flex-col items-center gap-2 group">
-
-        <span class="color-dot w-9 h-9 border block
-          {% if default_variant and default_variant.color == color.name %}
-            border-black
-          {% else %}
-            border-black/20
-          {% endif %}"
-          style="background: {{ color.hex|default:'#ddd' }};">
-        </span>
-
-        <span class="color-name mono text-[8px] tracking-widest uppercase
-          {% if default_variant and default_variant.color == color.name %}
-            text-black
-          {% else %}
-            text-black/35
-          {% endif %}">
-          {{ color.name }}
-        </span>
-
-      </button>
-    {% endfor %}
-  </div>
-</div>
 
       <!-- Description Box -->
       <div class="border-l border-black/20 pl-6 mb-8">
-        <p class="text-black/60 text-sm leading-relaxed">
+        <p class="mono text-[12px] tracking-widest text-black/50 ">
           {{ product.description }}
         </p>
       </div>
@@ -391,7 +394,7 @@
                         border-black/15 text-black/30 cursor-not-allowed
                     {% endif %}">
                 {% if default_variant and default_variant.stock > 0 %}
-                ADD TO CART
+                ADD TO SHOPPING BAG
                 {% else %}
                 SOLD OUT
                 {% endif %}
@@ -416,7 +419,7 @@
                       border-black/15 text-black/30 cursor-not-allowed
                   {% endif %}">
               {% if default_variant and default_variant.stock > 0 %}
-                ADD TO WISHLIST
+                ADD TO FAVOURITES
               {% else %}
                 SOLD OUT
               {% endif %}
@@ -683,6 +686,64 @@
     return variants.find(v => v.size === selectedSize && v.color === selectedColor);
   }
 
+  function filterAvailableOptions() {
+  const colorButtons = document.querySelectorAll('.variant-color-btn');
+  const sizeButtons = document.querySelectorAll('.variant-size-btn');
+
+  const colorsForSelectedSize = new Set(
+    variants
+      .filter(v => v.size === selectedSize)
+      .map(v => v.color)
+  );
+
+  const sizesForSelectedColor = new Set(
+    variants
+      .filter(v => v.color === selectedColor)
+      .map(v => v.size)
+  );
+
+  colorButtons.forEach(btn => {
+    const color = btn.dataset.color;
+    const isAvailable = colorsForSelectedSize.has(color);
+
+    const dot = btn.querySelector('.color-dot');
+    const name = btn.querySelector('.color-name');
+
+    btn.classList.remove('hidden');
+    btn.disabled = !isAvailable;
+
+    // no blur, no opacity, only not-allowed cursor
+    btn.classList.toggle('cursor-not-allowed', !isAvailable);
+    btn.classList.toggle('pointer-events-none', !isAvailable);
+
+    if (dot) {
+      dot.classList.remove('grayscale', 'opacity-35');
+    }
+
+    if (name) {
+      name.classList.toggle('line-through', !isAvailable);
+      name.classList.toggle('text-black/35', !isAvailable);
+      name.classList.toggle('text-black', isAvailable);
+    }
+  });
+
+  sizeButtons.forEach(btn => {
+    const size = btn.dataset.size;
+    const isAvailable = sizesForSelectedColor.has(size);
+
+    btn.classList.remove('hidden');
+    btn.disabled = !isAvailable;
+
+    // no blur, no opacity, only cross through word
+    btn.classList.toggle('cursor-not-allowed', !isAvailable);
+    btn.classList.toggle('pointer-events-none', !isAvailable);
+    btn.classList.toggle('line-through', !isAvailable);
+
+    // keep text visible
+    btn.classList.toggle('text-black/45', !isAvailable);
+  });
+}
+
   function updateMainImage(imageUrl) {
     const mainImage = document.getElementById('main-product-image');
 
@@ -799,7 +860,7 @@
     if (addToCartBtn) {
       if (Number(variant.stock) > 0) {
         addToCartBtn.disabled = false;
-        addToCartBtn.textContent = 'ADD TO CART';
+        addToCartBtn.textContent = 'ADD TO SHOPPING BAG';
         addToCartBtn.className = 'w-full mono text-[11px] tracking-[.35em] bg-black text-white py-4 font-bold hover:bg-black/80 active:scale-[0.98] transition-all';
       } else {
         addToCartBtn.disabled = true;
@@ -851,6 +912,7 @@
     if (variant.images && variant.images.length > 0) {
       updateMainImage(variant.images[0]);
     }
+    filterAvailableOptions();
     updateQuantityControls(variant);
     renderThumbnails(variant);
   }
@@ -951,7 +1013,7 @@
     }
 
     if (selectedVariant) {
-    updateQuantityControls(selectedVariant);
+      updateVariantUI(selectedVariant);
     }
 
     const detailAddToCartForm = document.getElementById('detail-add-to-cart-form');
@@ -1017,7 +1079,7 @@
     });
   }
 
-  const detailAddToWishlistForm = document.getElementById('detail-add-to-wishlist-form');
+const detailAddToWishlistForm = document.getElementById('detail-add-to-wishlist-form');
 const wishlistToast = document.getElementById('cart-toast');
 const wishlistToastMessage = document.getElementById('cart-toast-message');
 

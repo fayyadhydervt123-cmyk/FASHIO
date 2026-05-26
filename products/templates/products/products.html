@@ -27,7 +27,7 @@
       >
       {% if query %}
         <a href="{% url 'products' %}"
-           class="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-sm">✕</a>
+           class="absolute top-1/2 -translate-y-1/ text-white/40 hover:text-white text-sm">✕</a>
       {% endif %}
     </div>
 
@@ -66,9 +66,9 @@
         <select name="price"
                 class="bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-1.5 outline-none">
           <option value="">All</option>
-          <option value="under_200" {% if price_range == 'under_200' %}selected{% endif %}>Under $200</option>
-          <option value="200_400"   {% if price_range == '200_400'   %}selected{% endif %}>$200 – $400</option>
-          <option value="above_400" {% if price_range == 'above_400' %}selected{% endif %}>Above $400</option>
+          <option value="under_200" {% if price_range == 'under_200' %}selected{% endif %}>Under ₹200</option>
+          <option value="200_400"   {% if price_range == '200_400'   %}selected{% endif %}>₹200 – ₹400</option>
+          <option value="above_400" {% if price_range == 'above_400' %}selected{% endif %}>Above ₹400</option>
         </select>
       </div>
 
@@ -134,7 +134,7 @@
       </div>
 
       <!-- Price -->
-      <span class="font-mono text-sm text-gray-300">${{ product.base_price }}</span>
+      <span class="font-mono text-sm text-gray-300">₹{{ product.base_price }}</span>
 
       <!-- Stock -->
       <span class="font-mono text-sm {% if product.total_stock == 0 %}text-red-500{% else %}text-gray-400{% endif %}">

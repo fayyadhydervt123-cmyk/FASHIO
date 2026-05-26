@@ -1,0 +1,493 @@
+{% extends 'admin_base/base.html' %}
+{% block title %}Inventory{% endblock %}
+
+{% block content %}
+<div class="p-8 max-w-screen-xl mx-auto">
+
+  <!-- Top Bar -->
+  <div class="flex items-start justify-between mb-8">
+    <div>
+      <h1 class="mono text-white text-4xl font-bold tracking-tight">
+        Inventory Management
+      </h1>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+
+    <!-- Total Products -->
+    <div class="bg-[#141414] border border-white/10 px-6 py-6">
+      <p class="mono text-xs text-white/35 tracking-widest mb-4 uppercase">
+        Total Products
+      </p>
+
+      <div class="flex items-center justify-between">
+        <h2 class="mono text-white text-3xl font-bold">
+          {{ total_products|default:0 }}
+        </h2>
+
+        <div class="w-11 h-11 bg-white/5 border border-white/10 flex items-center justify-center">
+          <span class="text-xl">📦</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Out Of Stock -->
+    <div class="bg-[#141414] border border-white/10 px-6 py-6">
+      <p class="mono text-xs text-white/35 tracking-widest mb-4 uppercase">
+        Out Of Stock
+      </p>
+
+      <div class="flex items-center justify-between">
+        <h2 class="mono text-red-400 text-3xl font-bold">
+          {{ out_of_stock_count|default:0 }}
+        </h2>
+
+        <div class="w-11 h-11 bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+          <span class="text-xl">⊘</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Low Stock -->
+    <div class="bg-[#141414] border border-white/10 px-6 py-6">
+      <p class="mono text-xs text-white/35 tracking-widest mb-4 uppercase">
+        Low Stock
+      </p>
+
+      <div class="flex items-center justify-between">
+        <h2 class="mono text-orange-400 text-3xl font-bold">
+          {{ low_stock_count|default:0 }}
+        </h2>
+
+        <div class="w-11 h-11 bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
+          <span class="text-xl">⚠</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Search + Filters -->
+  <form method="GET" action="">
+
+    <div class="flex flex-col lg:flex-row gap-4 mb-6">
+
+      <!-- Search -->
+      <div class="relative flex-1">
+        <input
+          type="text"
+          name="q"
+          value="{{ query }}"
+          placeholder="Search products..."
+          class="w-full bg-black border border-white/10 px-4 py-3 pl-10 text-sm text-white placeholder-[#2e2e2e] outline-none focus:border-white/30 transition-colors"
+        >
+
+        <svg class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-white/35"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2"
+             viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M21 21l-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+
+        {% if query %}
+          <a href="{% url 'inventory_list' %}"
+             class="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-sm">
+            ✕
+          </a>
+        {% endif %}
+      </div>
+
+      <!-- Stock Filter -->
+      <select name="stock"
+              class="bg-[#111] border border-white/10 text-white text-xs px-4 py-3 outline-none min-w-[180px]">
+        <option value="">All Stock Levels</option>
+        <option value="in_stock" {% if stock_filter == 'in_stock' %}selected{% endif %}>
+          In Stock
+        </option>
+        <option value="low_stock" {% if stock_filter == 'low_stock' %}selected{% endif %}>
+          Low Stock
+        </option>
+        <option value="out_of_stock" {% if stock_filter == 'out_of_stock' %}selected{% endif %}>
+          Out Of Stock
+        </option>
+      </select>
+
+      <!-- Category Filter -->
+      <select name="category"
+              class="bg-[#111] border border-white/10 text-white text-xs px-4 py-3 outline-none min-w-[180px]">
+        <option value="">All Categories</option>
+
+        {% for category in categories %}
+          <option value="{{ category.id }}"
+                  {% if category_filter == category.id|stringformat:'s' %}selected{% endif %}>
+            {{ category.name }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <!-- Apply -->
+      <button type="submit"
+              class="mono bg-white text-black text-xs font-bold tracking-widest px-6 py-3 hover:bg-white/80 transition-colors">
+        Filter
+      </button>
+
+      <!-- Reset -->
+      <a href="{% url 'inventory_list' %}"
+         class="mono border border-white/10 text-white/60 text-xs font-bold tracking-widest px-6 py-3 hover:text-white hover:border-white/30 transition-colors text-center">
+        Reset
+      </a>
+
+    </div>
+
+  </form>
+
+  <!-- Table Panel -->
+  <div class="border border-white/10 rounded-sm overflow-hidden">
+
+    <!-- Table Header -->
+    <div class="grid grid-cols-[40px_370px_180px_140px_140px_170px_1fr] px-6 py-3 border-b border-white/10 bg-[#141414]">
+      <span class="mono text-xs text-white/60 font-semibold">#</span>
+      <span class="mono text-xs text-white/60 font-semibold">Product</span>
+      <span class="mono text-xs text-white/60 font-semibold">Category</span>
+      <span class="mono text-xs text-white/60 font-semibold">Variants</span>
+      <span class="mono text-xs text-white/60 font-semibold">Total Stock</span>
+      <span class="mono text-xs text-white/60 font-semibold">Status</span>
+      <span class="mono text-xs text-white/60 font-semibold">Edit Stock</span>
+    </div>
+
+    <!-- Rows -->
+    {% for product in products %}
+    <div class="grid grid-cols-[40px_370px_180px_140px_140px_170px_1fr] items-center px-6 py-4 border-b border-[#1a1a1a] last:border-b-0 hover:bg-[#1a1a1a] transition-colors">
+
+      <!-- Number -->
+      <span class="mono text-sm text-white/40">
+        {{ forloop.counter }}
+      </span>
+
+      <!-- Product -->
+      <div class="flex items-center gap-4 min-w-0">
+
+        <div class="w-12 h-12 border border-white/10 bg-[#111] overflow-hidden shrink-0">
+          {% if product.thumbnail %}
+            <img src="{{ product.thumbnail }}"
+                 alt="{{ product.name }}"
+                 class="w-full h-full object-cover">
+          {% else %}
+            <div class="w-full h-full flex items-center justify-center">
+              <span class="mono text-[8px] text-white/20 tracking-widest">
+                NO IMG
+              </span>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="min-w-0">
+          <p class="mono text-sm text-white font-semibold truncate">
+            {{ product.name }}
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Category -->
+      <div>
+        {% if product.subcategory %}
+          <span class="mono text-xs text-white/60">
+            {{ product.subcategory.category.name }}
+          </span>
+
+          <p class="mono text-[10px] text-white/30 mt-1">
+            {{ product.subcategory.name }}
+          </p>
+        {% else %}
+          <span class="mono text-xs text-white/25">
+            No Category
+          </span>
+        {% endif %}
+      </div>
+
+      <!-- Variants -->
+      <span class="mono text-sm text-white/60">
+        {{ product.variant_count|default:0 }}
+        {% if product.variant_count == 1 %}
+          variant
+        {% else %}
+          variants
+        {% endif %}
+      </span>
+
+      <!-- Total Stock -->
+      <span class="mono text-sm font-bold
+        {% if product.total_stock == 0 %}
+          text-red-400
+        {% elif product.total_stock <= low_stock_limit %}
+          text-orange-400
+        {% else %}
+          text-white
+        {% endif %}
+      ">
+        {{ product.total_stock|default:0 }}
+      </span>
+
+      <!-- Status -->
+      <div>
+        {% if product.total_stock == 0 %}
+          <span class="bg-[#0f4c2a] text-red-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit">
+            Out Of Stock
+          </span>
+
+        {% elif product.total_stock <= low_stock_limit %}
+          <span class="bg-[#0f4c2a] text-orange-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit">
+            Low Stock
+          </span>
+
+        {% else %}
+          <span class="bg-[#0f4c2a] text-green-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit">
+            In Stock
+          </span>
+        {% endif %}
+      </div>
+
+      <!-- Edit Stock -->
+      <div>
+        <button type="button"
+                onclick="openStockModal('{{ product.id }}')"
+                class="mono text-xs text-white/50 hover:text-white transition-colors tracking-widest">
+        Edit-Stock
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Stock Edit Modal -->
+<div id="stock-modal-{{ product.id }}"
+     class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm px-4">
+
+  <div class="w-full max-w-3xl bg-black border border-white/10">
+
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between px-6 py-5 border-b border-white/10">
+      <div>
+        <h2 class="mono text-white text-lg font-bold tracking-wide">
+          Edit Stock
+        </h2>
+
+        <p class="mono text-xs text-white/35 tracking-widest mt-2">
+          {{ product.name }}
+        </p>
+      </div>
+
+      <button type="button"
+              onclick="closeStockModal('{{ product.id }}')"
+              class="text-white/40 hover:text-white transition-colors text-xl">
+        ✕
+      </button>
+    </div>
+
+    <!-- Form -->
+    <form method="POST" action="{% url 'update_inventory_stock' product.id %}">
+      {% csrf_token %}
+
+      <div class="px-6 py-5 max-h-[60vh] overflow-y-auto">
+
+        {% for variant in product.variants.all %}
+        <div class="grid grid-cols-[1fr_180px] items-center gap-5 border-b border-white/10 last:border-b-0 py-4">
+
+          <!-- Variant Info -->
+          <!-- Variant Image Only -->
+        <div class="flex items-center gap-4">
+
+        <div class="w-20 h-20 border border-white/10 bg-[#111] overflow-hidden shrink-0">
+            {% with first_image=variant.images.first %}
+            {% if first_image %}
+                <img src="{{ first_image.image.url }}"
+                    alt="Variant image"
+                    class="w-full h-full object-cover">
+            {% else %}
+                <div class="w-full h-full flex items-center justify-center">
+                <span class="mono text-[8px] text-white/20 tracking-widest">
+                    NO IMG
+                </span>
+                </div>
+            {% endif %}
+            {% endwith %}
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+            <span class="mono text-[10px] text-white/45 border border-white/10 px-2 py-1">
+            {{ variant.size|default:"-" }}
+            </span>
+
+            <span class="mono text-[10px] text-white/45 border border-white/10 px-2 py-1">
+            {{ variant.color|default:"-" }}
+            </span>
+        </div>
+
+        </div>
+
+          <!-- Stock Control -->
+          <div class="flex items-center justify-end gap-2">
+
+            <button type="button"
+                    onclick="decreaseStock('stock-input-{{ variant.id }}')"
+                    class="w-10 h-10 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors">
+              −
+            </button>
+
+            <input type="number"
+                   id="stock-input-{{ variant.id }}"
+                   name="stock_{{ variant.id }}"
+                   value="{{ variant.stock }}"
+                   min="0"
+                   class="w-20 h-10 bg-[#111] border border-white/10 text-white text-center mono text-sm outline-none focus:border-white/30">
+
+            <button type="button"
+                    onclick="increaseStock('stock-input-{{ variant.id }}')"
+                    class="w-10 h-10 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors">
+              +
+            </button>
+
+          </div>
+
+        </div>
+        {% empty %}
+        <div class="py-10 text-center">
+          <p class="mono text-sm text-white/30 tracking-widest">
+            NO VARIANTS FOUND
+          </p>
+        </div>
+        {% endfor %}
+
+      </div>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-end gap-4 px-6 py-5 border-t border-white/10">
+
+        <button type="button"
+                onclick="closeStockModal('{{ product.id }}')"
+                class="mono text-xs text-white/60 border border-white/10 px-6 py-3 hover:text-white hover:border-white/30 transition-colors">
+          Cancel
+        </button>
+
+        <button type="submit"
+                class="mono text-xs bg-white text-black font-bold tracking-widest px-8 py-3 hover:bg-white/80 transition-colors">
+          Save Stock
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+    {% empty %}
+    <div class="px-6 py-16 text-center text-gray-600 font-mono text-sm tracking-widest">
+      NO INVENTORY ITEMS FOUND
+    </div>
+    {% endfor %}
+
+  </div>
+
+  <!-- Pagination -->
+  <div class="flex items-center justify-between mt-6">
+
+    <p class="mono text-xs text-white/50">
+      Page {{ products.number }} of {{ products.paginator.num_pages }}
+    </p>
+
+    <div class="flex items-center gap-2">
+
+      {% if products.has_previous %}
+        <a href="?q={{ query }}&stock={{ stock_filter }}&category={{ category_filter }}&page={{ products.previous_page_number }}"
+           class="mono text-xs text-white/50 border border-white/10 px-4 py-2 hover:text-white hover:border-white/30 transition-colors">
+          Prev
+        </a>
+      {% endif %}
+
+      {% for page_num in products.paginator.page_range %}
+        {% if page_num == products.number %}
+          <span class="mono text-xs bg-white text-black px-4 py-2 font-bold">
+            {{ page_num }}
+          </span>
+        {% elif page_num >= products.number|add:"-1" and page_num <= products.number|add:"1" %}
+          <a href="?q={{ query }}&stock={{ stock_filter }}&category={{ category_filter }}&page={{ page_num }}"
+             class="mono text-xs text-white/50 border border-white/10 px-4 py-2 hover:text-white hover:border-white/30 transition-colors">
+            {{ page_num }}
+          </a>
+        {% endif %}
+      {% endfor %}
+
+      {% if products.has_next %}
+        <a href="?q={{ query }}&stock={{ stock_filter }}&category={{ category_filter }}&page={{ products.next_page_number }}"
+           class="mono text-xs text-white/50 border border-white/10 px-4 py-2 hover:text-white hover:border-white/30 transition-colors">
+          Next →
+        </a>
+      {% endif %}
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function openStockModal(productId) {
+    const modal = document.getElementById(`stock-modal-${productId}`);
+    if (!modal) return;
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.classList.add('overflow-hidden');
+  }
+
+  function closeStockModal(productId) {
+    const modal = document.getElementById(`stock-modal-${productId}`);
+    if (!modal) return;
+
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.body.classList.remove('overflow-hidden');
+  }
+
+  function increaseStock(inputId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    const currentValue = parseInt(input.value || '0');
+    input.value = currentValue + 1;
+  }
+
+  function decreaseStock(inputId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    const currentValue = parseInt(input.value || '0');
+
+    if (currentValue > 0) {
+      input.value = currentValue - 1;
+    }
+  }
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') {
+      document.querySelectorAll('[id^="stock-modal-"]').forEach(modal => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      });
+
+      document.body.classList.remove('overflow-hidden');
+    }
+  });
+</script>
+{% endblock %}

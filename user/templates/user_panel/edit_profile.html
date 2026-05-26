@@ -198,7 +198,7 @@
 
             <!-- Full name -->
             <div class="mb-5">
-                <label class="block text-[11px] tracking-[0.08em] text-white mb-2">Full name</label>
+                <label class="block text-[11px] tracking-[0.08em] text-black mb-2">Full name</label>
                 <input type="text" name="fullname" value="{{ user.fullname }}"
                 class="form-input"/>
             </div>
@@ -207,7 +207,7 @@
             <div class="grid grid-cols-2 gap-5 mb-8">
 
                 <div id="emailColumn">
-                    <label class="block text-[11px] tracking-[0.08em] text-white mb-2">Email</label>
+                    <label class="block text-[11px] tracking-[0.08em] text-black mb-2">Email</label>
                     <input type="email" value="{{ user.email }}" readonly
                         class="form-input"/>
 
@@ -239,7 +239,7 @@
                 </div>
 
                 <div>
-                <label class="block text-[11px] tracking-[0.08em] text-white mb-2">Phone</label>
+                <label class="block text-[11px] tracking-[0.08em] text-black mb-2">Phone</label>
                 <input type="tel" name="phone" value="{{ user.phone }}" pattern="\d{10,15}" required
                     class="form-input"/>
                 </div>
@@ -247,26 +247,26 @@
 
             {% if user.auth_provider == 'email' %}
                 <!-- ── Password ── -->
-                <div class="flex items-center gap-3 border-l-2 border-red-600 pl-3 mb-6 mt-8">
+                <div class="flex items-center gap-3 border-l-2 border-black pl-3 mb-6 mt-8">
                     <span class="text-[14px] font-bold tracking-[0.06em]">Password</span>
                 </div>
 
                 <div class="mb-5">
-                    <label class="block text-[11px] tracking-[0.08em] text-white mb-2">Current Password</label>
+                    <label class="block text-[11px] tracking-[0.08em] text-black mb-2">Current Password</label>
                     <input type="password" name="current_password"
-                        class="w-full bg-[#0d0d0d] border border-[#2a2a2a] text-white px-4 py-3 text-[12px] outline-none focus:border-[#555] transition-colors"/>
+                        class="form-input"/>
                 </div>
 
                 <div class="grid grid-cols-2 gap-5 mb-0">
                     <div>
-                        <label class="block text-[11px] tracking-[0.08em] text-white mb-2">New Password</label>
+                        <label class="block text-[11px] tracking-[0.08em] text-black mb-2">New Password</label>
                         <input type="password" name="new_password"
-                            class="w-full bg-[#0d0d0d] border border-[#2a2a2a] text-white px-4 py-3 text-[12px] outline-none focus:border-[#555] transition-colors"/>
+                            class="form-input"/>
                     </div>
                     <div>
-                        <label class="block text-[11px] tracking-[0.08em] text-white mb-2">Confirm Password</label>
+                        <label class="block text-[11px] tracking-[0.08em] text-black mb-2">Confirm Password</label>
                         <input type="password" name="confirm_password"
-                            class="w-full bg-[#0d0d0d] border border-[#2a2a2a] text-white px-4 py-3 text-[12px] outline-none focus:border-[#555] transition-colors"/>
+                            class="form-input"/>
                     </div>
                 </div>
 

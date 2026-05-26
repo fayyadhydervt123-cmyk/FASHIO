@@ -1,16 +1,17 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.core.paginator import Paginator
-from django.urls import reverse
+from django.shortcuts import render, redirect, get_object_or_404 #Used to get one object from the database.
+#If the object does not exist, Django shows a 404 page.
+from django.core.paginator import Paginator #Used for pagination
+from django.urls import reverse #to get a URL from a URL name
 from django.http import JsonResponse
 from .models import *
-from django.http import HttpResponseNotAllowed
-from django.db.models import Sum, Min, Q, Prefetch
-from django.contrib import messages
+from django.http import HttpResponseNotAllowed #when the user sends a wrong request method
+from django.db.models import Sum, Min, Q, Prefetch #database query helpers
+from django.contrib import messages #to show success/error messages
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.views.decorators.cache import never_cache
-import json
+import json #Python built-in module used to read or create JSON data.
 import re
-from PIL import Image
+from PIL import Image #Used for image handling, resizing, checking image dimensions, converting formats, etc.
 from decimal import Decimal, InvalidOperation
 
 MAX_QUANTITY_PER_ORDER = 5
@@ -20,19 +21,19 @@ def is_admin(user):
     return user.is_authenticated and (user.is_staff or user.is_superuser)
 
 
-
+#helper function, checks whether the uploaded image is valid or not
 def _validate_image(image):
 
-    ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
-    MAX_IMAGE_SIZE_MB = 10
+    ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] #defines which image file types are allowed
+    MAX_IMAGE_SIZE_MB = 10 #uploaded image should be maximum 10 MB
 
-    if image is None:
+    if image is None: #if no image is uploaded
         return True, None
 
-    if image.content_type not in ALLOWED_IMAGE_TYPES:
+    if image.content_type not in ALLOWED_IMAGE_TYPES: #checks file type
         return False, 'Only JPG, PNG, or WEBP images are allowed.'
 
-    if image.size > MAX_IMAGE_SIZE_MB * 1024 * 1024:
+    if image.size > MAX_IMAGE_SIZE_MB * 1024 * 1024: #checks image size
         return False, f'Image must be smaller than {MAX_IMAGE_SIZE_MB} MB.'
 
     try:
@@ -46,24 +47,32 @@ def _validate_image(image):
         return False, 'Invalid or corrupted image.'
 
     return True, None
+
+
+
+
+
 # ─────────────────────────────────────────────────────────────
-# Views
+# Admin Side - Category Management
 # ─────────────────────────────────────────────────────────────
+
 @never_cache
 @user_passes_test(is_admin, login_url='admin_login')
 def view_categories(request):
-    query = request.GET.get('q', '').strip()
-    categories = Category.objects.filter(
-    ).prefetch_related(
-        'subcategories'
-    ).order_by('name')
 
+    query = request.GET.get('q', '').strip() #This line reads the search text from the URL
+
+    categories = Category.objects.prefetch_related( #Gets category records from the database
+        'subcategories'
+    ).order_by('name') 
+    
+    #Search filter
     if query:
         categories = categories.filter(name__icontains=query)
 
-    paginator   = Paginator(categories, 10)
-    page_number = request.GET.get('page', 1)
-    page_obj    = paginator.get_page(page_number)
+    paginator   = Paginator(categories, 10) #Show 10 per page
+    page_number = request.GET.get('page', 1) #Gets page number from url
+    page_obj    = paginator.get_page(page_number) #Gets the correct page data
 
     return render(request, 'categories/categories.html', {
         'categories': page_obj,
@@ -74,8 +83,8 @@ def view_categories(request):
 @never_cache
 @user_passes_test(is_admin, login_url='admin_login')
 def add_category(request):
-    if request.method == 'POST':
-        name        = request.POST.get('name', '').strip()
+    if request.method == 'POST': #Check request method
+        name        = request.POST.get('name', '').strip() #Get name from form input
         description = request.POST.get('description', '').strip()
         image       = request.FILES.get('image')
 
@@ -84,6 +93,7 @@ def add_category(request):
             messages.error(request, 'Category name is required.')
             return redirect('categories')
 
+        # ── Minimum length validation ────────────────────────
         if len(name) < 3:
             messages.error(request, 'Category name must be at least 3 characters.')
             return redirect('categories')
@@ -94,11 +104,12 @@ def add_category(request):
             return redirect('categories')
 
         # ── Image validation ─────────────────────────────────
-        image_ok, image_err = _validate_image(image)
+        image_ok, image_err = _validate_image(image) #This calls the helper function
         if not image_ok:
             messages.error(request, image_err)
             return redirect('categories')
 
+        #Creates a new row in category table
         Category.objects.create(name=name, description=description, image=image)
         messages.success(request, f'Category "{name}" added successfully.')
         return redirect('categories')
@@ -110,12 +121,12 @@ def add_category(request):
 @user_passes_test(is_admin, login_url='admin_login')
 def edit_category(request):
     if request.method == 'POST':
-        category_id = request.POST.get('category_id', '').strip()
+        category_id = request.POST.get('category_id', '').strip() #Gets the category ID from the hidden input from submitted form
         name        = request.POST.get('name', '').strip()
         description = request.POST.get('description', '').strip()
         image       = request.FILES.get('image')
 
-        # ── category_id presence check (was missing before) ──
+        # ── Checks category_id exists ────────────────────────
         if not category_id:
             messages.error(request, 'Invalid request: category ID is missing.')
             return redirect('categories')
@@ -125,11 +136,12 @@ def edit_category(request):
             messages.error(request, 'Category name is required.')
             return redirect('categories')
 
+        # ── Minimum length validation ────────────────────────
         if len(name) < 3:
             messages.error(request, 'Category name must be at least 3 characters.')
             return redirect('categories')
 
-        # ── Fetch category ───────────────────────────────────
+        # ── Fetch category from database using category_id ───
         try:
             category = Category.objects.get(id=category_id)
         except Category.DoesNotExist:
@@ -147,11 +159,11 @@ def edit_category(request):
             messages.error(request, image_err)
             return redirect('categories')
 
-        category.name        = name
-        category.description = description
+        category.name        = name #updates category name
+        category.description = description #updates category description
         if image:
-            category.image = image
-        category.save()
+            category.image = image #if image, it also
+        category.save() #saves the updated object into the database
 
         messages.success(request, f'Category "{name}" updated successfully.')
         return redirect('categories')
@@ -163,19 +175,19 @@ def edit_category(request):
 @user_passes_test(is_admin, login_url='admin_login')
 def toggle_category_block(request):
     if request.method == 'POST':
-        category_id = request.POST.get('category_id', '').strip()
+        category_id = request.POST.get('category_id', '').strip() #get category_id 
 
-        if not category_id:
+        if not category_id: #check if category_id is missing
             messages.error(request, 'Invalid request: category ID is missing.')
             return redirect('categories')
 
         try:
-            category = Category.objects.get(id=category_id)
+            category = Category.objects.get(id=category_id) #fetch category from database
         except Category.DoesNotExist:
             messages.error(request, 'Category not found.')
             return redirect('categories')
 
-        category.is_blocked = not category.is_blocked
+        category.is_blocked = not category.is_blocked #Flips the current value
         category.save()
 
         action = 'blocked' if category.is_blocked else 'unblocked'
@@ -183,6 +195,11 @@ def toggle_category_block(request):
         return redirect('categories')
 
     return redirect('categories')
+
+
+# ─────────────────────────────────────────────────────────────
+# Admin Side - Product Management
+# ─────────────────────────────────────────────────────────────
 
 
 @never_cache
@@ -242,7 +259,7 @@ def view_products(request):
         active_variants = product.active_variants_list
         product.display_status = 'ACTIVE' if (product.is_active and active_variants) else 'INACTIVE'
         first_variant  = active_variants[0] if active_variants else None
-        first_image    = first_image = first_variant.images.first() if first_variant and first_variant.images.all() else None
+        first_image    = first_variant.images.first() if first_variant and first_variant.images.all() else None
 
     categories = Category.objects.filter(is_blocked=False).order_by('name')
 
@@ -255,12 +272,244 @@ def view_products(request):
         'price_range': price_range,
     })
 
+@never_cache
+@user_passes_test(is_admin, login_url='admin_login')
+def add_product(request):
+    categories = Category.objects.filter(is_blocked=False).order_by('name')
+    subcategories_json = {
+        str(cat.id): [
+            {'id': str(s.id), 'name': s.name}
+            for s in cat.subcategories.order_by('name')
+        ]
+        for cat in categories
+    }
+    base_context = {
+        'categories': categories,
+        'subcategories_json': json.dumps(subcategories_json),
+    }
+
+    if request.method == 'POST':
+        name           = request.POST.get('name', '').strip()
+        base_price     = request.POST.get('base_price', '').strip()
+        description    = request.POST.get('description', '').strip()
+        subcategory_id = request.POST.get('subcategory_id', '').strip()
+        category_id    = request.POST.get('category_id', '').strip()
+        action         = request.POST.get('action', 'save')
+
+        product_details = {
+            'material':      request.POST.get('material', '').strip(),
+            'fabric_weight': request.POST.get('fabric_weight', '').strip(),
+            'fit':           request.POST.get('fit', '').strip(),
+            'design':        request.POST.get('design', '').strip(),
+            'care':          request.POST.get('care', '').strip(),
+            'durability':    request.POST.get('durability', '').strip(),
+        }
+
+        errors = {}
+
+        # ── Name ────────────────────────────────────────────
+        if not name:
+            errors['name'] = 'Product name is required.'
+        elif len(name) < 3:
+            errors['name'] = 'Must be at least 3 characters.'
+        elif Product.objects.filter(name__iexact=name).exists():
+            errors['name'] = f'A product named "{name}" already exists.'
+
+        # ── Price ────────────────────────────────────────────
+        if not base_price:
+            errors['base_price'] = 'Base price is required.'
+        else:
+            try:
+                base_price_val = Decimal(base_price)
+                if base_price_val <= 0:
+                    errors['base_price'] = 'Price must be greater than 0.'
+            except InvalidOperation:
+                errors['base_price'] = 'Enter a valid number.'
+
+        # ── Description ──────────────────────────────────────
+        if not description:
+            errors['description'] = 'Description is required.'
+        elif len(description) < 10:
+            errors['description'] = 'Description must be at least 10 characters.'
+
+        # ── Subcategory ──────────────────────────────────────
+        if not subcategory_id:
+            errors['subcategory_id'] = 'Please select a subcategory.'
+        else:
+            try:
+                subcategory = SubCategory.objects.get(id=subcategory_id)
+            except SubCategory.DoesNotExist:
+                errors['subcategory_id'] = 'Selected subcategory not found.'
+
+        if errors:
+            return render(request, 'products/add_product.html', {
+                **base_context,
+                'errors': errors,
+                'form_data': request.POST,  # ← sends data back to repopulate fields
+                'selected_category_id': category_id,
+            })
+
+        product = Product.objects.create(
+            name=name,
+            base_price=base_price_val,
+            description=description,
+            subcategory=subcategory,
+            product_details=product_details,
+            is_active=True,
+        )
+
+        messages.success(request, f'Product "{name}" created successfully.')
+
+        if action == 'save_add_variant':
+            return redirect('add_variant', product_id=product.id)
+
+        return redirect('products')
+
+    return render(request, 'products/add_product.html', base_context)
+
+@never_cache
+@user_passes_test(is_admin, login_url='admin_login')
+def edit_product(request, product_id):
+    try:
+        product = Product.objects.get(id=product_id)
+    except Product.DoesNotExist:
+        messages.error(request, 'Product not found.')
+        return redirect('products')
+
+    categories = Category.objects.filter(is_blocked=False).order_by('name')
+    subcategories_json = {
+        str(cat.id): [
+            {'id': str(s.id), 'name': s.name}
+            for s in cat.subcategories.order_by('name')
+        ]
+        for cat in categories
+    }
+
+    base_context = {
+        'categories': categories,
+        'subcategories_json': json.dumps(subcategories_json),
+        'product': product,
+        # Pre-fill form_data from existing product so the template repopulates
+        'form_data': {
+            'name':           product.name,
+            'base_price':     product.base_price,
+            'description':    product.description,
+            'category_id':    str(product.subcategory.category.id) if product.subcategory else '',
+            'subcategory_id': str(product.subcategory.id) if product.subcategory else '',
+            'material':       product.product_details.get('material', ''),
+            'fabric_weight':  product.product_details.get('fabric_weight', ''),
+            'fit':            product.product_details.get('fit', ''),
+            'design':         product.product_details.get('design', ''),
+            'care':           product.product_details.get('care', ''),
+            'durability':     product.product_details.get('durability', ''),
+        },
+    }
+
+    if request.method == 'POST':
+        name           = request.POST.get('name', '').strip()
+        base_price     = request.POST.get('base_price', '').strip()
+        description    = request.POST.get('description', '').strip()
+        subcategory_id = request.POST.get('subcategory_id', '').strip()
+        category_id    = request.POST.get('category_id', '').strip()
+
+        product_details = {
+            'material':      request.POST.get('material', '').strip(),
+            'fabric_weight': request.POST.get('fabric_weight', '').strip(),
+            'fit':           request.POST.get('fit', '').strip(),
+            'design':        request.POST.get('design', '').strip(),
+            'care':          request.POST.get('care', '').strip(),
+            'durability':    request.POST.get('durability', '').strip(),
+        }
+
+        errors = {}
+
+        if not name:
+            errors['name'] = 'Product name is required.'
+        elif len(name) < 3:
+            errors['name'] = 'Must be at least 3 characters.'
+        elif Product.objects.filter(name__iexact=name).exclude(id=product_id).exists():
+            errors['name'] = f'A product named "{name}" already exists.'
+
+        if not base_price:
+            errors['base_price'] = 'Base price is required.'
+        else:
+            try:
+                price_val = Decimal(base_price)
+
+                if price_val <= 0:
+                    errors['base_price'] = 'Price must be greater than 0.'
+
+            except InvalidOperation:
+                errors['base_price'] = 'Enter a valid price.'
+
+        if not description:
+            errors['description'] = 'Description is required.'
+        elif len(description) < 10:
+            errors['description'] = 'Description must be at least 10 characters.'
+
+        if not subcategory_id:
+            errors['subcategory_id'] = 'Please select a subcategory.'
+        else:
+            try:
+                subcategory = SubCategory.objects.get(id=subcategory_id)
+            except SubCategory.DoesNotExist:
+                errors['subcategory_id'] = 'Selected subcategory not found.'
+
+        if errors:
+            return render(request, 'products/edit_product.html', {
+                **base_context,
+                'errors': errors,
+                'form_data': request.POST,
+            })
+
+        product.name            = name
+        product.base_price      = price_val
+        product.description     = description
+        product.subcategory     = subcategory
+        product.product_details = product_details
+        product.save()
+
+        messages.success(request, f'Product "{name}" updated successfully.')
+        return redirect('products')
+
+    return render(request, 'products/edit_product.html', base_context)
+
+@never_cache
+@user_passes_test(is_admin, login_url='admin_login')
+def toggle_product_block(request):
+    if request.method == 'POST':
+        product_id = request.POST.get('product_id', '').strip()
+
+        if not product_id:
+            messages.error(request, 'Invalid request: product ID is missing.')
+            return redirect('products')
+
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            messages.error(request, 'Product not found.')
+            return redirect('products')
+
+        product.is_active = not product.is_active
+        product.save()
+
+        action = 'unblocked' if product.is_active else 'blocked'
+        messages.success(request, f'Product "{product.name}" {action} successfully.')
+        return redirect('products')
+
+    return redirect('products')
+
+
+# ─────────────────────────────────────────────────────────────
+# Admin Side - Subcategory Management
+# ─────────────────────────────────────────────────────────────
+
 
 @never_cache
 @user_passes_test(is_admin, login_url='admin_login')
 def view_subcategories(request):
     # Each category gets its own search query and paginated subcategory list
-    categories = Category.objects.filter(is_blocked=False).order_by('name').prefetch_related('subcategories')
+    categories = Category.objects.order_by('name').prefetch_related('subcategories')
 
     sections = []
     for cat in categories:
@@ -390,237 +639,43 @@ def delete_subcategory(request):
 
     return redirect('subcategories')
 
-@never_cache
-@user_passes_test(is_admin, login_url='admin_login')
-def add_product(request):
-    categories = Category.objects.filter(is_blocked=False).order_by('name')
-    subcategories_json = {
-        str(cat.id): [
-            {'id': str(s.id), 'name': s.name}
-            for s in cat.subcategories.order_by('name')
-        ]
-        for cat in categories
-    }
-    base_context = {
-        'categories': categories,
-        'subcategories_json': json.dumps(subcategories_json),
-    }
 
-    if request.method == 'POST':
-        name           = request.POST.get('name', '').strip()
-        base_price     = request.POST.get('base_price', '').strip()
-        description    = request.POST.get('description', '').strip()
-        subcategory_id = request.POST.get('subcategory_id', '').strip()
-        category_id    = request.POST.get('category_id', '').strip()
-        action         = request.POST.get('action', 'save')
+# ─────────────────────────────────────────────────────────────
+# Admin Side - Variant Management
+# ─────────────────────────────────────────────────────────────
 
-        product_details = {
-            'material':      request.POST.get('material', '').strip(),
-            'fabric_weight': request.POST.get('fabric_weight', '').strip(),
-            'fit':           request.POST.get('fit', '').strip(),
-            'design':        request.POST.get('design', '').strip(),
-            'care':          request.POST.get('care', '').strip(),
-            'durability':    request.POST.get('durability', '').strip(),
-        }
-
-        errors = {}
-
-        # ── Name ────────────────────────────────────────────
-        if not name:
-            errors['name'] = 'Product name is required.'
-        elif len(name) < 3:
-            errors['name'] = 'Must be at least 3 characters.'
-        elif Product.objects.filter(name__iexact=name).exists():
-            errors['name'] = f'A product named "{name}" already exists.'
-
-        # ── Price ────────────────────────────────────────────
-        if not base_price:
-            errors['base_price'] = 'Base price is required.'
-        else:
-            try:
-                base_price_val = Decimal(base_price)
-                if base_price_val <= 0:
-                    errors['base_price'] = 'Price must be greater than 0.'
-            except InvalidOperation:
-                errors['base_price'] = 'Enter a valid number.'
-
-        # ── Description ──────────────────────────────────────
-        if not description:
-            errors['description'] = 'Description is required.'
-        elif len(description) < 10:
-            errors['description'] = 'Description must be at least 10 characters.'
-
-        # ── Subcategory ──────────────────────────────────────
-        if not subcategory_id:
-            errors['subcategory_id'] = 'Please select a subcategory.'
-        else:
-            try:
-                subcategory = SubCategory.objects.get(id=subcategory_id)
-            except SubCategory.DoesNotExist:
-                errors['subcategory_id'] = 'Selected subcategory not found.'
-
-        if errors:
-            return render(request, 'products/add_product.html', {
-                **base_context,
-                'errors': errors,
-                'form_data': request.POST,  # ← sends data back to repopulate fields
-                'selected_category_id': category_id,
-            })
-
-        product = Product.objects.create(
-            name=name,
-            base_price=float(base_price),
-            description=description,
-            subcategory=subcategory,
-            product_details=product_details,
-            is_active=True,
-        )
-
-        messages.success(request, f'Product "{name}" created successfully.')
-
-        if action == 'save_add_variant':
-            return redirect('add_variant', product_id=product.id)
-
-        return redirect('products')
-
-    return render(request, 'products/add_product.html', base_context)
 
 @never_cache
 @user_passes_test(is_admin, login_url='admin_login')
-def edit_product(request, product_id):
+def product_variants(request, product_id):
     try:
         product = Product.objects.get(id=product_id)
     except Product.DoesNotExist:
         messages.error(request, 'Product not found.')
         return redirect('products')
 
-    categories = Category.objects.filter(is_blocked=False).order_by('name')
-    subcategories_json = {
-        str(cat.id): [
-            {'id': str(s.id), 'name': s.name}
-            for s in cat.subcategories.order_by('name')
-        ]
-        for cat in categories
-    }
+    variants = product.variants.prefetch_related('images').order_by('created_at')
 
-    base_context = {
-        'categories': categories,
-        'subcategories_json': json.dumps(subcategories_json),
+    # thumbnail for summary card
+    default_variant = variants.filter(status='ACTIVE', is_default=True).first()
+    first_active    = default_variant or variants.filter(status='ACTIVE').first()
+    first_image     = first_active.images.first() if first_active else None
+    product.thumbnail = first_image.image.url if first_image else None
+    product.total_stock  = variants.filter(status='ACTIVE').aggregate(total=Sum('stock'))['total'] or 0
+    product.display_status = (
+        'ACTIVE'
+        if product.is_active and variants.filter(status='ACTIVE').exists()
+        else 'INACTIVE'
+    )
+
+    return render(request, 'products/product_variants.html', {
         'product': product,
-        # Pre-fill form_data from existing product so the template repopulates
-        'form_data': {
-            'name':           product.name,
-            'base_price':     product.base_price,
-            'description':    product.description,
-            'category_id':    str(product.subcategory.category.id) if product.subcategory else '',
-            'subcategory_id': str(product.subcategory.id) if product.subcategory else '',
-            'material':       product.product_details.get('material', ''),
-            'fabric_weight':  product.product_details.get('fabric_weight', ''),
-            'fit':            product.product_details.get('fit', ''),
-            'design':         product.product_details.get('design', ''),
-            'care':           product.product_details.get('care', ''),
-            'durability':     product.product_details.get('durability', ''),
-        },
-    }
-
-    if request.method == 'POST':
-        name           = request.POST.get('name', '').strip()
-        base_price     = request.POST.get('base_price', '').strip()
-        description    = request.POST.get('description', '').strip()
-        subcategory_id = request.POST.get('subcategory_id', '').strip()
-        category_id    = request.POST.get('category_id', '').strip()
-
-        product_details = {
-            'material':      request.POST.get('material', '').strip(),
-            'fabric_weight': request.POST.get('fabric_weight', '').strip(),
-            'fit':           request.POST.get('fit', '').strip(),
-            'design':        request.POST.get('design', '').strip(),
-            'care':          request.POST.get('care', '').strip(),
-            'durability':    request.POST.get('durability', '').strip(),
-        }
-
-        errors = {}
-
-        if not name:
-            errors['name'] = 'Product name is required.'
-        elif len(name) < 3:
-            errors['name'] = 'Must be at least 3 characters.'
-        elif Product.objects.filter(name__iexact=name).exclude(id=product_id).exists():
-            errors['name'] = f'A product named "{name}" already exists.'
-
-        if not base_price:
-            errors['base_price'] = 'Base price is required.'
-        else:
-            try:
-                price_val = Decimal(base_price)
-
-                if price_val <= 0:
-                    errors['price'] = 'Price must be greater than 0.'
-
-            except InvalidOperation:
-                errors['price'] = 'Enter a valid price.'
-
-        if not description:
-            errors['description'] = 'Description is required.'
-        elif len(description) < 10:
-            errors['description'] = 'Description must be at least 10 characters.'
-
-        if not subcategory_id:
-            errors['subcategory_id'] = 'Please select a subcategory.'
-        else:
-            try:
-                subcategory = SubCategory.objects.get(id=subcategory_id)
-            except SubCategory.DoesNotExist:
-                errors['subcategory_id'] = 'Selected subcategory not found.'
-
-        if errors:
-            return render(request, 'products/edit_product.html', {
-                **base_context,
-                'errors': errors,
-                'form_data': request.POST,
-            })
-
-        product.name            = name
-        product.base_price      = float(base_price)
-        product.description     = description
-        product.subcategory     = subcategory
-        product.product_details = product_details
-        product.save()
-
-        messages.success(request, f'Product "{name}" updated successfully.')
-        return redirect('products')
-
-    return render(request, 'products/edit_product.html', base_context)
-
-@never_cache
-@user_passes_test(is_admin, login_url='admin_login')
-def toggle_product_block(request):
-    if request.method == 'POST':
-        product_id = request.POST.get('product_id', '').strip()
-
-        if not product_id:
-            messages.error(request, 'Invalid request: product ID is missing.')
-            return redirect('products')
-
-        try:
-            product = Product.objects.get(id=product_id)
-        except Product.DoesNotExist:
-            messages.error(request, 'Product not found.')
-            return redirect('products')
-
-        product.is_active = not product.is_active
-        product.save()
-
-        action = 'unblocked' if product.is_active else 'blocked'
-        messages.success(request, f'Product "{product.name}" {action} successfully.')
-        return redirect('products')
-
-    return redirect('products')
+        'variants': variants,
+    })
 
 @never_cache
 @user_passes_test(is_admin, login_url='admin_login')
 def add_variant(request, product_id):
-    print("PRODUCT ID:", product_id)
     try:
         product = Product.objects.get(id=product_id)
     except Product.DoesNotExist:
@@ -729,33 +784,6 @@ def add_variant(request, product_id):
         'size_choices': size_choices,
     })
 
-@never_cache
-@user_passes_test(is_admin, login_url='admin_login')
-def product_variants(request, product_id):
-    try:
-        product = Product.objects.get(id=product_id)
-    except Product.DoesNotExist:
-        messages.error(request, 'Product not found.')
-        return redirect('products')
-
-    variants = product.variants.prefetch_related('images').order_by('created_at')
-
-    # thumbnail for summary card
-    default_variant = variants.filter(status='ACTIVE', is_default=True).first()
-    first_active    = default_variant or variants.filter(status='ACTIVE').first()
-    first_image     = first_active.images.first() if first_active else None
-    product.thumbnail = first_image.image.url if first_image else None
-    product.total_stock  = variants.filter(status='ACTIVE').aggregate(total=Sum('stock'))['total'] or 0
-    product.display_status = (
-        'ACTIVE'
-        if product.is_active and variants.filter(status='ACTIVE').exists()
-        else 'INACTIVE'
-    )
-
-    return render(request, 'products/product_variants.html', {
-        'product': product,
-        'variants': variants,
-    })
 
 @never_cache
 @user_passes_test(is_admin, login_url='admin_login')
@@ -922,6 +950,12 @@ def toggle_variant_status(request):
 
     return redirect('products')
 
+
+# ─────────────────────────────────────────────────────────────
+# User Side - Product List
+# ─────────────────────────────────────────────────────────────
+
+@never_cache
 @login_required(login_url='user_login')
 def product_list(request):
     query = request.GET.get('q', '').strip()
@@ -1083,6 +1117,11 @@ def product_list(request):
             is_blocked=False
         ).first()
 
+    wishlist_variant_ids = list(
+        Wishlist.objects.filter(user=request.user)
+        .values_list('variant_id', flat=True)
+    )
+
     return render(request, 'products/product_list.html', {
         'products': page_obj,
         'categories': categories,
@@ -1093,8 +1132,10 @@ def product_list(request):
         'selected_price': price_range,
         'selected_sort': sort,
         'modal_products_data': modal_products_data,
+        'wishlist_variant_ids': wishlist_variant_ids,
     })
 
+@never_cache
 @login_required(login_url='user_login')
 def product_detail(request, product_id):
     active_variants_prefetch = Prefetch(
@@ -1236,6 +1277,7 @@ def product_detail(request, product_id):
         'variants_data': variants_data,
     })
 
+@never_cache
 @login_required(login_url='user_login')
 def add_to_cart(request):
     if request.method != 'POST':
@@ -1335,12 +1377,30 @@ def add_to_cart(request):
     request.session['cart_notification_count'] = current_notification_count + 1
     request.session.modified = True
 
+    # Remove product from wishlist after successfully adding to cart
+    removed_from_wishlist = Wishlist.objects.filter(
+        user=request.user,
+        variant=variant
+    ).delete()[0] > 0
+
+    wishlist_notification_count = Wishlist.objects.filter(
+        user=request.user
+    ).count()
+
 
     if is_ajax:
+        message = 'Product added to cart.'
+
+        if removed_from_wishlist:
+            message = 'Product added to cart and removed from wishlist.'
+
         return JsonResponse({
             'success': True,
-            'message': 'Product added to cart.',
-            'cart_notification_count': request.session['cart_notification_count']
+            'message': message,
+            'cart_notification_count': request.session['cart_notification_count'],
+            'wishlist_notification_count': wishlist_notification_count,
+            'removed_from_wishlist': removed_from_wishlist,
+            'removed_variant_id': variant.id,
         })
 
     messages.success(request, 'Product added to cart.')

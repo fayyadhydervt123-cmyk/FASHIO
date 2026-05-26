@@ -1,0 +1,278 @@
+{% extends 'user_base/base.html' %}
+
+{% block title %}My Orders | FASHIO{% endblock %}
+
+{% block content %}
+
+<section class="bg-white min-h-screen pt-20 pb-16">
+
+  <!-- Orders Section -->
+  <div class="px-6 md:px-16 py-14">
+
+    <!-- Back Button -->
+    <div class="mb-8">
+        <a href="{% url 'user_profile' %}"
+        class="inline-flex items-center gap-2 mono text-[10px] tracking-widest text-black/45 hover:text-black uppercase transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to Profile
+        </a>
+    </div>
+
+    <!-- Section Heading -->
+    <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-8">
+
+      <div class="flex items-center gap-5">
+
+        <div>
+          <div class="flex items-center gap-3">
+
+            <h2 class="bebas text-black text-6xl md:text-8xl leading-none tracking-wide">
+              My Orders
+            </h2>
+          </div>
+
+          <p class="mono text-[10px] tracking-widest text-black/35 mt-3 uppercase">
+            Track your recent purchases and order status
+          </p>
+        </div>
+      </div>
+
+      <!-- Search -->
+      <form method="GET" action="" class="w-full lg:w-[360px]">
+        <div class="relative">
+          <input type="text"
+                 name="q"
+                 value="{{ query }}"
+                 placeholder="Search orders..."
+                 class="w-full border border-black/15 bg-white px-11 py-4 mono text-[11px] tracking-widest text-black outline-none placeholder-black/25 focus:border-black/40">
+
+          <svg class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-black/35"
+               fill="none"
+               stroke="currentColor"
+               stroke-width="2"
+               viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M21 21l-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+
+          {% if query %}
+            <a href="{% url 'user_orders' %}"
+               class="absolute right-4 top-1/2 -translate-y-1/2 text-black/35 hover:text-black">
+              ✕
+            </a>
+          {% endif %}
+        </div>
+      </form>
+
+    </div>
+
+    <!-- Orders Table -->
+    <div class="border border-black/10 bg-white overflow-hidden">
+
+      <!-- Table Header -->
+      <div class="hidden md:grid grid-cols-[140px_1.5fr_130px_150px_150px_100px] bg-neutral-50 border-b border-black/10 px-5 py-4">
+        <span class="mono text-[10px] tracking-widest text-black/45 uppercase">Order ID</span>
+        <span class="mono text-[10px] tracking-widest text-black/45 uppercase">Product Details</span>
+        <span class="mono text-[10px] tracking-widest text-black/45 uppercase">Amount</span>
+        <span class="mono text-[10px] tracking-widest text-black/45 uppercase">Status</span>
+        <span class="mono text-[10px] tracking-widest text-black/45 uppercase">Order Date</span>
+        <span class="mono text-[10px] tracking-widest text-black/45 uppercase text-right">Action</span>
+      </div>
+
+      {% for order in orders %}
+      <div class="grid grid-cols-1 md:grid-cols-[140px_1.5fr_130px_150px_150px_100px] gap-4 md:gap-0 items-center px-5 py-5 border-b border-black/10 last:border-b-0 hover:bg-neutral-50 transition-colors">
+
+        <!-- Order ID -->
+        <div>
+          <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden mb-1">
+            Order ID
+          </p>
+          <p class="mono text-sm font-bold text-black">
+            #ORD-{{ order.id|stringformat:"04d" }}
+          </p>
+        </div>
+
+        <!-- Product Details -->
+        <div>
+          <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden mb-1">
+            Product Details
+          </p>
+
+          <div class="space-y-2">
+            {% for item in order.items.all|slice:":2" %}
+            <div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <p class="text-sm font-semibold text-black leading-snug">
+                        {{ item.product_name }}
+                    </p>
+
+                    {% if item.item_status == "CANCELLED" and order.has_active_items %}
+                        <span class="inline-flex mono text-[8px] tracking-widest px-2 py-0.5 text-red-600 font-bold">
+                            CANCELLED
+                        </span>
+
+                    {% elif item.item_status == "RETURN_REQUESTED"%}
+                        <span class="inline-flex mono text-[8px] tracking-widest px-2 py-0.5 text-blue-600 font-bold">
+                            RETURN REQUESTED
+                        </span>
+
+                    {% elif item.item_status == "RETURNED"%}
+                        <span class="inline-flex mono text-[8px] tracking-widest px-2 py-0.5 text-green-600 font-bold">
+                            RETURNED
+                        </span>
+                    {% endif %}
+                </div>
+
+                <p class="mono text-[9px] tracking-widest text-black/35 uppercase mt-1">
+                    {% if item.size %}{{ item.size }}{% endif %}
+                    {% if item.size and item.color %} / {% endif %}
+                    {% if item.color %}{{ item.color }}{% endif %}
+                    × {{ item.quantity }}
+                </p>
+            </div>
+            {% endfor %}
+
+            {% if order.items.count > 2 %}
+              <p class="mono text-[9px] tracking-widest text-black/35 uppercase">
+                + {{ order.items.count|add:"-2" }} more item{% if order.items.count|add:"-2" != 1 %}s{% endif %}
+              </p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Amount -->
+        <div>
+          <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden mb-1">
+            Amount
+          </p>
+          <p class="mono text-sm font-bold text-black">
+            ₹{{ order.display_total_amount|floatformat:0 }}
+          </p>
+        </div>
+
+        
+        <!-- Status -->
+        <div>
+            <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden mb-1">
+                Status
+            </p>
+
+            {% if order.order_status == "CANCELLED" %}
+                <span class="inline-flex mono text-[9px] tracking-widest px-3 py-1 border border-red-500/30 bg-red-500/10 text-red-600 font-bold">
+                    CANCELLED
+                </span>
+
+            {% elif order.order_status == "DELIVERED" %}
+                <span class="inline-flex mono text-[9px] tracking-widest px-3 py-1 border border-green-500/30 bg-green-500/10 text-green-600 font-bold">
+                    DELIVERED
+                </span>
+
+            {% elif order.order_status == "SHIPPED" %}
+                <span class="inline-flex mono text-[9px] tracking-widest px-3 py-1 border border-blue-500/30 bg-blue-500/10 text-blue-600 font-bold">
+                    SHIPPED
+                </span>
+
+            {% elif order.order_status == "OUT_FOR_DELIVERY" %}
+                <span class="inline-flex mono text-[9px] tracking-widest px-3 py-1 border border-sky-500/30 bg-sky-500/10 text-sky-600 font-bold">
+                    OUT FOR DELIVERY
+                </span>
+
+            {% elif order.order_status == "PLACED" %}
+                <span class="inline-flex mono text-[9px] tracking-widest px-3 py-1 border border-yellow-500/30 bg-yellow-500/10 text-yellow-600 font-bold">
+                    PLACED
+                </span>
+
+            {% elif order.order_status == "PENDING" %}
+                <span class="inline-flex mono text-[9px] tracking-widest px-3 py-1 border border-yellow-500/30 bg-yellow-500/10 text-yellow-600 font-bold">
+                    PENDING
+                </span>
+
+            {% else %}
+                <span class="inline-flex mono text-[9px] tracking-widest px-3 py-1 border border-yellow-500/30 bg-yellow-500/10 text-yellow-600 font-bold">
+                    {{ order.get_order_status_display|upper }}
+                </span>
+            {% endif %}
+        </div>
+
+        <!-- Order Date -->
+        <div>
+          <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden mb-1">
+            Order Date
+          </p>
+          <p class="mono text-sm text-black/60">
+            {{ order.created_at|date:"Y.m.d" }}
+          </p>
+        </div>
+
+        <!-- Action -->
+        <div class="md:text-right">
+          <a href="{% url 'user_order_detail' order.id %}"
+             class="mono text-[10px] tracking-widest text-black font-bold hover:text-black/50 transition-colors">
+            VIEW
+          </a>
+        </div>
+
+      </div>
+
+      {% empty %}
+      <div class="px-5 py-20 text-center">
+        <p class="mono text-[10px] tracking-widest text-black/35 uppercase">
+          No orders found
+        </p>
+      </div>
+      {% endfor %}
+
+    </div>
+
+  </div>
+
+</section>
+
+<!-- Logout Modal -->
+<div id="m-logout"
+     class="fixed inset-0 bg-black hidden items-center justify-center z-[999]">
+  <div class="w-full max-w-md px-6">
+    <p class="text-white text-xl font-semibold tracking-wide text-center mb-10">
+      Are you sure you want to Logout?
+    </p>
+
+    <div class="space-y-3">
+      <a href="{% url 'user_logout' %}"
+         class="block w-full bg-white text-black text-center mono text-sm font-bold tracking-widest py-5">
+        LOGOUT
+      </a>
+
+      <button type="button"
+              onclick="closeModal('logout')"
+              class="w-full border border-white/20 text-white mono text-sm font-bold tracking-widest py-5">
+        CANCEL
+      </button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function openModal(id) {
+    const modal = document.getElementById(`m-${id}`);
+    if (!modal) return;
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.classList.add('overflow-hidden');
+  }
+
+  function closeModal(id) {
+    const modal = document.getElementById(`m-${id}`);
+    if (!modal) return;
+
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.body.classList.remove('overflow-hidden');
+  }
+</script>
+{% endblock %}

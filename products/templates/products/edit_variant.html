@@ -50,7 +50,7 @@
     <!-- Base Price -->
     <div class="text-right border-l border-white/10 pl-6">
       <span class="mono text-[10px] text-white/30 tracking-widest uppercase block mb-1">Base Price</span>
-      <span class="mono text-white text-2xl font-bold">${{ product.base_price }}</span>
+      <span class="mono text-white text-2xl font-bold">₹{{ product.base_price }}</span>
     </div>
 
     <!-- Total Stock -->
@@ -159,7 +159,7 @@
           <div class="flex flex-col gap-2">
             <label class="mono text-xs text-white/50 tracking-widest">Price Override</label>
             <div class="relative">
-              <span class="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-sm text-white/30">$</span>
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-sm text-white/30">₹</span>
               <input
                 type="number"
                 name="price"

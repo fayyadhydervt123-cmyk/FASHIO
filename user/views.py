@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, get_user_model, update_session_auth_hash
 from django.contrib.auth.decorators import login_required #Protect pages (only logged-in users allowed)
@@ -11,7 +11,12 @@ from django.utils import timezone
 from datetime import timedelta
 from django.utils.dateparse import parse_datetime
 from .models import Address
-from products.models import Category
+from products.models import Category, Product, ProductVariant
+from django.db.models import Q, Prefetch, Sum, Count
+from orders.models import Order
+from products.models import Wishlist
+from orders.views import calculate_checkout_totals
+from decimal import Decimal
 # Create your views here.
 
 User = get_user_model() #Gets the custom User model
@@ -29,7 +34,43 @@ def user_loggedin_dashboard(request):
         is_blocked=False
     ).order_by('-created_at')
 
-    return render(request, 'user_panel/loggedin_dashboard.html', {'categories': categories})
+    latest_products = (
+        Product.objects
+        .filter(
+            is_active=True,
+            subcategory__category__is_blocked=False,
+        )
+        .select_related(
+            "subcategory",
+            "subcategory__category"
+        )
+        .prefetch_related(
+            Prefetch(
+                "variants",
+                queryset=ProductVariant.objects
+                .filter(status="ACTIVE")
+                .prefetch_related("images")
+                .order_by("price")
+            )
+        )
+        .annotate(total_stock=Sum("variants__stock"))
+        .filter(total_stock__gt=0)
+        .order_by("-created_at")[:4]
+    )
+
+    for product in latest_products:
+        first_variant = product.variants.first()
+        product.display_variant = first_variant
+
+        if first_variant:
+            first_image = first_variant.images.first()
+            product.thumbnail = first_image.image.url if first_image else None
+            product.display_price = first_variant.discounted_price
+        else:
+            product.thumbnail = None
+            product.display_price = product.base_price
+
+    return render(request, 'user_panel/loggedin_dashboard.html', {'categories': categories, 'latest_products': latest_products})
 
 @never_cache
 def user_login(request):
@@ -518,9 +559,68 @@ def user_profile(request):
     addresses = request.user.addresses.all()
     latest_address = addresses.order_by('-created_at').first()
 
+    orders = (
+        Order.objects
+        .filter(user=request.user)
+        .prefetch_related("items", "items__variant")
+        .order_by("-created_at")[:5]
+    )
+
+    for order in orders:
+        billable_items = order.items.filter(
+            item_status__in=["ACTIVE", "RETURN_REQUESTED"]
+        )
+
+        active_items = order.items.filter(item_status="ACTIVE")
+        cancelled_items = order.items.filter(item_status="CANCELLED")
+        return_requested_items = order.items.filter(item_status="RETURN_REQUESTED")
+        returned_items = order.items.filter(item_status="RETURNED")
+
+        order.has_active_items = active_items.exists()
+
+        order.billable_subtotal = sum(item.subtotal for item in billable_items)
+        order.cancelled_subtotal = sum(item.subtotal for item in cancelled_items)
+        order.returned_subtotal = sum(item.subtotal for item in returned_items)
+
+        order.has_cancelled_items = cancelled_items.exists()
+        order.has_return_requested_items = return_requested_items.exists()
+        order.has_returned_items = returned_items.exists()
+
+        if order.billable_subtotal > 0:
+            totals = calculate_checkout_totals(order.billable_subtotal)
+
+            order.display_delivery_fee = totals["delivery_fee"]
+            order.display_tax_amount = totals["tax_amount"]
+            order.display_discount_amount = totals["discount_amount"]
+            order.display_total_amount = totals["total_payable"]
+        else:
+            order.display_delivery_fee = Decimal("0.00")
+            order.display_tax_amount = Decimal("0.00")
+            order.display_discount_amount = Decimal("0.00")
+            order.display_total_amount = Decimal("0.00")
+
+    wishlist_items = (
+        Wishlist.objects
+        .filter(user=request.user)
+        .select_related("product", "variant")
+        .prefetch_related("variant__images")
+        .order_by("-created_at")
+    )
+
+    for item in wishlist_items:
+        first_image = item.variant.images.first()
+        item.thumbnail = first_image.image.url if first_image else None
+
+        item.display_price = item.variant.price
+
+        if item.variant.discount > 0:
+            item.display_price = item.variant.price - (
+                item.variant.price * item.variant.discount / 100
+            )
+
     open_modal = request.session.pop('open_modal', None)
 
-    return render(request, 'user_panel/profile.html', {'user':user, 'addresses':addresses, 'latest_address':latest_address, 'open_modal': open_modal})
+    return render(request, 'user_panel/profile.html', {'user':user, 'addresses':addresses, 'latest_address':latest_address, 'open_modal': open_modal, 'orders': orders, 'wishlist_items': wishlist_items})
 
 @login_required(login_url='user_login')
 def user_add_address(request):
@@ -570,7 +670,7 @@ def user_add_address(request):
 
 @login_required(login_url='user_login')
 def user_edit_address(request, id):
-    address = Address.objects.get(id=id, user=request.user)
+    address = get_object_or_404(Address, id=id, user=request.user)
 
     if request.method == "POST":
         name = request.POST.get('name', '').strip()
@@ -614,6 +714,8 @@ def user_edit_address(request, id):
         address.postal_code = postal_code
         address.state = state
         address.save()
+
+        return redirect(request.POST.get("next") or "user_profile")
         
 
     return redirect('user_profile')

@@ -183,22 +183,22 @@
 ══════════════════════════════════════════ -->
 <div class="bg-white overflow-hidden py-4">
   <div class="flex whitespace-nowrap marquee-track">
-    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED_DROP//</span>
-    <span class="mono text-black text-sm tracking-widest mr-12">NO_RESTOCK //</span>
-    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED_DROP//</span>
-    <span class="mono text-black text-sm tracking-widest mr-12">NO_RESTOCK //</span>
-    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED_DROP//</span>
-    <span class="mono text-black text-sm tracking-widest mr-12">NO_RESTOCK //</span>
-    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED_DROP//</span>
-    <span class="mono text-black text-sm tracking-widest mr-12">NO_RESTOCK //</span>
-    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED_DROP//</span>
-    <span class="mono text-black text-sm tracking-widest mr-12">NO_RESTOCK //</span>
-    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED_DROP//</span>
-    <span class="mono text-black text-sm tracking-widest mr-12">NO_RESTOCK //</span>
-    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED_DROP//</span>
-    <span class="mono text-black text-sm tracking-widest mr-12">NO_RESTOCK //</span>
-    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED_DROP//</span>
-    <span class="mono text-black text-sm tracking-widest mr-12">NO_RESTOCK //</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED DROP//</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">NO RESTOCK //</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED DROP//</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">NO RESTOCK //</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED DROP//</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">NO RESTOCK //</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED DROP//</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">NO RESTOCK //</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED DROP//</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">NO RESTOCK //</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED DROP//</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">NO RESTOCK //</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED DROP//</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">NO RESTOCK //</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED DROP//</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">NO RESTOCK //</span>
   </div>
 </div>
 
@@ -261,99 +261,111 @@
     <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-black/20 to-transparent pointer-events-none"></div>  <div class="flex items-end justify-between mb-12 reveal">
     <div>
       <div class="flex items-center gap-3 mb-3">
-        <div class="w-7 h-0.5 bg-white"></div>
-        <span class="mono text-black/50 text-[10px] tracking-widest">NEW_ARRIVAL</span>
+        <div class="w-7 h-0.5 bg-black"></div>
+        <span class="mono text-black/50 text-[10px] tracking-widest">NEW ARRIVAL</span>
       </div>
       <h2 class="bebas text-black text-5xl md:text-7xl leading-none">THIS WEEK'S DROP</h2>
     </div>
-    <a href="#" class="hidden md:flex items-center gap-2 mono text-black/50 text-[10px] tracking-widest hover:text-black transition-colors">
+    <a href="product_list" class="hidden md:flex items-center gap-2 mono text-black/50 text-[10px] tracking-widest hover:text-black transition-colors">
       VIEW ALL <span class="cat-arrow inline-block">→</span>
     </a>
   </div>
 
   <!-- Product grid -->
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
+<div id="product-grid" class="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-6">
 
-    <!-- Product 1 -->
-    <div class="product-card bg-[#111] rounded-sm overflow-hidden reveal reveal-d1">
-      <div class="relative bg-[#1a1a1a] h-64 md:h-72 flex items-center justify-center overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=600" 
-             alt="Heavy Box T-Shirt" class="product-img bw-img w-full h-full object-cover"/>
+  {% for product in latest_products %}
+
+  <div class="product-card bg-white border border-black/15 overflow-hidden reveal reveal-d{{ forloop.counter }}">
+
+    <!-- Product Image -->
+    <a href="{% url 'product_detail' product.id %}">
+      <div class="relative h-64 md:h-72 overflow-hidden bg-neutral-100">
+
+        {% if product.thumbnail %}
+          <img src="{{ product.thumbnail }}"
+               alt="{{ product.name }}"
+               class="product-img w-full h-full object-cover"/>
+        {% else %}
+          <div class="w-full h-full flex items-center justify-center bg-neutral-100">
+            <span class="mono text-[10px] tracking-widest text-black/30">
+              NO IMAGE
+            </span>
+          </div>
+        {% endif %}
+
+        {% if product.total_stock <= 0 %}
+          <div class="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
+            <span class="bebas text-white/80 text-3xl tracking-widest">
+              SOLD OUT
+            </span>
+          </div>
+        {% endif %}
+
         <div class="absolute top-3 left-3 z-10">
-          <span class="mono text-[8px] tracking-widest px-2 py-1 bg-white text-black font-bold">NEW</span>
+          <span class="mono text-[8px] tracking-widest px-2 py-1 bg-black text-white font-bold">
+            NEW
+          </span>
         </div>
-      </div>
-      <div class="p-4">
-        <p class="mono text-white/30 text-[9px] tracking-widest mb-1">T-SHIRTS</p>
-        <div class="flex items-center justify-between mb-3">
-          <p class="text-white text-sm font-semibold">Heavy Box T-Shirt</p>
-          <p class="mono text-white text-sm font-bold">₹1,800</p>
-        </div>
-        <button class="w-full mono text-[10px] tracking-widest py-3 bg-white text-black font-bold hover:bg-gray-200 active:scale-[0.98] transition-all">
-          ADD TO CART
-        </button>
-      </div>
-    </div>
 
-    <!-- Product 2 -->
-    <div class="product-card bg-[#111] rounded-sm overflow-hidden reveal reveal-d2">
-      <div class="relative bg-[#1a1a1a] h-64 md:h-72 flex items-center justify-center overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1503341504253-dff4f37f6c43?auto=format&fit=crop&q=80&w=600" 
-             alt="Industrial Graphic Tee" class="product-img bw-img w-full h-full object-cover"/>
-        <div class="absolute top-3 left-3 z-10">
-          <span class="mono text-[8px] tracking-widest px-2 py-1 bg-white text-black font-bold">NEW</span>
-        </div>
       </div>
-      <div class="p-4">
-        <p class="mono text-white/30 text-[9px] tracking-widest mb-1">T-SHIRTS</p>
-        <div class="flex items-center justify-between mb-3">
-          <p class="text-white text-sm font-semibold">Industrial Graphic Tee</p>
-          <p class="mono text-white text-sm font-bold">₹2,200</p>
-        </div>
-        <button class="w-full mono text-[10px] tracking-widest py-3 bg-white text-black font-bold hover:bg-gray-200 active:scale-[0.98] transition-all">
-          ADD TO CART
-        </button>
-      </div>
-    </div>
+    </a>
 
-    <!-- Product 3 -->
-    <div class="product-card bg-[#111] rounded-sm overflow-hidden reveal reveal-d3">
-      <div class="relative bg-[#1a1a1a] h-64 md:h-72 flex items-center justify-center overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&q=80&w=600" 
-             alt="Cypher Print T-Shirt" class="product-img bw-img w-full h-full object-cover"/>
-      </div>
-      <div class="p-4">
-        <p class="mono text-white/30 text-[9px] tracking-widest mb-1">T-SHIRTS</p>
-        <div class="flex items-center justify-between mb-3">
-          <p class="text-white text-sm font-semibold">Cypher Print T-Shirt</p>
-          <p class="mono text-white text-sm font-bold">₹2,800</p>
-        </div>
-        <button class="w-full mono text-[10px] tracking-widest py-3 bg-white text-black font-bold hover:bg-gray-200 active:scale-[0.98] transition-all">
-          ADD TO CART
-        </button>
-      </div>
-    </div>
+    <!-- Product Info -->
+    <div class="p-4">
 
-    <!-- Product 4 — Out of stock -->
-    <div class="product-card bg-[#111] rounded-sm overflow-hidden reveal reveal-d4">
-      <div class="relative bg-[#1a1a1a] h-64 md:h-72 flex items-center justify-center overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&q=80&w=600" 
-             alt="Drift Cargo" class="product-img bw-img w-full h-full object-cover opacity-50"/>
-        <div class="absolute inset-0 flex items-center justify-center z-10">
-          <span class="bebas text-white/70 text-3xl tracking-widest">SOLD OUT</span>
+      <p class="mono text-black/40 text-[9px] tracking-widest mb-1.5">
+        {% if product.subcategory %}
+          {{ product.subcategory.name|upper }}
+        {% else %}
+          PRODUCT
+        {% endif %}
+      </p>
+
+      <a href="{% url 'product_detail' product.id %}" class="flex items-start justify-between mb-1">
+        <p class="text-black text-sm font-medium leading-snug">
+          {{ product.name }}
+        </p>
+
+        <div class="text-right shrink-0 ml-2">
+          <p class="mono text-black text-sm font-bold">
+            ₹{{ product.display_price|floatformat:0 }}
+          </p>
+
+          {% if product.default_variant and product.default_variant.discount > 0 %}
+            <p class="mono text-black/35 text-[10px] line-through">
+              ₹{{ product.original_price|floatformat:0 }}
+            </p>
+          {% endif %}
         </div>
-      </div>
-      <div class="p-4">
-        <p class="mono text-white/30 text-[9px] tracking-widest mb-1">BOTTOMS</p>
-        <div class="flex items-center justify-between mb-3">
-          <p class="text-white text-sm font-semibold">Drift Cargo</p>
-          <p class="mono text-white text-sm font-bold">₹3,400</p>
-        </div>
-        <button disabled class="w-full mono text-[10px] tracking-widest py-3 bg-transparent text-white/30 font-bold cursor-not-allowed border border-white/10">
-          RESTOCK ALERT
+      </a>
+
+      {% if product.total_stock > 0 %}
+        <a href="{% url 'product_detail' product.id %}"
+           class="block text-center w-full mono text-[10px] border border-black/15 tracking-widest py-3 bg-white text-black font-bold hover:bg-gray-100 active:scale-[0.98] transition-all">
+          VIEW PRODUCT
+        </a>
+      {% else %}
+        <button disabled
+                class="w-full mono text-[10px] border border-black/10 tracking-widest py-3 bg-white text-black/30 font-bold cursor-not-allowed">
+          SOLD OUT
         </button>
-      </div>
+      {% endif %}
+
     </div>
+  </div>
+
+  {% empty %}
+
+  <div class="col-span-full py-24 text-center">
+    <p class="mono text-black/40 text-[10px] tracking-widest">
+      NO LATEST PRODUCTS FOUND
+    </p>
+  </div>
+
+  {% endfor %}
+
+</div>
 
   </div>
 </section>

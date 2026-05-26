@@ -17,12 +17,11 @@ urlpatterns = [
     path('subcategories/edit',       views.edit_subcategory,      name='edit_subcategory'),
     path('subcategories/delete',     views.delete_subcategory,    name='delete_subcategory'),
 
-    
+    path('products/<uuid:product_id>/variants/', views.product_variants, name='product_variants'),
     path('add-variant/<uuid:product_id>/', views.add_variant,     name='add_variant'),
     path('variants/<uuid:variant_id>/edit/', views.edit_variant,  name='edit_variant'),
     path('variants/toggle-status/',  views.toggle_variant_status, name='toggle_variant_status'),
-    path('products/<uuid:product_id>/variants/', views.product_variants, name='product_variants'),
-
+    
     path('products-list',            views.product_list,          name="product_list"),
     path('products-detail/<uuid:product_id>/', views.product_detail, name='product_detail'),
 

@@ -1,0 +1,386 @@
+{% extends 'user_base/base.html' %}
+
+{% block title %}
+Payment Method
+{% endblock %}
+
+{% block content %}
+
+<section class="bg-white min-h-screen px-8 md:px-12 py-14">
+
+  <div class="max-w-6xl mx-auto">
+
+    <!-- Back Button -->
+    <div class="mb-10">
+      <a href="{% url 'checkout_page' %}?source={{ checkout_source }}"
+         class="inline-flex items-center gap-3 mono text-[10px] tracking-widest text-black/50 hover:text-black uppercase transition-colors">
+        <span class="text-xl leading-none">←</span>
+        Back to Checkout
+      </a>
+    </div>
+
+    <!-- Page Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-[1.4fr_.8fr] gap-10">
+
+      <!-- Left Side -->
+      <div>
+
+        <!-- Header -->
+        <div class="flex items-center gap-4 mb-8">
+          <div class="w-1 h-8 bg-black"></div>
+          <div>
+            <p class="mono text-[9px] tracking-[.3em] text-black/35 uppercase mb-1">
+              Step 2 of 2
+            </p>
+            <h1 class="bebas text-5xl md:text-6xl leading-none text-black tracking-wide">
+              Payment Method
+            </h1>
+          </div>
+        </div>
+
+        <!-- Payment Form -->
+        <form method="POST" action="{% url 'place_order' %}" id="payment-form">
+          {% csrf_token %}
+
+          <!-- Selected address -->
+          {% if selected_address %}
+            <input type="hidden" name="address_id" value="{{ selected_address.id }}">
+          {% endif %}
+
+          <!-- Only COD enabled for now -->
+          <input type="hidden" name="payment_method" value="COD">
+          <input type="hidden" name="source" value="{{ checkout_source }}">
+
+          <!-- Payment Options -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+
+            <!-- Wallet Disabled -->
+            <div class="border border-black/10 bg-neutral-100 opacity-50 px-5 py-7 cursor-not-allowed">
+              <div class="flex flex-col items-center text-center gap-3">
+                <svg class="w-6 h-6 text-black/40"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="1.8"
+                     viewBox="0 0 24 24">
+                  <path d="M3 7h18v13H3z"/>
+                  <path d="M16 3v4"/>
+                  <path d="M8 3v4"/>
+                </svg>
+
+                <div>
+                  <p class="mono text-[10px] tracking-widest text-black uppercase font-bold">
+                    Wallet
+                  </p>
+                  <p class="mono text-[8px] tracking-widest text-black/35 mt-2 uppercase">
+                    Coming Soon
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- COD Active -->
+            <label class="border-2 border-black bg-white px-5 py-7 cursor-pointer relative block">
+              <input type="radio"
+                     name="payment_method_display"
+                     value="COD"
+                     checked
+                     class="hidden">
+
+              <div class="absolute top-3 right-3 w-4 h-4 bg-black flex items-center justify-center">
+                <span class="text-white text-[10px] leading-none">✓</span>
+              </div>
+
+              <div class="flex flex-col items-center text-center gap-3">
+                <svg class="w-6 h-6 text-black"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="1.8"
+                     viewBox="0 0 24 24">
+                  <rect x="3" y="6" width="18" height="12" rx="1"/>
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M6 9h.01M18 15h.01"/>
+                </svg>
+
+                <div>
+                  <p class="mono text-[10px] tracking-widest text-black uppercase font-bold">
+                    Cash On Delivery
+                  </p>
+                  <p class="mono text-[8px] tracking-widest text-black/35 mt-2 uppercase">
+                    Pay when delivered
+                  </p>
+                </div>
+              </div>
+            </label>
+
+            <!-- Razorpay Disabled -->
+            <div class="border border-black/10 bg-neutral-100 opacity-50 px-5 py-7 cursor-not-allowed">
+              <div class="flex flex-col items-center text-center gap-3">
+                <svg class="w-6 h-6 text-black/40"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="1.8"
+                     viewBox="0 0 24 24">
+                  <rect x="4" y="4" width="6" height="6"/>
+                  <rect x="14" y="4" width="6" height="6"/>
+                  <rect x="4" y="14" width="6" height="6"/>
+                  <path d="M14 14h2v2h-2zM18 14h2v6h-2zM14 18h2v2h-2z"/>
+                </svg>
+
+                <div>
+                  <p class="mono text-[10px] tracking-widest text-black uppercase font-bold">
+                    Razorpay
+                  </p>
+                  <p class="mono text-[8px] tracking-widest text-black/35 mt-2 uppercase">
+                    Coming Soon
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- COD Info Box -->
+          <div class="border border-black/10 bg-neutral-50 p-6 mb-10">
+            <div class="flex items-start gap-4">
+              <div class="w-9 h-9 bg-black text-white flex items-center justify-center shrink-0">
+                <span class="mono text-[11px]">₹</span>
+              </div>
+
+              <div>
+                <h3 class="mono text-[11px] tracking-widest text-black uppercase font-bold mb-2">
+                  Cash On Delivery Selected
+                </h3>
+
+                <p class="text-sm text-black/55 leading-relaxed">
+                  You can pay the final amount in cash when your order is delivered.
+                  Please keep the exact amount ready for faster delivery.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Delivery Address -->
+          {% if selected_address %}
+          <div class="border border-black/10 p-6 mb-10">
+            <div class="flex items-center justify-between gap-4 mb-5">
+              <div>
+                <p class="mono text-[9px] tracking-[.25em] text-black/35 uppercase mb-1">
+                  Deliver To
+                </p>
+                <h3 class="text-black text-lg font-semibold">
+                  {{ selected_address.name }}
+                </h3>
+              </div>
+
+              <a href="{% url 'checkout_page' %}?source={{ checkout_source }}"
+                 class="mono text-[10px] tracking-widest text-black/45 hover:text-black uppercase transition-colors">
+                Change
+              </a>
+            </div>
+
+            <p class="text-sm text-black/55 leading-relaxed">
+              {{ selected_address.line1 }}<br>
+              {{ selected_address.city }},
+              {{ selected_address.get_state_display }} -
+              {{ selected_address.postal_code }}<br>
+              India<br>
+              +91 {{ selected_address.phone }}
+            </p>
+          </div>
+          {% endif %}
+
+          <!-- Mobile Order Summary -->
+          <div class="lg:hidden border border-black/10 p-6 mb-8">
+            <h2 class="bebas text-4xl text-black mb-6">
+              Order Summary
+            </h2>
+
+            <div class="space-y-4">
+
+              <div class="flex items-center justify-between">
+                <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
+                  Subtotal
+                </span>
+                <span class="mono text-sm text-black">
+                  ₹{{ subtotal|floatformat:0 }}
+                </span>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
+                  Discount ({{ discount_percentage|floatformat:0 }}%)
+                </span>
+                <span class="mono text-sm text-green-700">
+                  - ₹{{ discount_amount|floatformat:0 }}
+                </span>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
+                  Tax ({{ tax_percentage|floatformat:0 }}%)
+                </span>
+                <span class="mono text-sm text-black">
+                  ₹{{ tax_amount|floatformat:0 }}
+                </span>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
+                  Shipping
+                </span>
+                <span class="mono text-sm text-black">
+                  ₹{{ delivery_fee|floatformat:0 }}
+                </span>
+              </div>
+
+              <div class="border-t border-black/10 pt-5 flex items-center justify-between">
+                <span class="bebas text-3xl text-black">
+                  Total
+                </span>
+                <span class="mono text-2xl font-bold text-black">
+                  ₹{{ total_payable|floatformat:0 }}
+                </span>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit"
+                  {% if not selected_address %}disabled{% endif %}
+                  class="w-full mono text-[11px] tracking-[.35em] py-5 font-bold uppercase transition-all
+                         {% if selected_address %}
+                           bg-black text-white hover:bg-black/80 active:scale-[0.98]
+                         {% else %}
+                           border border-black/15 text-black/30 cursor-not-allowed
+                         {% endif %}">
+            Confirm Order
+          </button>
+
+          {% if not selected_address %}
+            <p class="mono text-[10px] tracking-widest text-red-600 mt-4 uppercase">
+              Please select a delivery address before placing order.
+            </p>
+          {% endif %}
+
+        </form>
+
+      </div>
+
+      <!-- Right Side Order Summary -->
+      <aside class="hidden lg:block">
+        <div class="sticky top-24 border border-black/10 bg-white p-6">
+
+          <div class="flex items-center gap-3 mb-7">
+            <div class="w-1 h-7 bg-black"></div>
+            <h2 class="bebas text-4xl text-black leading-none">
+              Order Summary
+            </h2>
+          </div>
+
+          <!-- Products -->
+          <div class="space-y-5 mb-7 max-h-[340px] overflow-y-auto pr-1">
+
+            {% for item in cart_items %}
+            <div class="flex gap-4">
+
+              <a href="{% url 'product_detail' item.product.id %}"
+                 class="w-20 h-20 bg-neutral-100 border border-black/10 overflow-hidden shrink-0">
+                {% if item.thumbnail %}
+                  <img src="{{ item.thumbnail }}"
+                       alt="{{ item.product.name }}"
+                       class="w-full h-full object-cover">
+                {% else %}
+                  <div class="w-full h-full flex items-center justify-center">
+                    <span class="mono text-[8px] tracking-widest text-black/30">
+                      NO IMAGE
+                    </span>
+                  </div>
+                {% endif %}
+              </a>
+
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-black leading-snug">
+                  {{ item.product.name }}
+                </p>
+
+                <p class="mono text-[9px] tracking-widest text-black/35 mt-1 uppercase">
+                  Qty: {{ item.quantity }}
+                </p>
+
+                {% if item.variant %}
+                <p class="mono text-[9px] tracking-widest text-black/35 mt-1 uppercase">
+                  {{ item.variant.size }} / {{ item.variant.color }}
+                </p>
+                {% endif %}
+              </div>
+
+              <p class="mono text-sm font-bold text-black shrink-0">
+                ₹{{ item.subtotal_amount|floatformat:0 }}
+              </p>
+
+            </div>
+            {% endfor %}
+
+          </div>
+
+          <!-- Price Details -->
+          <div class="border-t border-black/10 pt-6 space-y-4">
+
+            <div class="flex items-center justify-between">
+              <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
+                Subtotal
+              </span>
+              <span class="mono text-sm text-black">
+                ₹{{ subtotal|floatformat:0 }}
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
+                Discount
+              </span>
+              <span class="mono text-sm text-green-700">
+                - ₹{{ discount_amount|floatformat:0 }}
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
+                Tax
+              </span>
+              <span class="mono text-sm text-black">
+                ₹{{ tax_amount|floatformat:0 }}
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
+                Shipping
+              </span>
+              <span class="mono text-sm text-black">
+                ₹{{ delivery_fee|floatformat:0 }}
+              </span>
+            </div>
+
+            <div class="border-t border-black/10 pt-5 flex items-center justify-between">
+              <span class="bebas text-3xl text-black">
+                Total
+              </span>
+              <span class="mono text-2xl font-bold text-black">
+                ₹{{ total_payable|floatformat:0 }}
+              </span>
+            </div>
+
+          </div>
+
+        </div>
+      </aside>
+
+    </div>
+
+  </div>
+
+</section>
+
+{% endblock %}

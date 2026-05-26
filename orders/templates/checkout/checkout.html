@@ -28,6 +28,104 @@ Checkout | FASHIO
     border-color: rgba(0,0,0,.25);
     background: rgba(0,0,0,.015);
   }
+
+  .modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  padding: 16px;
+}
+
+.modal.open {
+  display: flex;
+}
+
+.modal-box {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.1);
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 60px rgba(0,0,0,.25);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid rgba(0,0,0,.1);
+}
+
+.modal-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 40px;
+  color: #000;
+}
+
+.btn-close-modal {
+  font-size: 22px;
+  color: rgba(0,0,0,.45);
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.form-wrap {
+  display: grid;
+  gap: 16px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-field label {
+  display: block;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.45);
+  margin-bottom: 8px;
+}
+
+.form-field input,
+.form-field select {
+  width: 100%;
+  border: 1px solid rgba(0,0,0,.12);
+  padding: 13px 14px;
+  font-size: 14px;
+  outline: none;
+}
+
+.form-field input:focus,
+.form-field select:focus {
+  border-color: rgba(0,0,0,.45);
+}
+
+.btn-save {
+  width: 100%;
+  margin-top: 10px;
+  background: #000;
+  color: #fff;
+  padding: 15px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .25em;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
 </style>
 {% endblock %}
 
@@ -60,9 +158,6 @@ Checkout | FASHIO
       <div class="w-1 h-14 bg-black"></div>
 
       <div>
-        <p class="mono text-[10px] tracking-[.3em] text-black/40 uppercase mb-2">
-          Secure Checkout
-        </p>
 
         <h1 class="bebas text-black text-6xl md:text-8xl leading-none tracking-wide">
           CHECKOUT
@@ -110,6 +205,7 @@ Checkout | FASHIO
 
             <!-- Product -->
             <div class="flex gap-4">
+              <a href="{% url 'product_detail' item.product.id %}" >
               <div class="w-24 h-24 bg-neutral-100 border border-black/10 overflow-hidden shrink-0">
                 {% if item.thumbnail %}
                   <img src="{{ item.thumbnail }}"
@@ -123,11 +219,14 @@ Checkout | FASHIO
                   </div>
                 {% endif %}
               </div>
+            </a>
 
               <div class="min-w-0">
+                <a href="{% url 'product_detail' item.product.id %}" >
                 <p class="text-black text-sm md:text-base font-semibold leading-snug">
                   {{ item.product.name }}
                 </p>
+              </a>
 
                 {% if item.variant.sku %}
                   <p class="mono text-[9px] tracking-widest text-black/35 uppercase mt-1">
@@ -228,16 +327,31 @@ Checkout | FASHIO
                 value="{{ selected_address.id }}">
 
         <input type="hidden"
-                name="checkout_source"
+                name="source"
                 value="{{ checkout_source }}">
 
-        <div class="border-t border-black/10 mt-5 pt-4">
-            <button type="button"
-                    id="open-address-modal"
-                    class="mono text-[10px] tracking-widest text-black/50 hover:text-black transition-colors uppercase">
-            Change
-            </button>
-        </div>
+        <div class="border-t border-black/10 mt-5 pt-4 flex items-center gap-5">
+          <button type="button"
+                  id="open-address-modal"
+                  class="mono text-[10px] tracking-widest text-black/50 hover:text-black transition-colors uppercase">
+              Change
+          </button>
+
+          {% if selected_address %}
+          <button type="button"
+                  id="open-edit-address-modal"
+                  class="mono text-[10px] tracking-widest text-black/50 hover:text-black transition-colors uppercase"
+                  data-id="{{ selected_address.id }}"
+                  data-name="{{ selected_address.name|escapejs }}"
+                  data-phone="{{ selected_address.phone|escapejs }}"
+                  data-line1="{{ selected_address.line1|escapejs }}"
+                  data-city="{{ selected_address.city|escapejs }}"
+                  data-postal="{{ selected_address.postal_code|escapejs }}"
+                  data-state="{{ selected_address.state|escapejs }}">
+              Edit
+          </button>
+          {% endif %}
+      </div>
 
         </div>
     {% else %}
@@ -295,7 +409,7 @@ Checkout | FASHIO
 
           <div class="flex justify-between gap-6">
             <p class="text-sm text-black/55">
-              Discount
+              Discount ({{ discount_percentage|floatformat:0 }}%)
             </p>
 
             <p class="mono text-sm font-bold text-black">
@@ -305,7 +419,7 @@ Checkout | FASHIO
 
           <div class="flex justify-between gap-6 border-b border-black/10 pb-5">
             <p class="text-sm text-black/55">
-              GST and Taxes
+              Tax ({{ tax_percentage|floatformat:0 }}%)
             </p>
 
             <p class="mono text-sm font-bold text-black">
@@ -325,19 +439,29 @@ Checkout | FASHIO
 
         </div>
 
-        <button type="button"
-                {% if not address %}disabled{% endif %}
-                class="w-full mt-8 mono text-[10px] tracking-[.3em] py-4 font-bold uppercase transition-all flex items-center justify-center gap-3
-                {% if address %}
+        <form method="GET" action="{% url 'payment_method' %}" class="mt-8">
+        {% if selected_address %}
+          <input type="hidden"
+                id="payment-address-id"
+                name="address_id"
+                value="{{ selected_address.id }}">
+
+          <input type="hidden"
+                name="source"
+                value="{{ checkout_source }}">
+        {% endif %}
+
+        <button type="submit"
+                {% if not selected_address %}disabled{% endif %}
+                class="w-full mono text-[10px] tracking-[.3em] py-4 font-bold uppercase transition-all
+                {% if selected_address %}
                   bg-black text-white hover:bg-black/80 active:scale-[0.98]
                 {% else %}
                   border border-black/15 text-black/30 cursor-not-allowed
                 {% endif %}">
           Continue To Payment
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
         </button>
+      </form>
 
       </div>
 
@@ -396,6 +520,7 @@ Checkout | FASHIO
                   data-line1="{{ address.line1 }}"
                   data-city="{{ address.city }}"
                   data-state="{{ address.get_state_display }}"
+                  data-state-value="{{ address.state }}"
                   data-postal="{{ address.postal_code }}">
 
             <div class="flex items-start justify-between gap-4">
@@ -447,6 +572,131 @@ Checkout | FASHIO
   </div>
 </div>
 
+
+<div id="m-edit-address" class="modal">
+  <div class="modal-box">
+    <div class="modal-header">
+        <span class="modal-title">Edit Address</span>
+        <button type="button" class="btn-close-modal" onclick="closeModal('edit-address')">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <form method="POST" id="editForm" novalidate>
+        {% csrf_token %}
+
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <input type="hidden" name="address_id" id="edit_address_id">
+
+        <div class="form-wrap">
+
+          <div class="form-field">
+            <label>Name :</label>
+            <input type="text"
+                   name="name"
+                   id="edit_name"
+                   minlength="3"
+                   pattern="[A-Za-z ]+"
+                   required>
+          </div>
+
+          <div class="form-field">
+            <label>Street Address :</label>
+            <input type="text"
+                   name="line1"
+                   id="edit_line1"
+                   minlength="5"
+                   required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label>Phone :</label>
+              <input type="text"
+                     name="phone"
+                     id="edit_phone"
+                     pattern="[0-9]{10}"
+                     maxlength="10"
+                     required>
+            </div>
+
+            <div class="form-field">
+              <label>City :</label>
+              <input type="text"
+                     name="city"
+                     id="edit_city"
+                     pattern="[A-Za-z ]+"
+                     required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label>Postal code :</label>
+              <input type="text"
+                     name="postal_code"
+                     id="edit_postal"
+                     pattern="[0-9]{6}"
+                     maxlength="6"
+                     required>
+            </div>
+
+            <div class="form-field">
+              <label>State :</label>
+              <select name="state"
+                      id="edit_state"
+                      style="width:100%;background:#fff;border:1px solid #333;color:#111;padding:13px 14px;font-size:12px;font-family:'Space Mono',monospace;outline:none;">
+                <option value="">-- Select State --</option>
+                <option value="AP">Andhra Pradesh</option>
+                <option value="AR">Arunachal Pradesh</option>
+                <option value="AS">Assam</option>
+                <option value="BR">Bihar</option>
+                <option value="CG">Chhattisgarh</option>
+                <option value="DL">Delhi</option>
+                <option value="GA">Goa</option>
+                <option value="GJ">Gujarat</option>
+                <option value="HR">Haryana</option>
+                <option value="HP">Himachal Pradesh</option>
+                <option value="JK">Jammu and Kashmir</option>
+                <option value="JH">Jharkhand</option>
+                <option value="KA">Karnataka</option>
+                <option value="KL">Kerala</option>
+                <option value="MP">Madhya Pradesh</option>
+                <option value="MH">Maharashtra</option>
+                <option value="MN">Manipur</option>
+                <option value="ML">Meghalaya</option>
+                <option value="MZ">Mizoram</option>
+                <option value="NL">Nagaland</option>
+                <option value="OD">Odisha</option>
+                <option value="PB">Punjab</option>
+                <option value="RJ">Rajasthan</option>
+                <option value="SK">Sikkim</option>
+                <option value="TN">Tamil Nadu</option>
+                <option value="TG">Telangana</option>
+                <option value="TR">Tripura</option>
+                <option value="UP">Uttar Pradesh</option>
+                <option value="UT">Uttarakhand</option>
+                <option value="WB">West Bengal</option>
+                <option value="AN">Andaman and Nicobar Islands</option>
+                <option value="CH">Chandigarh</option>
+                <option value="DN">Dadra and Nagar Haveli</option>
+                <option value="LA">Ladakh</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-save">
+            <button type="submit" class="btn-save">
+              SAVE CHANGES →
+            </button>
+          </div>
+
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
 {% endblock %}
 
 {% block scripts %}
@@ -495,10 +745,27 @@ Checkout | FASHIO
       const line1 = button.dataset.line1;
       const city = button.dataset.city;
       const state = button.dataset.state;
+      const stateValue = button.dataset.stateValue;
       const postal = button.dataset.postal;
+
+      if (openEditAddressBtn) {
+        openEditAddressBtn.dataset.id = id;
+        openEditAddressBtn.dataset.name = name;
+        openEditAddressBtn.dataset.phone = phone;
+        openEditAddressBtn.dataset.line1 = line1;
+        openEditAddressBtn.dataset.city = city;
+        openEditAddressBtn.dataset.postal = postal;
+        openEditAddressBtn.dataset.state = stateValue;
+      }
 
       if (selectedAddressIdInput) {
         selectedAddressIdInput.value = id;
+      }
+
+      const paymentAddressIdInput = document.getElementById('payment-address-id');
+
+      if (paymentAddressIdInput) {
+        paymentAddressIdInput.value = id;
       }
 
       if (selectedAddressName) {
@@ -545,7 +812,56 @@ Checkout | FASHIO
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
       closeAddressModal();
+      closeModal('edit-address');
     }
   });
+
+  function openModal(id) {
+  const modal = document.getElementById(`m-${id}`);
+  if (modal) {
+    modal.classList.add('open');
+    document.body.classList.add('overflow-hidden');
+  }
+}
+
+function closeModal(id) {
+  const modal = document.getElementById(`m-${id}`);
+  if (modal) {
+    modal.classList.remove('open');
+    document.body.classList.remove('overflow-hidden');
+  }
+}
+
+function openEditModal(id, name, phone, line1, city, postal, state) {
+  openModal('edit-address');
+
+  document.getElementById('edit_address_id').value = id;
+  document.getElementById('edit_name').value = name;
+  document.getElementById('edit_phone').value = phone;
+  document.getElementById('edit_line1').value = line1;
+  document.getElementById('edit_city').value = city;
+  document.getElementById('edit_postal').value = postal;
+  document.getElementById('edit_state').value = state;
+
+  const editUrl = "{% url 'user_edit_address' 0 %}".replace('/0/', `/${id}/`);
+  document.getElementById('editForm').action = editUrl;
+}
+
+const openEditAddressBtn = document.getElementById('open-edit-address-modal');
+
+if (openEditAddressBtn) {
+  openEditAddressBtn.addEventListener('click', function () {
+    openEditModal(
+      this.dataset.id,
+      this.dataset.name,
+      this.dataset.phone,
+      this.dataset.line1,
+      this.dataset.city,
+      this.dataset.postal,
+      this.dataset.state
+    );
+  });
+}
+
 </script>
 {% endblock %}

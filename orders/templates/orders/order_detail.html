@@ -1,0 +1,674 @@
+{% extends 'admin_base/base.html' %}
+{% block title %}Order Detail{% endblock %}
+
+{% block content %}
+<div class="p-8 max-w-screen-xl mx-auto">
+
+  <!-- Top Bar -->
+  <div class="flex items-center justify-between mb-8">
+    <a href="{% url 'admin_order_list' %}"
+       class="inline-flex items-center gap-2 text-white hover:text-white/50 transition-colors">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+    </a>
+
+    {% comment %} <button class="bg-white text-black mono text-xs font-bold tracking-widest px-6 py-3 hover:bg-white/80 transition-colors">
+      Export CSV
+    </button> {% endcomment %}
+  </div>
+
+  <!-- Top Summary Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-[1.2fr_.9fr] gap-6 mb-8">
+
+    <!-- Order Summary -->
+    <div class="border border-white/10 bg-black">
+      <div class="px-6 py-5 border-b border-white/10">
+        <h2 class="mono text-white text-sm font-bold tracking-wide">
+          Order Summary
+        </h2>
+      </div>
+
+      <div class="px-6 py-5 space-y-0">
+
+        <div class="flex items-center justify-between border-b border-white/10 py-3">
+          <span class="mono text-xs text-white/35">Order ID</span>
+          <span class="mono text-xs text-white">#ORD-{{ order.id|stringformat:"04d" }}</span>
+        </div>
+
+        <div class="flex items-center justify-between border-b border-white/10 py-3">
+          <span class="mono text-xs text-white/35">Order Date</span>
+          <span class="mono text-xs text-white">
+            {{ order.created_at|date:"M d, Y" }} · {{ order.created_at|time:"h:i A" }}
+          </span>
+        </div>
+
+        <div class="flex items-center justify-between border-b border-white/10 py-3">
+          <span class="mono text-xs text-white/35">Order Status</span>
+
+          {% if order.order_status == 'PENDING' or order.order_status == 'PLACED' %}
+            <span class="mono text-xs text-yellow-400">{{ order.get_order_status_display }}</span>
+          {% elif order.order_status == 'SHIPPED' %}
+            <span class="mono text-xs text-blue-400">{{ order.get_order_status_display }}</span>
+          {% elif order.order_status == 'OUT_FOR_DELIVERY' %}
+            <span class="mono text-xs text-sky-400">{{ order.get_order_status_display }}</span>
+          {% elif order.order_status == 'DELIVERED' %}
+            <span class="mono text-xs text-green-400">{{ order.get_order_status_display }}</span>
+          {% elif order.order_status == 'CANCELLED' %}
+            <span class="mono text-xs text-red-400">{{ order.get_order_status_display }}</span>
+          {% else %}
+            <span class="mono text-xs text-white">{{ order.get_order_status_display }}</span>
+          {% endif %}
+        </div>
+
+        <div class="flex items-center justify-between border-b border-white/10 py-3">
+          <span class="mono text-xs text-white/35">Payment Status</span>
+
+          {% if order.payment_status == 'PAID' %}
+            <span class="mono text-xs text-green-400">Paid</span>
+          {% elif order.payment_status == 'FAILED' %}
+            <span class="mono text-xs text-red-400">Failed</span>
+          {% else %}
+            <span class="mono text-xs text-yellow-400">Pending</span>
+          {% endif %}
+        </div>
+
+        <div class="flex items-center justify-between border-b border-white/10 py-3">
+          <span class="mono text-xs text-white/35">Payment Method</span>
+          <span class="mono text-xs text-white">{{ order.get_payment_method_display }}</span>
+        </div>
+
+        <div class="flex items-center justify-between pt-5">
+        <span class="mono text-xs text-white/35">Current Amount</span>
+        <span class="mono text-2xl text-white font-bold">
+            ₹{{ display_total_amount|floatformat:0 }}
+        </span>
+        </div>
+
+        {% if display_total_amount != order.total_amount %}
+        <div class="flex items-center justify-between pt-3">
+            <span class="mono text-xs text-white/25">Original Amount</span>
+            <span class="mono text-xs text-white/40 line-through">
+            ₹{{ order.total_amount|floatformat:0 }}
+            </span>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+
+    <!-- Customer Information -->
+    <div class="border border-white/10 bg-black">
+      <div class="px-6 py-5 border-b border-white/10">
+        <h2 class="mono text-white text-sm font-bold tracking-wide">
+          Customer Information
+        </h2>
+      </div>
+
+      <div class="px-6 py-6 space-y-5">
+
+        <div>
+          <p class="mono text-[10px] text-white/30 tracking-widest mb-2">Name</p>
+          <p class="mono text-sm text-white">
+            {% if order.user.get_full_name %}
+              {{ order.user.get_full_name }}
+            {% else %}
+              {{ order.user.email }}
+            {% endif %}
+          </p>
+        </div>
+
+        <div>
+          <p class="mono text-[10px] text-white/30 tracking-widest mb-2">Email</p>
+          <p class="mono text-sm text-white break-all">
+            {{ order.user.email }}
+          </p>
+        </div>
+
+        {% if order.address %}
+        <div>
+          <p class="mono text-[10px] text-white/30 tracking-widest mb-2">Mobile</p>
+          <p class="mono text-sm text-white">
+            +91 {{ order.address.phone }}
+          </p>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Product Details -->
+  <div class="border border-white/10 bg-black mb-8">
+
+    <div class="px-6 py-5 border-b border-white/10">
+      <h2 class="mono text-white text-sm font-bold tracking-wide">
+        Product Details
+      </h2>
+    </div>
+
+    <!-- Table Header -->
+    <div class="hidden md:grid grid-cols-[1.5fr_1fr_80px_130px_130px] px-6 py-4 border-b border-white/10 bg-[#111]">
+      <span class="mono text-[10px] text-white/35 tracking-widest">Product</span>
+      <span class="mono text-[10px] text-white/35 tracking-widest">Variant</span>
+      <span class="mono text-[10px] text-white/35 tracking-widest text-center">QTY</span>
+      <span class="mono text-[10px] text-white/35 tracking-widest text-right">Price</span>
+      <span class="mono text-[10px] text-white/35 tracking-widest text-right">Subtotal</span>
+    </div>
+
+    <!-- Items -->
+    {% for item in order.items.all %}
+    <div class="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_80px_130px_130px] items-center gap-5 px-6 py-5 border-b border-white/10 last:border-b-0 transition-colors
+    {% if item.item_status == 'CANCELLED' %}
+        bg-red-950/20 opacity-70
+    {% elif item.item_status == 'RETURN_REQUESTED' %}
+        bg-blue-950/20
+    {% elif item.item_status == 'RETURNED' %}
+        bg-green-950/20 opacity-80
+    {% else %}
+        hover:bg-[#111]
+    {% endif %}
+    ">
+      <!-- Product -->
+      <div class="flex items-center gap-4">
+        <div class="w-16 h-16 border border-white/10 bg-[#111] overflow-hidden shrink-0">
+          {% if item.variant and item.variant.images.first %}
+            <img src="{{ item.variant.images.first.image.url }}"
+                 alt="{{ item.product_name }}"
+                 class="w-full h-full object-cover">
+          {% else %}
+            <div class="w-full h-full flex items-center justify-center">
+              <span class="mono text-[8px] text-white/20 tracking-widest">
+                NO IMG
+              </span>
+            </div>
+          {% endif %}
+        </div>
+
+        <div>
+        <div class="flex items-center gap-2 flex-wrap">
+            <p class="mono text-sm text-white font-semibold">
+            {{ item.product_name }}
+            </p>
+
+            {% if item.item_status == "CANCELLED" %}
+            <span class="mono text-[8px] tracking-widest px-2 py-1 text-red-400 font-bold">
+                CANCELLED
+            </span>
+
+            {% elif item.item_status == "RETURN_REQUESTED" %}
+            <span class="mono text-[8px] tracking-widest px-2 py-1 text-blue-400 font-bold">
+                RETURN REQUESTED
+            </span>
+            {% endif %}
+
+            {% comment %} {% elif item.item_status == "RETURNED" %}
+            <span class="mono text-[8px] tracking-widest px-2 py-1 text-green-400 font-bold">
+                RETURNED
+            </span>
+            {% endif %} {% endcomment %}
+        </div>
+
+        {% if item.variant and item.variant.sku %}
+            <p class="mono text-[10px] text-white/30 tracking-widest mt-1">
+            SKU: {{ item.variant.sku }}
+            </p>
+        {% endif %}
+
+        {% if item.cancel_reason %}
+            <p class="mono text-[9px] text-red-400/70 tracking-widest mt-2">
+            Reason: {{ item.get_cancel_reason_display }}
+            </p>
+        {% endif %}
+
+        {% comment %} {% if item.return_reason %}
+            <p class="mono text-[9px] text-blue-400/70 tracking-widest mt-2">
+            Reason: {{ item.get_return_reason_display }}
+            </p>
+        {% endif %} {% endcomment %}
+        </div>
+      </div>
+
+      <!-- Variant -->
+      <div>
+        <p class="mono text-xs text-white/60">
+          Size : {{ item.size|default:"-" }}
+        </p>
+        <p class="mono text-xs text-white/60 mt-1">
+          Color : {{ item.color|default:"-" }}
+        </p>
+      </div>
+
+      <!-- Quantity -->
+      <div class="md:text-center">
+        <p class="mono text-[10px] text-white/30 uppercase md:hidden mb-1">Qty</p>
+        <p class="mono text-sm text-white">
+          {{ item.quantity }}
+        </p>
+      </div>
+
+      <!-- Price -->
+      <div class="md:text-right">
+        <p class="mono text-[10px] text-white/30 uppercase md:hidden mb-1">Price</p>
+        <p class="mono text-sm text-white">
+          ₹{{ item.price|floatformat:0 }}
+        </p>
+      </div>
+
+      <!-- Subtotal -->
+      <div class="md:text-right">
+        <p class="mono text-[10px] text-white/30 uppercase md:hidden mb-1">Subtotal</p>
+        <p class="mono text-sm font-bold
+        {% if item.item_status == 'CANCELLED' %}
+            text-red-400 line-through
+        {% elif item.item_status == 'RETURN_REQUESTED' %}
+            text-blue-400
+        {% elif item.item_status == 'RETURNED' %}
+            text-green-400 line-through
+        {% else %}
+            text-white
+        {% endif %}
+        ">
+        ₹{{ item.subtotal|floatformat:0 }}
+        </p>
+      </div>
+
+    </div>
+    {% empty %}
+    <div class="px-6 py-16 text-center">
+      <p class="mono text-sm text-white/30 tracking-widest">
+        NO ORDER ITEMS FOUND
+      </p>
+    </div>
+    {% endfor %}
+
+    <!-- Price Summary -->
+    <div class="bg-[#111] border-t border-white/10 px-6 py-6">
+    <div class="max-w-sm ml-auto space-y-4">
+
+        <div class="flex items-center justify-between">
+        <span class="mono text-xs text-white/40">Billable Subtotal</span>
+        <span class="mono text-sm text-white">
+            ₹{{ billable_subtotal|floatformat:0 }}
+        </span>
+        </div>
+
+        <div class="flex items-center justify-between">
+        <span class="mono text-xs text-white/40">Discount</span>
+        <span class="mono text-sm text-green-400">
+            - ₹{{ display_discount_amount|floatformat:0 }}
+        </span>
+        </div>
+
+        {% if cancelled_subtotal > 0 %}
+        <div class="flex items-center justify-between">
+            <span class="mono text-xs text-red-400">Cancelled Items</span>
+            <span class="mono text-sm text-red-400 line-through">
+            ₹{{ cancelled_subtotal|floatformat:0 }}
+            </span>
+        </div>
+        {% endif %}
+
+        {% if returned_subtotal > 0 %}
+        <div class="flex items-center justify-between">
+            <span class="mono text-xs text-green-400">Returned Items</span>
+            <span class="mono text-sm text-green-400 line-through">
+            ₹{{ returned_subtotal|floatformat:0 }}
+            </span>
+        </div>
+        {% endif %}
+
+        <div class="flex items-center justify-between">
+        <span class="mono text-xs text-white/40">Tax</span>
+        <span class="mono text-sm text-white">
+            ₹{{ display_tax_amount|floatformat:0 }}
+        </span>
+        </div>
+
+        <div class="flex items-center justify-between">
+        <span class="mono text-xs text-white/40">Shipping Fee</span>
+        <span class="mono text-sm text-white">
+            {% if display_delivery_fee > 0 %}
+            ₹{{ display_delivery_fee|floatformat:0 }}
+            {% else %}
+            Free
+            {% endif %}
+        </span>
+        </div>
+
+        <div class="flex items-center justify-between pt-5">
+        <span class="mono text-xs text-white/35">Current Amount</span>
+        <span class="mono text-2xl text-white font-bold">
+            ₹{{ display_total_amount|floatformat:0 }}
+        </span>
+        </div>
+
+        {% if display_total_amount != order.total_amount %}
+        <div class="flex items-center justify-between pt-3">
+            <span class="mono text-xs text-white/25">Original Amount</span>
+            <span class="mono text-xs text-white/40 line-through">
+            ₹{{ order.total_amount|floatformat:0 }}
+            </span>
+        </div>
+        {% endif %}
+
+    </div>
+    </div>
+
+  </div>
+
+  <!-- Delivery Address + Order Tracking -->
+  <div class="grid grid-cols-1 lg:grid-cols-[.9fr_1.1fr] gap-6 mb-8">
+
+    <!-- Delivery Address -->
+    <div class="border border-white/10 bg-black">
+      <div class="px-6 py-5 border-b border-white/10">
+        <h2 class="mono text-white text-sm font-bold tracking-wide">
+          Delivery Address
+        </h2>
+      </div>
+
+      <div class="px-6 py-6">
+        {% if order.address %}
+          <p class="mono text-sm text-white mb-2">
+            {{ order.address.name }}
+          </p>
+
+          <p class="text-sm text-white/50 leading-relaxed">
+            {{ order.address.line1 }}<br>
+            {{ order.address.city }},
+            {{ order.address.get_state_display }} -
+            {{ order.address.postal_code }}<br>
+            India
+          </p>
+
+          <p class="mono text-xs text-white/50 mt-5">
+            +91 {{ order.address.phone }}
+          </p>
+        {% else %}
+          <p class="mono text-sm text-white/30 tracking-widest">
+            NO ADDRESS FOUND
+          </p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Order Status Timeline -->
+<!-- Order Status Timeline -->
+<div class="border border-white/10 bg-black">
+  <div class="px-6 py-5 border-b border-white/10">
+    <h2 class="mono text-white text-sm font-bold tracking-wide">
+      Order Status
+    </h2>
+  </div>
+
+  <div class="px-6 py-8">
+
+    {% if order.order_status == "CANCELLED" %}
+
+      <!-- Cancelled Timeline -->
+      <div class="relative">
+
+        <div class="absolute left-[22%] right-[22%] top-5 h-px bg-red-500/40"></div>
+
+        <div class="relative grid grid-cols-2 gap-4">
+
+          <!-- Order Placed -->
+          <div class="text-center">
+            <div class="mx-auto w-10 h-10 rounded-full border border-white bg-white text-black flex items-center justify-center relative z-10">
+              ✓
+            </div>
+
+            <p class="mono text-[10px] text-white mt-4 font-bold">
+              Order Placed
+            </p>
+
+            <p class="mono text-[9px] text-white/30 mt-2">
+              {{ order.created_at|date:"M d, Y" }}
+            </p>
+          </div>
+
+          <!-- Order Cancelled -->
+          <div class="text-center">
+            <div class="mx-auto w-10 h-10 rounded-full border border-red-500 bg-red-500 text-white flex items-center justify-center relative z-10">
+              ×
+            </div>
+
+            <p class="mono text-[10px] text-red-400 mt-4 font-bold">
+              Order Cancelled
+            </p>
+
+            {% for history in status_history %}
+              {% if history.status == "CANCELLED" %}
+                <p class="mono text-[9px] text-white/30 mt-2">
+                  {{ history.created_at|date:"M d, Y" }}
+                </p>
+              {% endif %}
+            {% endfor %}
+          </div>
+
+        </div>
+      </div>
+
+    {% else %}
+
+      <!-- Normal Timeline Icons -->
+      <div class="relative">
+
+        <div class="absolute left-0 right-0 top-5 h-px bg-white/20"></div>
+
+        <div class="relative grid grid-cols-4 gap-4">
+
+          <!-- Order Placed -->
+          <div class="text-center">
+            <div class="mx-auto w-10 h-10 rounded-full border border-white bg-white text-black flex items-center justify-center relative z-10">
+              ✓
+            </div>
+            <p class="mono text-[10px] text-white mt-4 font-bold">
+              Order Placed
+            </p>
+          </div>
+
+          <!-- Shipped -->
+          <div class="text-center">
+            <div class="mx-auto w-10 h-10 rounded-full border
+              {% if order.order_status == 'SHIPPED' or order.order_status == 'OUT_FOR_DELIVERY' or order.order_status == 'DELIVERED' %}
+                border-white bg-white text-black
+              {% else %}
+                border-white/20 bg-black text-white/30
+              {% endif %}
+              flex items-center justify-center relative z-10">
+              📦
+            </div>
+            <p class="mono text-[10px] text-white mt-4 font-bold">
+              Shipped
+            </p>
+          </div>
+
+          <!-- Out For Delivery -->
+          <div class="text-center">
+            <div class="mx-auto w-10 h-10 rounded-full border
+              {% if order.order_status == 'OUT_FOR_DELIVERY' or order.order_status == 'DELIVERED' %}
+                border-white bg-white text-black
+              {% else %}
+                border-white/20 bg-black text-white/30
+              {% endif %}
+              flex items-center justify-center relative z-10">
+              🚚
+            </div>
+            <p class="mono text-[10px] text-white mt-4 font-bold">
+              Out For Delivery
+            </p>
+          </div>
+
+          <!-- Delivered -->
+          <div class="text-center">
+            <div class="mx-auto w-10 h-10 rounded-full border
+              {% if order.order_status == 'DELIVERED' %}
+                border-white bg-white text-black
+              {% else %}
+                border-white/20 bg-black text-white/30
+              {% endif %}
+              flex items-center justify-center relative z-10">
+              📍
+            </div>
+            <p class="mono text-[10px] text-white mt-4 font-bold">
+              Delivered
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+    {% endif %}
+
+    <!-- Status History List -->
+    <div class="mt-10 border-t border-white/10 pt-6">
+      <p class="mono text-xs text-white/35 tracking-widest mb-5">
+        Status History
+      </p>
+
+      <div class="space-y-4">
+        {% for history in status_history %}
+          <div class="flex items-start justify-between gap-6 border-b border-white/5 pb-4 last:border-b-0">
+
+            <div>
+              <p class="mono text-sm
+                {% if history.status == 'CANCELLED' %}
+                  text-red-400
+                {% else %}
+                  text-white
+                {% endif %}
+              ">
+                {% if history.status == "PENDING" %}
+                  Pending
+                {% elif history.status == "PLACED" %}
+                  Placed
+                {% elif history.status == "CONFIRMED" %}
+                  Confirmed
+                {% elif history.status == "SHIPPED" %}
+                  Shipped
+                {% elif history.status == "OUT_FOR_DELIVERY" %}
+                  Out For Delivery
+                {% elif history.status == "DELIVERED" %}
+                  Delivered
+                {% elif history.status == "CANCELLED" %}
+                  Order Cancelled
+                {% else %}
+                  {{ history.status }}
+                {% endif %}
+              </p>
+
+              {% if history.note %}
+                <p class="text-sm text-white/40 mt-2 leading-relaxed">
+                  {{ history.note }}
+                </p>
+              {% endif %}
+            </div>
+
+            <div class="text-right shrink-0">
+              <p class="mono text-xs text-white/50">
+                {{ history.created_at|date:"M d, Y" }}
+              </p>
+
+              <p class="mono text-[11px] text-white/30 mt-1">
+                {{ history.created_at|time:"h:i A" }}
+              </p>
+            </div>
+
+          </div>
+        {% empty %}
+          <p class="mono text-sm text-white/25 tracking-widest">
+            NO STATUS HISTORY FOUND
+          </p>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+  <!-- Payment Details -->
+<div class="border border-white/10 bg-black mb-10">
+  <div class="px-6 py-5 border-b border-white/10">
+    <h2 class="mono text-white text-sm font-bold tracking-wide">
+      Payment Details
+    </h2>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 px-6 py-6">
+
+    <div>
+      <p class="mono text-[10px] text-white/30 tracking-widest mb-2">
+        Transaction ID
+      </p>
+
+      <p class="mono text-sm text-white">
+        {% if payment and payment.transaction_id %}
+          {{ payment.transaction_id }}
+        {% else %}
+          N/A
+        {% endif %}
+      </p>
+    </div>
+
+    <div>
+      <p class="mono text-[10px] text-white/30 tracking-widest mb-2">
+        Payment Date
+      </p>
+
+      <p class="mono text-sm text-white">
+        {% if payment %}
+          {{ payment.created_at|date:"Y-m-d" }} {{ payment.created_at|time:"H:i:s" }}
+        {% else %}
+          N/A
+        {% endif %}
+      </p>
+    </div>
+
+    <div>
+      <p class="mono text-[10px] text-white/30 tracking-widest mb-2">
+        Status
+      </p>
+
+      {% if payment and payment.payment_status == 'PAID' %}
+        <p class="mono text-sm text-green-400">Paid</p>
+      {% elif payment and payment.payment_status == 'FAILED' %}
+        <p class="mono text-sm text-red-400">Failed</p>
+      {% elif payment and payment.payment_status == 'PENDING' %}
+        <p class="mono text-sm text-yellow-400">Pending</p>
+      {% else %}
+        <p class="mono text-sm text-white/30">N/A</p>
+      {% endif %}
+    </div>
+
+    <div>
+      <p class="mono text-[10px] text-white/30 tracking-widest mb-2">
+        Method
+      </p>
+
+      <p class="mono text-sm text-white">
+        {% if payment %}
+          {{ payment.payment_method }}
+        {% else %}
+          {{ order.get_payment_method_display }}
+        {% endif %}
+      </p>
+    </div>
+
+  </div>
+</div>
+
+  <!-- Action Buttons -->
+  <div class="flex flex-col items-end gap-4">
+
+    <a href="{% url 'admin_change_order_status' order.id %}"
+    class="w-full md:w-[360px] bg-white text-black mono text-xs font-bold tracking-widest px-6 py-4 text-center hover:bg-white/80 transition-colors">
+    Change Order Status
+    </a>
+
+  </div>
+
+</div>
+{% endblock %}

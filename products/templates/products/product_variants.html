@@ -47,7 +47,7 @@
     <!-- Base Price -->
     <div class="text-right">
       <span class="mono text-[10px] text-white/30 tracking-widest uppercase block mb-1">Base Price</span>
-      <span class="mono text-white text-3xl font-bold">${{ product.base_price }}</span>
+      <span class="mono text-white text-3xl font-bold">₹{{ product.base_price }}</span>
     </div>
 
     <!-- Separator -->
@@ -109,7 +109,7 @@
       <span class="font-mono text-sm text-gray-300">{{ variant.get_size_display|default:'—' }}</span>
 
       <!-- Price -->
-      <span class="font-mono text-sm text-gray-300">${{ variant.price }}</span>
+      <span class="font-mono text-sm text-gray-300">₹{{ variant.price }}</span>
 
       <!-- Stock -->
           <span class="font-mono text-sm text-gray-300 w-8 text-center">
