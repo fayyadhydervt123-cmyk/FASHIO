@@ -625,6 +625,8 @@ def user_profile(request):
 @login_required(login_url='user_login')
 def user_add_address(request):
     if request.method == "POST":
+        next_url = request.POST.get("next")
+
         name = request.POST.get('name', '').strip()
         phone = request.POST.get('phone', '').strip()
         line1 = request.POST.get('line1', '').strip()
@@ -663,6 +665,11 @@ def user_add_address(request):
             name=name, phone=phone, line1=line1,
             city=city, postal_code=postal_code, state=state,
         )
+
+        if next_url:
+            return redirect(next_url)
+        
+        return redirect("user_profile")
         
 
     return redirect('user_profile')

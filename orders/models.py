@@ -21,11 +21,14 @@ class Order(models.Model):
 
     ORDER_STATUS_CHOICES = [
         ("PENDING", "Pending"),
+        ("PLACED", "Placed"),
         ("SHIPPED", "Shipped"),
         ("OUT_FOR_DELIVERY", "Out For Delivery"),
         ("DELIVERED", "Delivered"),
         ("CANCELLED", "Cancelled"),
     ]
+
+    order_id = models.CharField(max_length=30, unique=True, blank=True, null=True)
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     address = models.ForeignKey("user.Address", on_delete=models.SET_NULL, null=True)
@@ -42,6 +45,7 @@ class Order(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
 
 class OrderItem(models.Model):
     ITEM_STATUS_CHOICES = [

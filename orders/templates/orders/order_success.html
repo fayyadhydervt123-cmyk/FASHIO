@@ -59,7 +59,7 @@ Order Confirmed
             Order ID
           </p>
           <p class="mono text-sm font-bold text-black">
-            #{{ order.id }}
+            {{ order.order_id }}
           </p>
         </div>
 
@@ -77,7 +77,7 @@ Order Confirmed
             Total Amount
           </p>
           <p class="mono text-sm font-bold text-black">
-            ₹{{ order.total_amount|floatformat:0 }}
+            ₹{{ order.total_amount|floatformat:2 }}
           </p>
         </div>
 
@@ -145,7 +145,7 @@ Order Confirmed
                 </div>
 
                 <p class="mono text-[10px] tracking-widest text-black/35 mt-3">
-                  ₹{{ item.price|floatformat:0 }} × {{ item.quantity }}
+                  ₹{{ item.price|floatformat:2 }} × {{ item.quantity }}
                 </p>
 
               </div>
@@ -153,7 +153,7 @@ Order Confirmed
               <!-- Item Total -->
               <div class="text-right shrink-0">
                 <p class="mono text-sm font-bold text-black">
-                  ₹{{ item.subtotal|floatformat:0 }}
+                  ₹{{ item.subtotal|floatformat:2 }}
                 </p>
               </div>
 
@@ -264,7 +264,7 @@ Order Confirmed
                   Subtotal
                 </span>
                 <span class="mono text-sm text-black">
-                  ₹{{ order.subtotal|floatformat:0 }}
+                  ₹{{ order.subtotal|floatformat:2 }}
                 </span>
               </div>
 
@@ -273,7 +273,7 @@ Order Confirmed
                   Discount
                 </span>
                 <span class="mono text-sm text-green-700">
-                  - ₹{{ order.discount_amount|floatformat:0 }}
+                  - ₹{{ order.discount_amount|floatformat:2 }}
                 </span>
               </div>
 
@@ -282,7 +282,7 @@ Order Confirmed
                   Tax
                 </span>
                 <span class="mono text-sm text-black">
-                  ₹{{ order.tax_amount|floatformat:0 }}
+                  ₹{{ order.tax_amount|floatformat:2 }}
                 </span>
               </div>
 
@@ -291,7 +291,7 @@ Order Confirmed
                   Shipping
                 </span>
                 <span class="mono text-sm text-black">
-                  ₹{{ order.delivery_fee|floatformat:0 }}
+                  ₹{{ order.delivery_fee|floatformat:2 }}
                 </span>
               </div>
 
@@ -300,7 +300,7 @@ Order Confirmed
                   Total
                 </span>
                 <span class="mono text-2xl font-bold text-black">
-                  ₹{{ order.total_amount|floatformat:0 }}
+                  ₹{{ order.total_amount|floatformat:2 }}
                 </span>
               </div>
 

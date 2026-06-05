@@ -1,11 +1,11 @@
-from types import SimpleNamespace
-from django.shortcuts import render, redirect, get_object_or_404
+from types import SimpleNamespace #Creates simple objects that let attach attributes dynamically
+from django.shortcuts import render, redirect, get_object_or_404 #Fetches a DB object, auto-returns 404 page if not found
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from decimal import Decimal
+from django.contrib import messages 
+from decimal import Decimal, ROUND_HALF_UP
 from products.models import Cart, ProductVariant, Product, Category
 from user.models import Address
-from .models import *
+from .models import Order, OrderItem, Payment, OrderStatusHistory
 from django.core.paginator import Paginator
 from django.db.models import Q, Prefetch, Sum, Count
 from django.db import transaction
@@ -15,21 +15,23 @@ from weasyprint import HTML
 from django.http import HttpResponse
 
 MAX_QUANTITY_PER_ORDER = 5
-TAX_PERCENTAGE = Decimal("18.00")
-DISCOUNT_PERCENTAGE = Decimal("3.00")
+TAX_PERCENTAGE = Decimal("18")
+DISCOUNT_PERCENTAGE = Decimal("3")
 
 def calculate_checkout_totals(subtotal):
     delivery_fee = Decimal("0.00")
 
     tax_amount = (
         subtotal * TAX_PERCENTAGE / Decimal("100")
-    ).quantize(Decimal("0.01"))
+    ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
     discount_amount = (
         subtotal * DISCOUNT_PERCENTAGE / Decimal("100")
-    ).quantize(Decimal("0.01"))
+    ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
-    total_payable = subtotal + delivery_fee + tax_amount - discount_amount
+    total_payable = (
+        subtotal + delivery_fee + tax_amount - discount_amount
+    ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
     return {
         "delivery_fee": delivery_fee,
@@ -41,6 +43,7 @@ def calculate_checkout_totals(subtotal):
     }
 
 
+#Handles two purchase flows in one view
 @login_required(login_url='user_login')
 def checkout_page(request):
     source = request.GET.get("source", "cart")
@@ -111,7 +114,7 @@ def checkout_page(request):
 
         checkout_source = "cart"
 
-    addresses = Address.objects.filter(user=request.user)
+    addresses = Address.objects.filter(user=request.user).order_by("-created_at")
     selected_address = addresses.first()
 
     totals = calculate_checkout_totals(subtotal)
@@ -243,6 +246,7 @@ def payment_method(request):
         "discount_percentage": discount_percentage,
     })
 
+
 @login_required(login_url="user_login")
 def place_order(request):
     if request.method != "POST":
@@ -350,6 +354,9 @@ def place_order(request):
         total_amount=total_amount,
     )
 
+    order.order_id = f"ORD-{order.id:06d}"
+    order.save(update_fields=["order_id"])
+
     for item in order_items_data:
         OrderItem.objects.create(
             order=order,
@@ -386,7 +393,7 @@ def place_order(request):
         Cart.objects.filter(user=request.user).delete()
 
     messages.success(request, "Order placed successfully.")
-    return redirect("order_success", order_id=order.id)
+    return redirect("order_success", order_id=order.order_id)
 
 @login_required(login_url='user_login')
 def order_success(request, order_id):
@@ -399,7 +406,7 @@ def order_success(request, order_id):
             "items__variant",
             "items__variant__images"
         ),
-        id=order_id,
+        order_id=order_id,
         user=request.user
     )
 
@@ -430,7 +437,7 @@ def admin_order_list(request):
     # -----------------------------
     if query:
         orders_queryset = orders_queryset.filter(
-            Q(id__icontains=query) |
+            Q(order_id__icontains=query) |
             Q(user__fullname__icontains=query) |
             Q(user__email__icontains=query) |
             Q(user__first_name__icontains=query) |
@@ -488,6 +495,34 @@ def admin_order_list(request):
     page_number = request.GET.get("page")
     orders = paginator.get_page(page_number)
 
+    for order in orders:
+        billable_items = order.items.filter(
+            item_status__in=["ACTIVE", "RETURN_REQUESTED"]
+        )
+
+        cancelled_items = order.items.filter(item_status="CANCELLED")
+        returned_items = order.items.filter(item_status="RETURNED")
+
+        order.billable_subtotal = sum(item.subtotal for item in billable_items)
+        order.cancelled_subtotal = sum(item.subtotal for item in cancelled_items)
+        order.returned_subtotal = sum(item.subtotal for item in returned_items)
+
+        order.cancelled_items_count = cancelled_items.count()
+        order.returned_items_count = returned_items.count()
+
+        if order.billable_subtotal > 0:
+            totals = calculate_checkout_totals(order.billable_subtotal)
+
+            order.display_delivery_fee = totals["delivery_fee"]
+            order.display_tax_amount = totals["tax_amount"]
+            order.display_discount_amount = totals["discount_amount"]
+            order.display_total_amount = totals["total_payable"]
+        else:
+            order.display_delivery_fee = Decimal("0.00")
+            order.display_tax_amount = Decimal("0.00")
+            order.display_discount_amount = Decimal("0.00")
+            order.display_total_amount = Decimal("0.00")
+ 
     context = {
         "orders": orders,
 
@@ -684,6 +719,12 @@ def inventory_list(request):
         total_stock__lte=LOW_STOCK_LIMIT
     ).count()
 
+
+    paginator = Paginator(products_queryset, 5)
+    page_number = request.GET.get("page")
+    products = paginator.get_page(page_number)
+
+
     # Add thumbnail manually
     for product in products_queryset:
         product.thumbnail = None
@@ -699,10 +740,6 @@ def inventory_list(request):
             product.total_stock = 0
 
     categories = Category.objects.all().order_by("name")
-
-    paginator = Paginator(products_queryset, 5)
-    page_number = request.GET.get("page")
-    products = paginator.get_page(page_number)
 
     context = {
         "products": products,
@@ -764,7 +801,7 @@ def user_orders(request):
 
     if query:
         orders = orders.filter(
-            Q(id__icontains=query) |
+            Q(order_id__icontains=query) |
             Q(items__product_name__icontains=query) |
             Q(order_status__icontains=query)
         ).distinct()
@@ -815,7 +852,7 @@ def user_order_detail(request, order_id):
             "items__variant__images",
             "status_history",
         ),
-        id=order_id,
+        order_id=order_id,
         user=request.user
     )
 
@@ -829,7 +866,7 @@ def user_order_detail(request, order_id):
     )
 
     cancelled_item_ids = request.session.pop(
-        f"cancel_success_items_{order.id}",
+        f"cancel_success_items_{order.order_id}",
         []
     )
 
@@ -840,7 +877,7 @@ def user_order_detail(request, order_id):
     )
 
     return_item_ids = request.session.pop(
-        f"return_success_items_{order.id}",
+        f"return_success_items_{order.order_id}",
         []
     )
 
@@ -917,19 +954,19 @@ def user_cancel_order_select(request, order_id):
     if request.method != "POST":
         return redirect("user_order_detail", order_id=order_id)
 
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order = get_object_or_404(Order, order_id=order_id, user=request.user)
 
-    cancellable_statuses = ["PENDING", "PLACED", "CONFIRMED"]
+    cancellable_statuses = ["PENDING", "PLACED"]
 
     if order.order_status not in cancellable_statuses:
         messages.error(request, "This order cannot be cancelled now.")
-        return redirect("user_order_detail", order_id=order.id)
+        return redirect("user_order_detail", order_id=order.order_id)
 
     selected_items = request.POST.getlist("selected_items")
 
     if not selected_items:
         messages.error(request, "Please select at least one item to cancel.")
-        return redirect("user_order_detail", order_id=order.id)
+        return redirect("user_order_detail", order_id=order.order_id)
 
     valid_items = OrderItem.objects.filter(
         id__in=selected_items,
@@ -939,12 +976,12 @@ def user_cancel_order_select(request, order_id):
 
     if not valid_items.exists():
         messages.error(request, "No valid items selected.")
-        return redirect("user_order_detail", order_id=order.id)
+        return redirect("user_order_detail", order_id=order.order_id)
 
-    request.session[f"cancel_items_{order.id}"] = [str(item.id) for item in valid_items]
+    request.session[f"cancel_items_{order.order_id}"] = [str(item.id) for item in valid_items]
     request.session.modified = True
 
-    return redirect("user_cancel_order_page", order_id=order.id)
+    return redirect("user_cancel_order_page", order_id=order.order_id)
 
 
 @login_required(login_url="user_login")
@@ -955,11 +992,11 @@ def user_cancel_order_page(request, order_id):
             "items__variant",
             "items__variant__images",
         ),
-        id=order_id,
+        order_id=order_id,
         user=request.user
     )
 
-    selected_item_ids = request.session.get(f"cancel_items_{order.id}", [])
+    selected_item_ids = request.session.get(f"cancel_items_{order.order_id}", [])
 
     selected_items = OrderItem.objects.filter(
         id__in=selected_item_ids,
@@ -969,7 +1006,7 @@ def user_cancel_order_page(request, order_id):
 
     if not selected_items.exists():
         messages.error(request, "Please select items to cancel.")
-        return redirect("user_order_detail", order_id=order.id)
+        return redirect("user_order_detail", order_id=order.order_id)
 
     estimated_refund = sum(item.subtotal for item in selected_items)
 
@@ -987,9 +1024,9 @@ def user_confirm_cancel_items(request, order_id):
     if request.method != "POST":
         return redirect("user_cancel_order_page", order_id=order_id)
 
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order = get_object_or_404(Order, order_id=order_id, user=request.user)
 
-    selected_item_ids = request.session.get(f"cancel_items_{order.id}", [])
+    selected_item_ids = request.session.get(f"cancel_items_{order.order_id}", [])
 
     selected_items = OrderItem.objects.filter(
         id__in=selected_item_ids,
@@ -999,7 +1036,7 @@ def user_confirm_cancel_items(request, order_id):
 
     if not selected_items.exists():
         messages.error(request, "No valid items selected.")
-        return redirect("user_order_detail", order_id=order.id)
+        return redirect("user_order_detail", order_id=order.order_id)
 
     reason = request.POST.get("reason", "").strip()
     comment = request.POST.get("comment", "").strip()
@@ -1008,7 +1045,7 @@ def user_confirm_cancel_items(request, order_id):
 
     if reason not in valid_reason_keys:
         messages.error(request, "Please select a valid cancellation reason.")
-        return redirect("user_cancel_order_page", order_id=order.id)
+        return redirect("user_cancel_order_page", order_id=order.order_id)
 
     with transaction.atomic():
         for item in selected_items:
@@ -1047,12 +1084,12 @@ def user_confirm_cancel_items(request, order_id):
 
     cancelled_item_ids_for_success = [str(item.id) for item in selected_items]
 
-    request.session.pop(f"cancel_items_{order.id}", None)
+    request.session.pop(f"cancel_items_{order.order_id}", None)
 
-    request.session[f"cancel_success_items_{order.id}"] = cancelled_item_ids_for_success
+    request.session[f"cancel_success_items_{order.order_id}"] = cancelled_item_ids_for_success
     request.session.modified = True
 
-    return redirect("user_order_detail", order_id=order.id)
+    return redirect("user_order_detail", order_id=order.order_id)
 
 RETURN_REASONS = [
     ("wrong_size_or_fit", "Wrong size or fit"),
@@ -1073,17 +1110,17 @@ def user_return_order_select(request, order_id):
     if request.method != "POST":
         return redirect("user_order_detail", order_id=order_id)
 
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order = get_object_or_404(Order, order_id=order_id, user=request.user)
 
     if order.order_status != "DELIVERED":
         messages.error(request, "Return is available only after delivery.")
-        return redirect("user_order_detail", order_id=order.id)
+        return redirect("user_order_detail", order_id=order.order_id)
 
     selected_items = request.POST.getlist("selected_items")
 
     if not selected_items:
         messages.error(request, "Please select at least one item to return.")
-        return redirect("user_order_detail", order_id=order.id)
+        return redirect("user_order_detail", order_id=order.order_id)
 
     valid_items = OrderItem.objects.filter(
         id__in=selected_items,
@@ -1093,14 +1130,14 @@ def user_return_order_select(request, order_id):
 
     if not valid_items.exists():
         messages.error(request, "No valid items selected for return.")
-        return redirect("user_order_detail", order_id=order.id)
+        return redirect("user_order_detail", order_id=order.order_id)
 
-    request.session[f"return_items_{order.id}"] = [
+    request.session[f"return_items_{order.order_id}"] = [
         str(item.id) for item in valid_items
     ]
     request.session.modified = True
 
-    return redirect("user_return_order_page", order_id=order.id)
+    return redirect("user_return_order_page", order_id=order.order_id)
 
 
 @login_required(login_url="user_login")
@@ -1111,15 +1148,15 @@ def user_return_order_page(request, order_id):
             "items__variant",
             "items__variant__images",
         ),
-        id=order_id,
+        order_id=order_id,
         user=request.user
     )
 
     if order.order_status != "DELIVERED":
         messages.error(request, "Return is available only after delivery.")
-        return redirect("user_order_detail", order_id=order.id)
+        return redirect("user_order_detail", order_id=order.order_id)
 
-    selected_item_ids = request.session.get(f"return_items_{order.id}", [])
+    selected_item_ids = request.session.get(f"return_items_{order.order_id}", [])
 
     selected_items = OrderItem.objects.filter(
         id__in=selected_item_ids,
@@ -1129,7 +1166,7 @@ def user_return_order_page(request, order_id):
 
     if not selected_items.exists():
         messages.error(request, "Please select items to return.")
-        return redirect("user_order_detail", order_id=order.id)
+        return redirect("user_order_detail", order_id=order.order_id)
 
     estimated_refund = sum(item.subtotal for item in selected_items)
 
@@ -1147,13 +1184,13 @@ def user_confirm_return_items(request, order_id):
     if request.method != "POST":
         return redirect("user_return_order_page", order_id=order_id)
 
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order = get_object_or_404(Order, order_id=order_id, user=request.user)
 
     if order.order_status != "DELIVERED":
         messages.error(request, "Return is available only after delivery.")
-        return redirect("user_order_detail", order_id=order.id)
+        return redirect("user_order_detail", order_id=order.order_id)
 
-    selected_item_ids = request.session.get(f"return_items_{order.id}", [])
+    selected_item_ids = request.session.get(f"return_items_{order.order_id}", [])
 
     selected_items = OrderItem.objects.filter(
         id__in=selected_item_ids,
@@ -1163,7 +1200,7 @@ def user_confirm_return_items(request, order_id):
 
     if not selected_items.exists():
         messages.error(request, "No valid items selected.")
-        return redirect("user_order_detail", order_id=order.id)
+        return redirect("user_order_detail", order_id=order.order_id)
 
     reason = request.POST.get("reason", "").strip()
     comment = request.POST.get("comment", "").strip()
@@ -1172,7 +1209,7 @@ def user_confirm_return_items(request, order_id):
 
     if reason not in valid_reason_keys:
         messages.error(request, "Please select a valid return reason.")
-        return redirect("user_return_order_page", order_id=order.id)
+        return redirect("user_return_order_page", order_id=order.order_id)
 
     with transaction.atomic():
         for item in selected_items:
@@ -1195,11 +1232,11 @@ def user_confirm_return_items(request, order_id):
 
     return_item_ids_for_success = [str(item.id) for item in selected_items]
 
-    request.session.pop(f"return_items_{order.id}", None)
-    request.session[f"return_success_items_{order.id}"] = return_item_ids_for_success
+    request.session.pop(f"return_items_{order.order_id}", None)
+    request.session[f"return_success_items_{order.order_id}"] = return_item_ids_for_success
     request.session.modified = True
 
-    return redirect("user_order_detail", order_id=order.id)
+    return redirect("user_order_detail", order_id=order.order_id)
 
 @login_required(login_url="user_login")
 def download_invoice(request, order_id):
@@ -1211,7 +1248,7 @@ def download_invoice(request, order_id):
             "items__product",
             "items__variant",
         ),
-        id=order_id,
+        order_id=order_id,
         user=request.user
     )
 
@@ -1257,7 +1294,7 @@ def download_invoice(request, order_id):
 
     response = HttpResponse(pdf_file, content_type="application/pdf")
     response["Content-Disposition"] = (
-        f'attachment; filename="invoice_ORD_{order.id:04d}.pdf"'
+        f'attachment; filename="invoice_{order.order_id}.pdf"'
     )
 
     return response

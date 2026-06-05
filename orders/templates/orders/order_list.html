@@ -217,7 +217,7 @@
       <!-- Order ID -->
       <div>
         <span class="font-mono text-sm text-gray-200 tracking-wide">
-          #ORD-{{ order.id|stringformat:"04d" }}
+          {{ order.order_id }}
         </span>
       </div>
 
@@ -245,8 +245,21 @@
 
       <!-- Amount -->
       <span class="font-mono text-sm text-gray-300">
-        ₹{{ order.total_amount|floatformat:2 }}
+        ₹{{ order.display_total_amount|floatformat:2 }}
+        {% if order.cancelled_items_count > 0 and order.billable_subtotal > 0 %}
+            <div class="font-mono text-[11px] text-gray-500 truncate">
+                {{ order.cancelled_items_count }}
+                {% if order.cancelled_items_count == 1 %}
+                    item cancelled
+                {% else %}
+                    items cancelled
+                {% endif %}
+                <br>
+                - ₹{{ order.cancelled_subtotal }}
+            </div>
+        {% endif %}
       </span>
+      
 
       <!-- Status -->
       <div>

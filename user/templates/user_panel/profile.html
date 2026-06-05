@@ -306,7 +306,7 @@
 
               <!-- Order ID -->
               <td class="prod">
-                #ORD-{{ order.id|stringformat:"04d" }}
+                {{ order.order_id }}
               </td>
 
               <!-- Product Details -->
@@ -356,7 +356,7 @@
 
               <!-- Amount -->
               <td>
-                ₹{{ order.display_total_amount|floatformat:0 }}
+                ₹{{ order.display_total_amount|floatformat:2 }}
 
                 {% comment %} {% if order.cancelled_subtotal > 0 %}
                   <br>
@@ -479,12 +479,12 @@
 
               <div class="text-right shrink-0 ml-2">
                 <p class="mono text-black text-sm font-bold">
-                  ₹{{ item.display_price|floatformat:0 }}
+                  ₹{{ item.display_price|floatformat:2 }}
                 </p>
 
                 {% if item.variant.discount > 0 %}
                   <p class="mono text-black/35 text-[10px] line-through">
-                    ₹{{ item.variant.price|floatformat:0 }}
+                    ₹{{ item.variant.price|floatformat:2 }}
                   </p>
                 {% endif %}
               </div>

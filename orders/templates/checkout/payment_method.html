@@ -202,35 +202,39 @@ Payment Method
                   Subtotal
                 </span>
                 <span class="mono text-sm text-black">
-                  ₹{{ subtotal|floatformat:0 }}
+                  ₹{{ subtotal|floatformat:2 }}
                 </span>
               </div>
 
               <div class="flex items-center justify-between">
                 <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
-                  Discount ({{ discount_percentage|floatformat:0 }}%)
+                  Discount ({{ discount_percentage|floatformat:2 }}%)
                 </span>
                 <span class="mono text-sm text-green-700">
-                  - ₹{{ discount_amount|floatformat:0 }}
+                  - ₹{{ discount_amount|floatformat:2 }}
                 </span>
               </div>
 
               <div class="flex items-center justify-between">
                 <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
-                  Tax ({{ tax_percentage|floatformat:0 }}%)
+                  Tax ({{ tax_percentage|floatformat:2 }}%)
                 </span>
                 <span class="mono text-sm text-black">
-                  ₹{{ tax_amount|floatformat:0 }}
+                  ₹{{ tax_amount|floatformat:2 }}
                 </span>
               </div>
 
               <div class="flex items-center justify-between">
                 <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
-                  Shipping
+                  Delivery Fee
                 </span>
-                <span class="mono text-sm text-black">
-                  ₹{{ delivery_fee|floatformat:0 }}
-                </span>
+                <p class="mono text-sm font-bold text-black">
+                  {% if delivery_fee > 0 %}
+                    ₹{{ delivery_fee|floatformat:2 }}
+                  {% else %}
+                    Free
+                  {% endif %}
+                </p>
               </div>
 
               <div class="border-t border-black/10 pt-5 flex items-center justify-between">
@@ -238,7 +242,7 @@ Payment Method
                   Total
                 </span>
                 <span class="mono text-2xl font-bold text-black">
-                  ₹{{ total_payable|floatformat:0 }}
+                  ₹{{ total_payable|floatformat:2 }}
                 </span>
               </div>
 
@@ -316,7 +320,7 @@ Payment Method
               </div>
 
               <p class="mono text-sm font-bold text-black shrink-0">
-                ₹{{ item.subtotal_amount|floatformat:0 }}
+                ₹{{ item.subtotal_amount|floatformat:2 }}
               </p>
 
             </div>
@@ -332,7 +336,7 @@ Payment Method
                 Subtotal
               </span>
               <span class="mono text-sm text-black">
-                ₹{{ subtotal|floatformat:0 }}
+                ₹{{ subtotal|floatformat:2 }}
               </span>
             </div>
 
@@ -341,7 +345,7 @@ Payment Method
                 Discount
               </span>
               <span class="mono text-sm text-green-700">
-                - ₹{{ discount_amount|floatformat:0 }}
+                - ₹{{ discount_amount|floatformat:2 }}
               </span>
             </div>
 
@@ -350,7 +354,7 @@ Payment Method
                 Tax
               </span>
               <span class="mono text-sm text-black">
-                ₹{{ tax_amount|floatformat:0 }}
+                ₹{{ tax_amount|floatformat:2 }}
               </span>
             </div>
 
@@ -359,7 +363,7 @@ Payment Method
                 Shipping
               </span>
               <span class="mono text-sm text-black">
-                ₹{{ delivery_fee|floatformat:0 }}
+                ₹{{ delivery_fee|floatformat:2 }}
               </span>
             </div>
 
@@ -368,7 +372,7 @@ Payment Method
                 Total
               </span>
               <span class="mono text-2xl font-bold text-black">
-                ₹{{ total_payable|floatformat:0 }}
+                ₹{{ total_payable|floatformat:2 }}
               </span>
             </div>
 

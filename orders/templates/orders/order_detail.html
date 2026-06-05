@@ -33,7 +33,7 @@
 
         <div class="flex items-center justify-between border-b border-white/10 py-3">
           <span class="mono text-xs text-white/35">Order ID</span>
-          <span class="mono text-xs text-white">#ORD-{{ order.id|stringformat:"04d" }}</span>
+          <span class="mono text-xs text-white">{{ order.order_id }}</span>
         </div>
 
         <div class="flex items-center justify-between border-b border-white/10 py-3">
@@ -81,7 +81,7 @@
         <div class="flex items-center justify-between pt-5">
         <span class="mono text-xs text-white/35">Current Amount</span>
         <span class="mono text-2xl text-white font-bold">
-            ₹{{ display_total_amount|floatformat:0 }}
+            ₹{{ display_total_amount|floatformat:2 }}
         </span>
         </div>
 
@@ -89,7 +89,7 @@
         <div class="flex items-center justify-between pt-3">
             <span class="mono text-xs text-white/25">Original Amount</span>
             <span class="mono text-xs text-white/40 line-through">
-            ₹{{ order.total_amount|floatformat:0 }}
+            ₹{{ order.total_amount|floatformat:2 }}
             </span>
         </div>
         {% endif %}
@@ -252,7 +252,7 @@
       <div class="md:text-right">
         <p class="mono text-[10px] text-white/30 uppercase md:hidden mb-1">Price</p>
         <p class="mono text-sm text-white">
-          ₹{{ item.price|floatformat:0 }}
+          ₹{{ item.price|floatformat:2 }}
         </p>
       </div>
 
@@ -270,7 +270,7 @@
             text-white
         {% endif %}
         ">
-        ₹{{ item.subtotal|floatformat:0 }}
+        ₹{{ item.subtotal|floatformat:2 }}
         </p>
       </div>
 
@@ -290,14 +290,14 @@
         <div class="flex items-center justify-between">
         <span class="mono text-xs text-white/40">Billable Subtotal</span>
         <span class="mono text-sm text-white">
-            ₹{{ billable_subtotal|floatformat:0 }}
+            ₹{{ billable_subtotal|floatformat:2 }}
         </span>
         </div>
 
         <div class="flex items-center justify-between">
         <span class="mono text-xs text-white/40">Discount</span>
         <span class="mono text-sm text-green-400">
-            - ₹{{ display_discount_amount|floatformat:0 }}
+            - ₹{{ display_discount_amount|floatformat:2 }}
         </span>
         </div>
 
@@ -305,7 +305,7 @@
         <div class="flex items-center justify-between">
             <span class="mono text-xs text-red-400">Cancelled Items</span>
             <span class="mono text-sm text-red-400 line-through">
-            ₹{{ cancelled_subtotal|floatformat:0 }}
+            ₹{{ cancelled_subtotal|floatformat:2 }}
             </span>
         </div>
         {% endif %}
@@ -314,7 +314,7 @@
         <div class="flex items-center justify-between">
             <span class="mono text-xs text-green-400">Returned Items</span>
             <span class="mono text-sm text-green-400 line-through">
-            ₹{{ returned_subtotal|floatformat:0 }}
+            ₹{{ returned_subtotal|floatformat:2 }}
             </span>
         </div>
         {% endif %}
@@ -322,7 +322,7 @@
         <div class="flex items-center justify-between">
         <span class="mono text-xs text-white/40">Tax</span>
         <span class="mono text-sm text-white">
-            ₹{{ display_tax_amount|floatformat:0 }}
+            ₹{{ display_tax_amount|floatformat:2 }}
         </span>
         </div>
 
@@ -330,7 +330,7 @@
         <span class="mono text-xs text-white/40">Shipping Fee</span>
         <span class="mono text-sm text-white">
             {% if display_delivery_fee > 0 %}
-            ₹{{ display_delivery_fee|floatformat:0 }}
+            ₹{{ display_delivery_fee|floatformat:2 }}
             {% else %}
             Free
             {% endif %}
@@ -340,7 +340,7 @@
         <div class="flex items-center justify-between pt-5">
         <span class="mono text-xs text-white/35">Current Amount</span>
         <span class="mono text-2xl text-white font-bold">
-            ₹{{ display_total_amount|floatformat:0 }}
+            ₹{{ display_total_amount|floatformat:2 }}
         </span>
         </div>
 
@@ -348,7 +348,7 @@
         <div class="flex items-center justify-between pt-3">
             <span class="mono text-xs text-white/25">Original Amount</span>
             <span class="mono text-xs text-white/40 line-through">
-            ₹{{ order.total_amount|floatformat:0 }}
+            ₹{{ order.total_amount|floatformat:2 }}
             </span>
         </div>
         {% endif %}

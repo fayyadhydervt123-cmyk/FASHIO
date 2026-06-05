@@ -22,7 +22,7 @@
 
     <div>
       <p class="mono text-[10px] tracking-widest text-black/35 uppercase mb-2">
-        Order #ORD-{{ order.id|stringformat:"04d" }}
+        {{ order.order_id }}
       </p>
 
       <h1 class="bebas text-black text-5xl md:text-5xl leading-none tracking-wide">
@@ -160,7 +160,7 @@
         text-black
         {% endif %}
         ">
-        ₹{{ item.subtotal|floatformat:0 }}
+        ₹{{ item.subtotal|floatformat:2 }}
         </p>
       </div>
 
@@ -430,7 +430,7 @@
             </p>
 
             <p class="mono text-xs text-black font-bold">
-              #ORD-{{ order.id|stringformat:"04d" }}
+              {{ order.order_id }}
             </p>
           </div>
 
@@ -513,7 +513,7 @@
             </p>
 
             <p class="mono text-sm font-bold text-black">
-              ₹{{ active_subtotal|floatformat:0 }}
+              ₹{{ active_subtotal|floatformat:2 }}
             </p>
           </div>
 
@@ -524,7 +524,7 @@
 
             <p class="mono text-sm font-bold text-black">
               {% if display_delivery_fee > 0 %}
-                ₹{{ display_delivery_fee|floatformat:0 }}
+                ₹{{ display_delivery_fee|floatformat:2 }}
                 {% else %}
                 Free
               {% endif %}
@@ -537,7 +537,7 @@
             </p>
 
             <p class="mono text-sm font-bold text-green-600">
-              -₹{{ display_discount_amount|floatformat:0 }}
+              -₹{{ display_discount_amount|floatformat:2 }}
             </p>
           </div>
 
@@ -548,7 +548,7 @@
                 </p>
 
                 <p class="mono text-sm font-bold text-red-600 line-through">
-                ₹{{ cancelled_subtotal|floatformat:0 }}
+                ₹{{ cancelled_subtotal|floatformat:2 }}
                 </p>
             </div>
             {% endif %}
@@ -559,7 +559,7 @@
             </p>
 
             <p class="mono text-sm font-bold text-black">
-              ₹{{ display_tax_amount|floatformat:0 }}
+              ₹{{ display_tax_amount|floatformat:2 }}
             </p>
           </div>
 
@@ -569,7 +569,7 @@
             </p>
 
             <p class="mono text-3xl font-bold text-black">
-              ₹{{ display_total_amount|floatformat:0 }}
+              ₹{{ display_total_amount|floatformat:2 }}
             </p>
           </div>
 
@@ -581,7 +581,7 @@
       <!-- Action Buttons -->
 <div class="grid grid-cols-1 gap-3 mt-5">
 
-   <a href="{% url 'download_invoice' order.id %}"
+   <a href="{% url 'download_invoice' order.order_id %}"
     class="w-full block text-center border border-black/15 bg-white text-black mono text-[10px] tracking-widest py-4 font-bold hover:bg-neutral-100 transition-colors">
     Download Invoice
    </a>
@@ -641,7 +641,7 @@
       </button>
     </div>
 
-    <form method="POST" action="{% url 'user_cancel_order_select' order.id %}">
+    <form method="POST" action="{% url 'user_cancel_order_select' order.order_id %}">
       {% csrf_token %}
 
       <!-- Table Header -->
@@ -716,7 +716,7 @@
                 </p>
 
                 <p class="mono text-sm font-bold text-black">
-                    ₹{{ item.subtotal|floatformat:0 }}
+                    ₹{{ item.subtotal|floatformat:2 }}
                 </p>
                 </div>
 
@@ -818,7 +818,7 @@
             </div>
 
             <p class="mono text-lg font-bold text-black shrink-0">
-              ₹{{ item.subtotal|floatformat:0 }}
+              ₹{{ item.subtotal|floatformat:2 }}
             </p>
 
           </div>
@@ -840,7 +840,7 @@
 
       <div class="mt-8 border-t border-black/10 pt-5 text-left">
         <p class="mono text-[10px] tracking-widest text-black/40 uppercase">
-          Order ID: #ORD-{{ order.id|stringformat:"04d" }}
+          {{ order.order_id }}
         </p>
       </div>
 
@@ -874,7 +874,7 @@
       </button>
     </div>
 
-    <form method="POST" action="{% url 'user_return_order_select' order.id %}">
+    <form method="POST" action="{% url 'user_return_order_select' order.order_id %}">
       {% csrf_token %}
 
       <!-- Table Header -->
@@ -949,7 +949,7 @@
                 </p>
 
                 <p class="mono text-sm font-bold text-black">
-                  ₹{{ item.subtotal|floatformat:0 }}
+                  ₹{{ item.subtotal|floatformat:2 }}
                 </p>
               </div>
 
@@ -1051,7 +1051,7 @@
             </div>
 
             <p class="mono text-lg font-bold text-black shrink-0">
-              ₹{{ item.subtotal|floatformat:0 }}
+              ₹{{ item.subtotal|floatformat:2 }}
             </p>
 
           </div>
@@ -1070,7 +1070,7 @@
 
       <div class="mt-8 border-t border-black/10 pt-5 text-left">
         <p class="mono text-[10px] tracking-widest text-black/40 uppercase">
-          Order ID: #ORD-{{ order.id|stringformat:"04d" }}
+          {{ order.order_id }}
         </p>
 
         <p class="mono text-[10px] tracking-widest text-black/40 uppercase mt-2">

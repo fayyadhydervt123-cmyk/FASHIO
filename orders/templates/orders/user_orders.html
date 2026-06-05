@@ -90,7 +90,7 @@
             Order ID
           </p>
           <p class="mono text-sm font-bold text-black">
-            #ORD-{{ order.id|stringformat:"04d" }}
+            {{ order.order_id }}
           </p>
         </div>
 
@@ -148,7 +148,7 @@
             Amount
           </p>
           <p class="mono text-sm font-bold text-black">
-            ₹{{ order.display_total_amount|floatformat:0 }}
+            ₹{{ order.display_total_amount|floatformat:2 }}
           </p>
         </div>
 
@@ -208,7 +208,7 @@
 
         <!-- Action -->
         <div class="md:text-right">
-          <a href="{% url 'user_order_detail' order.id %}"
+          <a href="{% url 'user_order_detail' order.order_id %}"
              class="mono text-[10px] tracking-widest text-black font-bold hover:text-black/50 transition-colors">
             VIEW
           </a>
