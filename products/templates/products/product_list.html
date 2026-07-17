@@ -24,9 +24,9 @@ Products
     }
     }
 
-    .h-anim-1 { animation: fadeUp .7s cubic-bezier(.16,1,.3,1) .1s both; }
-    .h-anim-2 { animation: fadeUp .8s cubic-bezier(.16,1,.3,1) .25s both; }
-    .h-anim-3 { animation: fadeUp .8s cubic-bezier(.16,1,.3,1) .4s both; }
+    .h-anim-1 { animation: fadeUp .7s cubic-bezier(.16,1,.3,1) .7s both; }
+    .h-anim-2 { animation: fadeUp .8s cubic-bezier(.16,1,.3,1) .50s both; }
+    .h-anim-3 { animation: fadeUp .8s cubic-bezier(.16,1,.3,1) .80s both; }
 
     /* Scroll reveal */
     .reveal {
@@ -45,15 +45,13 @@ Products
 
     /* Product card */
 
-    .product-card {
-    transition: transform .3s, box-shadow .3s, border-color .3s;
-    }
+.product-card{
+    transition: opacity .25s ease;
+}
 
-    .product-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(0,0,0,.28);
-    box-shadow: 0 20px 40px rgba(0,0,0,.08);
-    }
+.product-card:hover{
+    opacity:.92;
+}
 
     /* Add to cart btn shimmer */
     .cart-btn { position: relative; overflow: hidden; }
@@ -98,8 +96,8 @@ Products
 
     /* Wishlist heart */
     .wishlist-btn { transition: color .2s; }
-    .wishlist-btn:hover { color: #fff; }
-    .wishlist-btn.active { color: #fff; }
+    .wishlist-btn:hover { color: #000000; }
+    .wishlist-btn.active { color: #000000; }
 
     /* Pagination */
     .page-btn { transition: background .2s, color .2s, border-color .2s; }
@@ -116,18 +114,34 @@ Products
     }
 
     /* Scrollbar */
-    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-track { background: #fff; }
-    ::-webkit-scrollbar-thumb {  background: rgba(0,0,0,0.18);
-        border-radius: 2px; }
+    ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); border-radius: 2px; }
 
     /* Category tab accent */
     .cat-tab { cursor: pointer; }
+
+    .scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
+    .scrollbar-none::-webkit-scrollbar { display: none; }
 
   </style>
 {% endblock %}
 
 {% block content %}
+
+<!-- Page transition reveal (curtain sweeps away on load) -->
+<div id="page-transition-in" class="fixed inset-0 z-[9999] bg-black pointer-events-none origin-top"></div>
+
+<style>
+@keyframes wipeOut {
+  from { transform: scaleY(1); }
+  to   { transform: scaleY(0); }
+}
+#page-transition-in {
+  animation: wipeOut .6s cubic-bezier(.76,0,.24,1) .1s forwards;
+}
+</style>
+
 <section class="bg-white pt-10 md:pt-12 px-8 md:px-16 pb-14 border-b border-black/10">
 
   <div class="max-w-5xl">
@@ -139,7 +153,7 @@ Products
       </span>
     </div>
 
-    <h1 class="h-anim-2 bebas text-black text-[80px] md:text-[120px] lg:text-[150px] leading-[0.85] tracking-wide mb-5">
+    <h1 class="h-anim-2 bebas text-black text-[52px] sm:text-[80px] md:text-[120px] lg:text-[150px] leading-[0.85] tracking-wide mb-5 break-words">
       {% if selected_category_obj %}
         {{ selected_category_obj.name|upper }}
       {% else %}
@@ -163,10 +177,10 @@ Products
 <div class="sticky top-14 z-40 bg-white/95 border-black/10 backdrop-blur-sm border-b border-black/10">
   <form method="GET" action="{% url 'product_list' %}" class="px-8 md:px-12">
 
-    <div class="flex items-center justify-between gap-4 py-0">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-0 md:gap-4">
 
       <!-- Category tabs -->
-      <div class="flex items-stretch gap-0 overflow-x-auto">
+      <div class="flex items-stretch gap-0 overflow-x-auto py-2 md:py-0 scrollbar-none">
         <a href="{% url 'product_list' %}"
            class="cat-tab mono text-[10px] tracking-widest px-5 py-4 whitespace-nowrap
                   {% if not selected_category %}tab-active{% else %}tab-inactive{% endif %}">
@@ -182,11 +196,21 @@ Products
         {% endfor %}
       </div>
 
+      <!-- Mobile filter toggle -->
+      <button type="button"
+              id="mobile-filter-toggle"
+              class="md:hidden w-full flex items-center justify-center gap-2 mono text-[10px] tracking-widest px-4 py-3 border-t border-black/10 text-black/60">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M7 12h10M10 18h4"/>
+        </svg>
+        FILTERS
+      </button>
+
       <!-- Right filters -->
-      <div class="hidden md:flex items-center gap-2 shrink-0 flex-wrap">
+      <div id="mobile-filter-panel" class="hidden md:flex items-center gap-2 shrink-0 flex-wrap w-full md:w-auto flex-col md:flex-row py-4 md:py-0 border-t md:border-t-0 border-black/10 mt-3 md:mt-0">
 
         <!-- Search -->
-        <div class="relative hidden md:block">
+        <div class="relative w-full md:w-auto">
           <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-black/40"
                fill="none"
                stroke="currentColor"
@@ -200,7 +224,7 @@ Products
                  name="q"
                  value="{{ query }}"
                  placeholder="SEARCH PRODUCTS"
-                 class="mono text-[10px] tracking-widest border border-black/10 bg-white text-black pl-8 pr-3 py-2 w-44 outline-none placeholder-black/30 focus:border-black/30 transition-colors"/>
+                 class="mono text-[10px] tracking-widest border border-black/10 bg-white text-black pl-8 pr-3 py-2.5 w-full md:w-44 outline-none placeholder-black/30 focus:border-black/30 transition-colors"/>
 
             {% if query %}
               <a href="?{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_size %}size={{ selected_size }}&{% endif %}{% if selected_price %}price={{ selected_price }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}{% endif %}"
@@ -212,7 +236,7 @@ Products
 
         <!-- Size filter -->
         <select name="size"
-                class="filter-btn mono text-[10px] tracking-widest bg-white text-black px-3 py-2 cursor-pointer outline-none appearance-none pr-6">
+                class="filter-btn mono text-[10px] tracking-widest bg-white text-black px-3 py-2.5 cursor-pointer outline-none appearance-none pr-6 w-full md:w-auto">
           <option value="">SIZE:ALL</option>
           <option value="S" {% if selected_size == 'S' %}selected{% endif %}>S</option>
           <option value="M" {% if selected_size == 'M' %}selected{% endif %}>M</option>
@@ -222,7 +246,7 @@ Products
 
         <!-- Sort filter -->
         <select name="price"
-                class="filter-btn mono text-[10px] tracking-widest bg-white text-black px-3 py-2 cursor-pointer outline-none appearance-none pr-6">
+                class="filter-btn mono text-[10px] tracking-widest bg-white text-black px-3 py-2.5 cursor-pointer outline-none appearance-none pr-6 w-full md:w-auto">
         <option value="">PRICE:ALL</option>
         <option value="under_1000" {% if selected_price == 'under_1000' %}selected{% endif %}>
             UNDER ₹1000
@@ -239,7 +263,7 @@ Products
         </select>
 
         <select name="sort"
-              class="filter-btn mono text-[10px] tracking-widest bg-white text-black px-3 py-2 cursor-pointer outline-none appearance-none pr-6">
+              class="filter-btn mono text-[10px] tracking-widest bg-white text-black px-3 py-2.5 cursor-pointer outline-none appearance-none pr-6 w-full md:w-auto">
         <option value="">SORT:NEWEST</option>
 
         <option value="price_low_high" {% if selected_sort == 'price_low_high' %}selected{% endif %}>
@@ -263,15 +287,17 @@ Products
           <input type="hidden" name="category" value="{{ selected_category }}">
         {% endif %}
 
-        <button type="submit"
-                class="mono text-[10px] tracking-widest px-4 py-2 bg-black text-white font-bold hover:bg-black/80 transition-colors">
-          APPLY
-        </button>
+        <div class="flex items-center gap-2 w-full md:w-auto">
+          <button type="submit"
+                  class="flex-1 md:flex-none text-center mono text-[10px] tracking-widest px-4 py-2.5 bg-black text-white font-bold hover:bg-black/80 transition-colors">
+            APPLY
+          </button>
 
-        <a href="{% url 'product_list' %}"
-           class="mono text-[10px] tracking-widest px-4 py-2 border border-black/15 text-black/50 hover:text-black hover:border-black/40 transition-colors">
-          RESET
-        </a>
+          <a href="{% url 'product_list' %}"
+             class="flex-1 md:flex-none text-center mono text-[10px] tracking-widest px-4 py-2.5 border border-black/15 text-black/50 hover:text-black hover:border-black/40 transition-colors">
+            RESET
+          </a>
+        </div>
 
       </div>
 
@@ -283,7 +309,7 @@ Products
 <!-- ══════════════════════════════════════════
      PRODUCT GRID
 ══════════════════════════════════════════ -->
-<section class="bg-white px-8 md:px-12 py-16">
+<section class="bg-white px-1 md:px-12 py-16">
 
   <!-- Results count -->
   <div class="reveal flex items-center justify-between mb-8">
@@ -300,21 +326,22 @@ Products
   </div>
 
   <!-- Grid -->
-  <div id="product-grid" class="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-6">
+  <div id="product-grid" class="grid grid-cols-2 md:grid-cols-4 gap-x-0 gap-y-0">
 
         <!-- ── Card 1 ── -->
         {% for product in products %}
 
-    <div class="product-card bg-white border border-black/15 overflow-hidden reveal reveal-d1">
+    <div class="product-card bg-white overflow-hidden reveal flex flex-col h-full">
 
     <!-- Product Image -->
     <a href="{% url 'product_detail' product.id %}">
-        <div class="relative h-64 md:h-72 overflow-hidden bg-neutral-100">
+        <div class="relative w-full aspect-[3/4] overflow-hidden">
 
         {% if product.thumbnail %}
             <img src="{{ product.thumbnail }}"
                 alt="{{ product.name }}"
-                class="product-img w-full h-full object-cover"/>
+                loading="lazy"
+                class="absolute inset-0 w-full h-full object-cover object-top"/>
         {% else %}
             <div class="w-full h-full flex items-center justify-center bg-neutral-100">
             <span class="mono text-[10px] tracking-widest text-black/30">
@@ -339,11 +366,11 @@ Products
         <input type="hidden" name="variant_id" value="{{ product.default_variant.id }}">
 
         <button type="submit"
-            class="wishlist-btn text-white/70 bg-black/30 w-8 h-8 flex items-center justify-center
+            class="wishlist-btn text-black/70  w-8 h-8 flex items-center justify-center
                     {% if product.default_variant.id in wishlist_variant_ids %}active{% endif %}">
         <svg class="w-4 h-4"
             {% if product.default_variant.id in wishlist_variant_ids %}
-            fill="white"
+            fill="black"
             {% else %}
             fill="none"
             {% endif %}
@@ -359,7 +386,7 @@ Products
     </a>
 
     <!-- Product Info -->
-    <div class="p-4">
+    <div class="pt-3 px-1 pb-2 flex flex-col flex-1">
 
         <p class="mono text-black/40 text-[9px] tracking-widest mb-1.5">
         {% if product.subcategory %}
@@ -369,45 +396,50 @@ Products
         {% endif %}
         </p>
 
-        <a href="{% url 'product_detail' product.id %}" class="flex items-start justify-between mb-1">
-        <p class="text-black text-sm font-medium leading-snug">
+        <a href="{% url 'product_detail' product.id %}" class="flex items-start justify-between gap-2 mb-1 min-h-[2.6rem]">
+        <p class="text-black text-sm font-medium leading-snug min-w-0 line-clamp-2">
             {{ product.name }}
         </p>
 
-        <div class="text-right shrink-0 ml-2">
+        <div class="text-right shrink-0 min-h-[34px]">
             <p class="mono text-black text-sm font-bold">
             ₹{{ product.display_price|floatformat:0 }}
             </p>
 
-            {% if product.default_variant.discount > 0 %}
-            <p class="mono text-black/35 text-[10px] line-through">
-                ₹{{ product.original_price|floatformat:0 }}
-            </p>
+            {% if product.default_variant.effective_discount_percent > 0 %}
+            {% with savings=product.default_variant.savings_display %}
+            <div class="flex items-center justify-end gap-1.5 mt-0.5">
+                <p class="mono text-black/35 text-[10px] line-through">
+                    ₹{{ product.original_price|floatformat:0 }}
+                </p>
+
+                <p class="mono text-red-600 text-[9px] font-bold tracking-wide whitespace-nowrap">
+                    {% if savings.type == 'FLAT' %}
+                        ₹{{ savings.amount|floatformat:0 }} OFF
+                    {% else %}
+                        {{ savings.amount|floatformat:0 }}% OFF
+                    {% endif %}
+                </p>
+            </div>
+            {% endwith %}
             {% endif %}
         </div>
         </a>
 
-        <!-- Size pills -->
-        <div class="flex items-center gap-1 mb-3 mt-2">
-        {% for size in product.available_sizes %}
-            <span class="mono text-[8px] tracking-wider px-1.5 py-0.5 border border-black/15 text-black/40">
-            {{ size }}
-            </span>
-        {% endfor %}
+        <div class="mt-auto pt-1">
+          {% if product.total_stock > 0 %}
+          <button type="button"
+                  data-product-id="{{ product.id }}"
+                  class="open-cart-modal cart-btn w-full mono text-[10px] border border-black/15 tracking-widest py-3 bg-white text-black font-bold hover:bg-gray-100 active:scale-[0.98] transition-all">
+              ADD TO SHOPPING BAG
+          </button>
+          {% else %}
+          <button disabled
+                  class="w-full mono text-[10px] border border-black/10 tracking-widest py-3 bg-white text-black/30 font-bold cursor-not-allowed">
+              SOLD OUT
+          </button>
+          {% endif %}
         </div>
-
-        {% if product.total_stock > 0 %}
-        <button type="button"
-                data-product-id="{{ product.id }}"
-                class="open-cart-modal cart-btn w-full mono text-[10px] border border-black/15 tracking-widest py-3 bg-white text-black font-bold hover:bg-gray-100 active:scale-[0.98] transition-all">
-            ADD TO SHOPPING BAG
-        </button>
-        {% else %}
-        <button disabled
-                class="w-full mono text-[10px] border border-black/10 tracking-widest py-3 bg-white text-black/30 font-bold cursor-not-allowed">
-            SOLD OUT
-        </button>
-        {% endif %}
 
     </div>
     </div>
@@ -428,7 +460,7 @@ Products
        PAGINATION
   ══════════════════════════════════════════ -->
   {% if products.has_other_pages %}
-    <div class="reveal mt-16 flex items-center justify-center gap-2">
+    <div class="reveal mt-16 flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap px-2">
 
     {% if products.has_previous %}
         <a href="?page={{ products.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_size %}&size={{ selected_size }}{% endif %}{% if selected_price %}&price={{ selected_price }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}"
@@ -438,18 +470,47 @@ Products
     {% endif %}
 
     <div class="flex items-center gap-1.5">
-        {% for num in products.paginator.page_range %}
-        {% if products.number == num %}
-            <span class="page-btn page-active mono text-[10px] tracking-widest w-9 h-9 border border-black/15 flex items-center justify-center">
-            {{ num }}
-            </span>
-        {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
-            <a href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_size %}&size={{ selected_size }}{% endif %}{% if selected_price %}&price={{ selected_price }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}"
-            class="page-btn mono text-[10px] tracking-widest w-9 h-9 border border-black/15 text-black/40 flex items-center justify-center transition-all">
-            {{ num }}
-            </a>
+      {% with total=products.paginator.num_pages current=products.number %}
+
+      <!-- First page -->
+      {% if current > 3 %}
+        <a href="?page=1{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_size %}&size={{ selected_size }}{% endif %}{% if selected_price %}&price={{ selected_price }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}"
+           class="page-btn mono text-[10px] tracking-widest w-8 h-8 sm:w-9 sm:h-9 border border-black/15 text-black/40 flex items-center justify-center transition-all">
+          1
+        </a>
+        {% if current > 4 %}
+          <span class="mono text-[10px] text-black/30 px-1">…</span>
         {% endif %}
-        {% endfor %}
+      {% endif %}
+
+      <!-- Sliding window -->
+      {% for num in products.paginator.page_range %}
+        {% if num > current|add:'-3' and num < current|add:'3' %}
+          {% if num == current %}
+            <span class="page-btn page-active mono text-[10px] tracking-widest w-8 h-8 sm:w-9 sm:h-9 border border-black/15 flex items-center justify-center">
+              {{ num }}
+            </span>
+          {% else %}
+            <a href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_size %}&size={{ selected_size }}{% endif %}{% if selected_price %}&price={{ selected_price }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}"
+               class="page-btn mono text-[10px] tracking-widest w-8 h-8 sm:w-9 sm:h-9 border border-black/15 text-black/40 flex items-center justify-center transition-all">
+              {{ num }}
+            </a>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+
+      <!-- Last page -->
+      {% if current < total|add:'-2' %}
+        {% if current < total|add:'-3' %}
+          <span class="mono text-[10px] text-black/30 px-1">…</span>
+        {% endif %}
+        <a href="?page={{ total }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_size %}&size={{ selected_size }}{% endif %}{% if selected_price %}&price={{ selected_price }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}"
+           class="page-btn mono text-[10px] tracking-widest w-8 h-8 sm:w-9 sm:h-9 border border-black/15 text-black/40 flex items-center justify-center transition-all">
+          {{ total }}
+        </a>
+      {% endif %}
+
+      {% endwith %}
     </div>
 
     {% if products.has_next %}
@@ -474,40 +535,39 @@ Products
        class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
 
   <!-- Modal Box -->
-  <div class="relative z-10 min-h-screen flex items-center justify-center px-4">
+  <div class="relative z-10 min-h-screen flex items-start sm:items-center justify-center px-4 py-6 overflow-y-auto">
 
-    <div class="bg-white border border-black/10 w-full max-w-xl shadow-2xl">
+    <div class="bg-white border border-black/10 w-full max-w-xl shadow-2xl max-h-[92vh] overflow-y-auto my-auto">
 
-      <!-- Header -->
-      <div class="flex items-center justify-between px-5 py-4 border-b border-black/10">
-        <div>
+      <div class="sticky top-0 z-10 bg-white flex items-start justify-between gap-3 px-4 sm:px-5 py-4 border-b border-black/10">
+        <div class="min-w-0">
           <p class="mono text-[9px] tracking-[.25em] text-black/35 uppercase">
             Select Variant
           </p>
           <h2 id="modal-product-name"
-              class="bebas text-4xl text-black leading-none mt-1">
+              class="bebas text-3xl sm:text-4xl text-black leading-none mt-1 break-words">
             Product
           </h2>
         </div>
 
         <button type="button"
                 id="close-cart-modal"
-                class="mono text-xl text-black/40 hover:text-black transition-colors">
+                class="shrink-0 w-8 h-8 flex items-center justify-center mono text-2xl leading-none text-black/40 hover:text-black transition-colors">
           ×
         </button>
       </div>
 
       <!-- Body -->
-      <form id="modal-add-to-cart-form" method="POST" action="{% url 'add_to_cart' %}" class="p-5">
+      <form id="modal-add-to-cart-form" method="POST" action="{% url 'add_to_cart' %}" class="p-4 sm:p-5">
         {% csrf_token %}
 
         <input type="hidden" name="variant_id" id="modal-variant-id">
         <input type="hidden" name="quantity" id="modal-form-quantity" value="1">
 
-        <div class="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-5">
+        <div class="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-4 sm:gap-5">
 
           <!-- Image -->
-          <div class="aspect-square bg-neutral-100 border border-black/10 overflow-hidden">
+          <div class="w-32 sm:w-full mx-auto sm:mx-0 aspect-square bg-neutral-100 border border-black/10 overflow-hidden">
             <img id="modal-product-image"
                  src=""
                  alt="Product"
@@ -542,7 +602,7 @@ Products
                 </p>
 
                 <span id="modal-discount"
-                      class="mono text-[8px] tracking-widest bg-black text-white px-2 py-1 hidden">
+                      class="mono text-[9px] tracking-widest text-red-600 py-1 hidden">
                   0% OFF
                 </span>
               </div>
@@ -578,13 +638,13 @@ Products
 
             <!-- Quantity -->
             <div class="mb-6">
-              <div class="flex items-center justify-between mb-3">
-                <p class="mono text-[10px] tracking-widest text-black/50 uppercase">
+              <div class="flex items-center justify-between mb-3 gap-2 flex-wrap">
+                <p class="mono text-[10px] tracking-widest text-black/50 uppercase shrink-0">
                   Quantity
                 </p>
 
                 <p id="modal-quantity-help"
-                   class="mono text-[9px] tracking-widest text-black/35">
+                   class="mono text-[9px] tracking-widest text-black/35 text-right">
                   MAX 5 PER ORDER
                 </p>
               </div>
@@ -626,7 +686,7 @@ Products
 </div>
 
 <div id="cart-toast"
-     class="fixed top-20 right-6 z-[1000] hidden border border-black/10 bg-white shadow-xl px-5 py-4">
+     class="fixed top-20 right-4 left-4 sm:left-auto sm:right-6 z-[1000] hidden border border-black/10 bg-white shadow-xl px-5 py-4">
   <p id="cart-toast-message"
      class="mono text-[10px] tracking-widest text-black uppercase">
     Added to shopping bag
@@ -634,7 +694,7 @@ Products
 </div>
 
 <div id="wishlist-toast"
-     class="fixed top-20 right-6 z-[1000] hidden border border-black/10 bg-white shadow-xl px-5 py-4">
+     class="fixed top-20 right-4 left-4 sm:left-auto sm:right-6 z-[1000] hidden border border-black/10 bg-white shadow-xl px-5 py-4">
   <p id="wishlist-toast-message"
      class="mono text-[10px] tracking-widest text-black uppercase">
     Added to wishlist
@@ -647,7 +707,7 @@ Products
 ══════════════════════════════════════════ -->
 <footer class="relative bg-white border-t border-black/10 px-8 md:px-12 pt-14 pb-8">
   <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-black/5 to-transparent pointer-events-none"></div>
-  <div class="flex flex-col md:flex-row justify-between gap-12 mb-12">
+  <div class="flex flex-col md:flex-row justify-between gap-10 md:gap-12 mb-12">
 
     <!-- Brand column -->
     <div class="max-w-xs">
@@ -661,6 +721,10 @@ Products
       </div>
       <p class="mono text-black/30 text-[10px] tracking-wider leading-loose">Premium essentials built for those who refuse to blend in. Every piece, intentionally crafted.</p>
     </div>
+
+    <!-- Help links -->
+    <!-- Help + Shop row on mobile -->
+    <div class="grid grid-cols-2 gap-8 md:contents">
 
     <!-- Help links -->
     <div>
@@ -682,6 +746,7 @@ Products
         <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">BOTTOMS</a></li>
         <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">ACCESSORIES</a></li>
       </ul>
+    </div>
     </div>
 
     <!-- Social -->
@@ -847,11 +912,15 @@ Products
 
     modalPrice.textContent = formatPrice(currentVariant.discounted_price);
 
-    if (Number(currentVariant.discount) > 0) {
+    if (Number(currentVariant.effective_discount_percent) > 0) {
       modalOriginalPrice.textContent = formatPrice(currentVariant.price);
       modalOriginalPrice.classList.remove('hidden');
 
-      modalDiscount.textContent = `${Math.round(Number(currentVariant.discount))}% OFF`;
+      if (currentVariant.savings_type === 'FLAT') {
+        modalDiscount.textContent = `₹${Math.round(Number(currentVariant.savings_amount))} OFF`;
+      } else {
+        modalDiscount.textContent = `${Math.round(Number(currentVariant.savings_amount))}% OFF`;
+      }
       modalDiscount.classList.remove('hidden');
     } else {
       modalOriginalPrice.classList.add('hidden');
@@ -1108,7 +1177,7 @@ function updateWishlistBadge(count) {
             removeWishlistActiveStateByVariant(data.removed_variant_id);
           }
 
-          showCartToast(data.message || 'Product added to cart.');
+          showCartToast(data.message || 'Product added to Shopping Bag.');
 
           if (typeof closeModal === 'function') {
             closeModal();
@@ -1175,7 +1244,7 @@ function setWishlistButtonActive(button) {
   const svg = button.querySelector('svg');
 
   if (svg) {
-    svg.setAttribute('fill', 'white');
+    svg.setAttribute('fill', 'black');
   }
 }
 
@@ -1243,6 +1312,15 @@ function removeWishlistActiveStateByVariant(variantId) {
   });
 }
 
+/* ── Mobile filter panel toggle ── */
+  const mobileFilterToggle = document.getElementById('mobile-filter-toggle');
+  const mobileFilterPanel = document.getElementById('mobile-filter-panel');
+
+  if (mobileFilterToggle && mobileFilterPanel) {
+    mobileFilterToggle.addEventListener('click', () => {
+      mobileFilterPanel.classList.toggle('hidden');
+    });
+  }
 
 </script>
 {% endblock %}

@@ -11,13 +11,13 @@
     .mono { font-family: 'Share Tech Mono', monospace; }
 
     .otp-input {
-      width: 80px;
-      height: 90px;
-      {% comment %} background: #fff; {% endcomment %}
+      --otp-size: 56px;
+      width: var(--otp-size);
+      height: calc(var(--otp-size) * 1.1);
       border: 1.5px solid #2e2e2e;
       border-radius: 4px;
       color: #111;
-      font-size: 2rem;
+      font-size: 1.5rem;
       font-family: 'Share Tech Mono', monospace;
       text-align: center;
       outline: none;
@@ -27,24 +27,31 @@
     .otp-input:focus  { border-color: #3b82f6; }
     .otp-input.filled { border-color: #444; }
     .otp-input.error  { border-color: #ef4444; }
+
+    @media (min-width: 480px) {
+      .otp-input { --otp-size: 68px; font-size: 1.75rem; }
+    }
+
+    @media (min-width: 640px) {
+      .otp-input { --otp-size: 80px; font-size: 2rem; }
+    }
   </style>
 </head>
-<body class="bg-white text-black min-h-screen flex items-center justify-center p-6">
+<body class="bg-white text-black min-h-screen flex items-center justify-center p-4 sm:p-6">
 
-  <!-- Outer card (matches the screenshot's bordered panel) -->
-  <div class="relative w-full max-w-3xl bg-white border border-black/10 rounded-sm px-14 py-14">
+  <!-- Outer card -->
+  <div class="relative w-full max-w-3xl bg-white border border-black/10 rounded-sm px-6 py-8 sm:px-10 sm:py-12 md:px-14 md:py-14">
 
-    <!-- Red left accent bar -->
-    <div class="absolute left-0 top-10 bottom-10 w-1 bg-black/10 rounded-r-sm"></div>
+    <!-- Left accent bar -->
+    <div class="absolute left-0 top-6 bottom-6 sm:top-10 sm:bottom-10 w-1 bg-black/10 rounded-r-sm"></div>
 
     <!-- Title -->
-    <h1 class="text-black text-4xl font-bold mb-3 pl-6">Enter the OTP</h1>
-    <p class="mono text-black/40 text-xs tracking-widest mb-12 pl-6">
-      Enter the 6-digit OTP sent to your email.
-    </p>
+    <h1 class="text-black text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-3 pl-4 sm:pl-6">
+      Enter the OTP
+    </h1>
 
     {% if messages %}
-      <div class="pl-6 mb-4">
+      <div class="pl-4 sm:pl-6 mb-4">
       {% for message in messages %}
         <p class="text-sm text-red-400 mono">{{ message }}</p>
       {% endfor %}
@@ -54,7 +61,7 @@
     <form method="POST" action="">
         {% csrf_token %}
 
-        <p class="mono text-black/40 text-xs tracking-widest mb-12 pl-6">
+        <p class="mono text-black/40 text-[11px] sm:text-xs tracking-widest mb-8 sm:mb-12 pl-4 sm:pl-6">
             {% if new_email %}
                 Enter the 6-digit OTP sent to {{ new_email }}
             {% else %}
@@ -63,14 +70,14 @@
         </p>
 
         <!-- OTP inputs -->
-      <div class="flex items-center gap-3 pl-6 mb-12 flex-wrap">
+      <div class="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 pl-0 sm:pl-6 mb-8 sm:mb-12 flex-wrap">
         <!-- Group 1 -->
         <input class="otp-input" type="text" name="otp1" maxlength="1" inputmode="numeric" id="otp1" autofocus/>
         <input class="otp-input" type="text" name="otp2" maxlength="1" inputmode="numeric" id="otp2"/>
         <input class="otp-input" type="text" name="otp3" maxlength="1" inputmode="numeric" id="otp3"/>
 
         <!-- Dash separator -->
-        <span class="mono text-black/30 text-xl px-1">—</span>
+        {% comment %} <span class="mono text-black/30 text-lg sm:text-xl px-1">—</span> {% endcomment %}
 
         <!-- Group 2 -->
         <input class="otp-input" type="text" name="otp4" maxlength="1" inputmode="numeric" id="otp4"/>
@@ -80,10 +87,10 @@
 
         <!-- CONFIRM button -->
         <button
-            class="w-full bg-black/70 text-white mono font-bold text-sm tracking-widest py-5 flex items-center justify-center gap-4 hover:bg-black active:scale-[0.99] transition-all duration-150 mb-8 rounded-sm"
+            class="w-full bg-black/70 text-white mono font-bold text-xs sm:text-sm tracking-widest py-4 sm:py-5 flex items-center justify-center gap-3 sm:gap-4 hover:bg-black active:scale-[0.99] transition-all duration-150 mb-6 sm:mb-8 rounded-sm"
         >
             CONFIRM
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
         </svg>
         </button>
@@ -91,7 +98,7 @@
     </form>
 
     <!-- Footer row -->
-    <div class="flex items-center gap-4 pl-1">
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 pl-1">
       <a href="{% url 'user_resend_otp' %}" 
         id="resendBtn"
         class="mono text-black text-xs font-bold opacity-40 pointer-events-none">
@@ -104,8 +111,8 @@
       >
       after {{ remaining_seconds|default:0 }}s
       </span>
-      <span class="text-black/20 text-xs">•</span>
-      <a href="{% url 'user_change_email' %}" class="mono text-white text-xs font-bold hover:underline">Change email</a>
+      <span class="text-black/20 text-xs hidden sm:inline">•</span>
+      <a href="{% url 'user_change_email' %}" class="mono text-black text-xs font-bold hover:underline">Change email</a>
     </div>
 
   </div>
@@ -117,7 +124,6 @@
 
       if (!label || !resendBtn) return;
 
-      // Ensure we get a valid number
       let seconds = parseInt(label.getAttribute('data-seconds')) || 0;
 
       function updateUI(s) {
@@ -128,12 +134,10 @@
           resendBtn.textContent = "Resend code";
         } else {
           label.textContent = `after ${s}s`;
-          // Ensure button is disabled while timer runs
           resendBtn.classList.add('opacity-40', 'pointer-events-none');
         }
       }
 
-      // Initial check
       updateUI(seconds);
 
       if (seconds > 0) {
@@ -147,7 +151,6 @@
 
     const otpIds = ['otp1','otp2','otp3','otp4','otp5','otp6'];
 
-    // ── Auto-advance & backspace ─────────────────────
     otpIds.forEach((id, idx) => {
       const el = document.getElementById(id);
 
@@ -163,7 +166,6 @@
           document.getElementById(otpIds[idx - 1]).focus();
       });
 
-      // Paste support
       el.addEventListener('paste', e => {
         e.preventDefault();
         const digits = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6);

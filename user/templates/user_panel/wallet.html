@@ -1,0 +1,487 @@
+{% extends 'user_base/base.html' %}
+
+{% block title %}
+Wallet | FASHIO
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #fff;
+    color: #000;
+  }
+
+  .mono {
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .bebas {
+    font-family: 'Bebas Neue', sans-serif;
+  }
+
+  .wallet-card {
+    transition: border-color .25s ease, transform .25s ease;
+  }
+
+  .wallet-card:hover {
+    border-color: rgba(0,0,0,.28);
+  }
+
+  .transaction-row {
+    transition: background .2s ease;
+  }
+
+  .transaction-row:hover {
+    background: rgba(0,0,0,.025);
+  }
+
+  .amount-input {
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .amount-input::-webkit-outer-spin-button,
+  .amount-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="bg-white pt-10 md:pt-12 px-6 md:px-12 pb-20">
+
+  <!-- Breadcrumb -->
+  <div class="mb-8 flex items-center gap-2 flex-wrap">
+    <a href="{% url 'user_profile' %}"
+       class="mono text-[10px] tracking-widest text-black/40 hover:text-black transition-colors uppercase">
+      Profile
+    </a>
+
+    <span class="mono text-[10px] tracking-widest text-black/25">/</span>
+
+    <span class="mono text-[10px] tracking-widest text-black/35 uppercase">
+      Wallet
+    </span>
+  </div>
+
+  <!-- Page Header -->
+  <div class="mb-12">
+    <div class="flex items-center gap-4 mb-4">
+      <div class="w-1 h-12 bg-black"></div>
+
+      <div>
+        <h1 class="bebas text-black text-4xl sm:text-6xl md:text-8xl leading-none tracking-wide">
+          MY WALLET
+        </h1>
+      </div>
+    </div>
+
+    <p class="mono text-[10px] tracking-widest text-black/40 uppercase max-w-xl leading-relaxed">
+      Manage your wallet balance, add money, and view your recent wallet transactions.
+    </p>
+  </div>
+
+<!-- Main Grid -->
+  <div class="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-10">
+
+    <!-- Balance Card -->
+    <div class="order-1 xl:order-none xl:col-start-1 xl:row-start-1 space-y-10">
+
+      <div class="wallet-card border border-black/10 bg-white p-6 md:p-8">
+
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-8">
+
+          <!-- Balance -->
+          <div>
+            <p class="mono text-[10px] tracking-widest text-black/45 uppercase mb-4">
+              Current Balance
+            </p>
+
+            <h2 class="mono text-3xl sm:text-5xl md:text-7xl font-bold text-black leading-none break-words">
+              ₹{{ wallet.balance|floatformat:2 }}
+            </h2>
+
+            <p class="mono text-[10px] tracking-widest text-black/35 uppercase mt-4">
+              Available for future purchases
+            </p>
+          </div>
+
+          <!-- Mini Stats -->
+          <div class="grid grid-cols-2 gap-4 md:min-w-[260px]">
+
+            <div class="p-4">
+              <p class="mono text-[9px] tracking-widest text-black/35 uppercase mb-2">
+                Total Added
+              </p>
+
+              <p class="mono text-xl font-bold text-black">
+                ₹{{ total_added|floatformat:2 }}
+              </p>
+            </div>
+
+            <div class="p-4">
+              <p class="mono text-[9px] tracking-widest text-black/35 uppercase mb-2">
+                Total Spend
+              </p>
+
+              <p class="mono text-xl font-bold text-black">
+                ₹{{ total_spent|floatformat:2 }}
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- RIGHT SIDE: Add Money -->
+    <aside class="order-2 xl:order-none xl:col-start-2 xl:row-start-1 xl:row-span-2 xl:sticky xl:top-24 h-fit">
+
+      <div class="border border-black/10 p-6 md:p-8 bg-white">
+
+        <p class="mono text-[10px] tracking-widest text-black/45 uppercase mb-3">
+          Wallet Action
+        </p>
+
+        <h2 class="bebas text-black text-5xl leading-none tracking-wide mb-8">
+          Add Money
+        </h2>
+
+        <form method="POST" action="{% url 'user_add_wallet_money' %}">
+          {% csrf_token %}
+
+          <div class="mb-6">
+            <label class="block mono text-[10px] tracking-widest text-black/45 uppercase mb-3">
+              Amount
+            </label>
+
+            <div class="flex items-center border border-black/15 bg-neutral-50 px-3 sm:px-4">
+              <span class="mono text-base sm:text-lg font-bold text-black mr-2 sm:mr-3 shrink-0">
+                ₹
+              </span>
+
+              <input type="number"
+                     name="amount"
+                     placeholder="0.00"
+                     class="amount-input w-full min-w-0 bg-transparent py-4 sm:py-5 outline-none mono text-xl sm:text-2xl font-bold text-black placeholder-black/25">
+
+              <span class="mono text-[9px] sm:text-[10px] tracking-widest text-black/35 uppercase ml-2 sm:ml-3 shrink-0">
+                INR
+              </span>
+            </div>
+          </div>
+
+          <!-- Quick Amounts -->
+          <div class="grid grid-cols-3 gap-3 mb-8">
+
+            <button type="button"
+                    class="quick-amount-btn mono text-[10px] tracking-widest border border-black/15 py-3 text-black/50 hover:border-black hover:text-black transition-colors">
+            ₹100
+            </button>
+
+            <button type="button"
+                    class="quick-amount-btn mono text-[10px] tracking-widest border border-black/15 py-3 text-black/50 hover:border-black hover:text-black transition-colors">
+            ₹500
+            </button>
+
+            <button type="button"
+                    class="quick-amount-btn mono text-[10px] tracking-widest border border-black/15 py-3 text-black/50 hover:border-black hover:text-black transition-colors">
+            ₹1000
+            </button>
+
+          </div>
+
+          <button type="submit"
+                  class="w-full mono text-[10px] tracking-widest bg-black text-white py-4 font-bold hover:bg-black/80 active:scale-[0.98] transition-all uppercase">
+            Continue Payment
+          </button>
+
+        </form>
+
+        <div class="mt-6 border-t border-black/10 pt-5">
+          <p class="text-xs text-black/45 leading-relaxed">
+            Added wallet money can be used during checkout. Refunds and rewards will also appear in this wallet.
+          </p>
+        </div>
+
+      </div>
+
+    </aside>
+
+    <!-- Recent Transactions -->
+    <div class="order-3 xl:order-none xl:col-start-1 xl:row-start-2 space-y-10">
+
+      <div>
+
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <p class="mono text-[10px] tracking-widest text-black/45 uppercase">
+              Recent Transactions
+            </p>
+          </div>
+        </div>
+
+        <div class="border border-black/10 bg-white overflow-hidden">
+
+          <!-- Table Header -->
+          <div class="hidden md:grid grid-cols-[350px_1fr] gap-6 bg-neutral-50 border-b border-black/10 px-5 py-4">
+            <p class="mono text-[10px] tracking-widest text-black/50 uppercase">
+              Description
+            </p>
+
+            <p class="mono text-[10px] tracking-widest text-black/50 uppercase text-right">
+              Amount
+            </p>
+          </div>
+
+          <!-- Row -->
+          {% for transaction in page_obj %}
+            <div class="transaction-row grid grid-cols-1 md:grid-cols-[350px_1fr] gap-4 md:gap-6 border-b border-black/10 px-5 py-5 items-center">
+
+            <div class="transaction-row grid grid-cols-1 md:grid-cols-[350px_1fr] gap-4 md:gap-6 border-b border-black/10 px-5 py-5 items-start md:items-center">
+
+            <!-- Description -->
+            <div class="flex items-start justify-between gap-4 md:block">
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-black break-words">
+                {% if transaction.description %}
+                    {{ transaction.description }}
+                {% else %}
+                    {{ transaction.get_purpose_display }}
+                {% endif %}
+                </p>
+
+                 <span class="mono text-[9px] tracking-widest text-black/35 uppercase mt-1 block">
+                {{ transaction.get_purpose_display }}
+                </span>
+
+                <p class="mono text-[9px] tracking-widest text-black/35 uppercase mt-1">
+                {{ transaction.created_at|date:"d M Y, h:i A" }}
+                </p>
+              </div>
+
+              <!-- Amount (mobile only, shown inline with description) -->
+              <div class="md:hidden shrink-0 text-right">
+                {% if transaction.transaction_type == "CREDIT" %}
+                <p class="mono text-sm font-bold text-green-700 whitespace-nowrap">
+                    +₹{{ transaction.amount|floatformat:2 }}
+                </p>
+                {% else %}
+                <p class="mono text-sm font-bold text-red-600 whitespace-nowrap">
+                    -₹{{ transaction.amount|floatformat:2 }}
+                </p>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Amount (desktop only) -->
+            <div class="hidden md:block md:text-right">
+                {% if transaction.transaction_type == "CREDIT" %}
+                <p class="mono text-sm font-bold text-green-700">
+                    +₹{{ transaction.amount|floatformat:2 }}
+                </p>
+                {% else %}
+                <p class="mono text-sm font-bold text-red-600">
+                    -₹{{ transaction.amount|floatformat:2 }}
+                </p>
+                {% endif %}
+            </div>
+
+            </div>
+            {% empty %}
+            <div class="px-5 py-12 text-center">
+            <p class="mono text-[10px] tracking-widest text-black/35 uppercase">
+                No wallet transactions found
+            </p>
+            </div>
+            {% endfor %}
+        </div>
+
+      </div>
+
+      {% if page_obj.paginator.num_pages > 1 %}
+      <div class="flex items-center justify-between mt-6 gap-4 flex-wrap">
+
+        <p class="mono text-[10px] tracking-widest text-black/40 uppercase">
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </p>
+
+        <div class="flex gap-2 flex-wrap">
+          {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}"
+              class="mono text-[10px] tracking-widest border border-black/15 px-4 py-2 text-black/60 hover:border-black hover:text-black transition-colors uppercase">
+              Prev
+            </a>
+          {% endif %}
+
+          {% for num in page_obj.paginator.page_range %}
+            {% if num == page_obj.number %}
+              <span class="mono text-[10px] tracking-widest border border-black bg-black text-white px-4 py-2 uppercase">
+                {{ num }}
+              </span>
+            {% else %}
+              <a href="?page={{ num }}"
+                class="mono text-[10px] tracking-widest border border-black/15 px-4 py-2 text-black/60 hover:border-black hover:text-black transition-colors uppercase">
+                {{ num }}
+              </a>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}"
+              class="mono text-[10px] tracking-widest border border-black/15 px-4 py-2 text-black/60 hover:border-black hover:text-black transition-colors uppercase">
+              Next
+            </a>
+          {% endif %}
+        </div>
+
+      </div>
+      {% endif %}
+
+    </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+{% if open_razorpay %}
+<div id="payment-ready-modal"
+     class="fixed inset-0 z-[999] flex items-center justify-center px-4">
+
+  <!-- Overlay -->
+  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+  <!-- Modal Box -->
+  <div class="relative bg-white border border-black/10 w-full max-w-md p-6 md:p-8 shadow-2xl">
+
+    <!-- Close -->
+    <a href="{% url 'user_wallet' %}"
+       class="absolute top-3 right-3 sm:top-4 sm:right-4 w-8 h-8 border border-black/10 flex items-center justify-center mono text-sm text-black/50 hover:text-black hover:border-black transition-colors z-10">
+      ×
+    </a>
+
+    <p class="mono text-[10px] tracking-widest text-black/40 uppercase mb-3">
+      Payment Ready
+    </p>
+
+    <h2 class="bebas text-black text-5xl leading-none tracking-wide mb-5">
+      Add Money
+    </h2>
+
+    <div class="border border-black/10 bg-neutral-50 p-5 mb-6">
+      <p class="mono text-[9px] tracking-widest text-black/35 uppercase mb-2">
+        Recharge Amount
+      </p>
+
+      <p class="mono text-3xl font-bold text-black">
+        ₹{{ amount|floatformat:2 }}
+      </p>
+    </div>
+
+    <p class="text-sm text-black/50 leading-relaxed mb-6">
+      Your Razorpay payment is ready. Click the button below to open the secure payment popup.
+    </p>
+
+    <button id="rzp-button"
+            type="button"
+            class="w-full mono text-[10px] tracking-widest bg-black text-white py-4 font-bold hover:bg-black/80 active:scale-[0.98] transition-all uppercase">
+      Pay ₹{{ amount|floatformat:2 }}
+    </button>
+
+    <a href="{% url 'user_wallet' %}"
+       class="block text-center mt-5 mono text-[10px] tracking-widest text-black/35 hover:text-black uppercase">
+      Cancel Payment
+    </a>
+
+  </div>
+</div>
+{% endif %}
+
+<form id="payment-success-form"
+      method="POST"
+      action="{% url 'user_wallet_payment_success' %}"
+      style="display:none;">
+  {% csrf_token %}
+
+  <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
+  <input type="hidden" name="razorpay_order_id" id="razorpay_order_id">
+  <input type="hidden" name="razorpay_signature" id="razorpay_signature">
+</form>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+  const amountInput = document.querySelector('input[name="amount"]');
+  const quickAmountButtons = document.querySelectorAll('.quick-amount-btn');
+
+  quickAmountButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const value = button.innerText.replace('₹', '').trim();
+      amountInput.value = value;
+    });
+  });
+
+  {% if open_razorpay %}
+  // Build options only when the button is clicked (Razorpay is guaranteed
+  // loaded by then), and use callback_url + redirect:true instead of relying
+  // solely on the JS `handler`. This makes Razorpay do a server-to-server
+  // POST redirect to our success URL after payment, which is far more
+  // reliable than depending on the popup calling back into this page's JS —
+  // the previous handler-only approach is what produced the blank
+  // about:blank popup when the callback couldn't reach the opener window.
+  function buildRazorpayOptions() {
+    return {
+      key: "{{ razorpay_key_id }}",
+      amount: "{{ amount_in_paise }}",
+      currency: "INR",
+      name: "FASHIO",
+      description: "Wallet Recharge",
+      order_id: "{{ razorpay_order_id }}",
+
+      callback_url: "{{ request.scheme }}://{{ request.get_host }}{% url 'user_wallet_payment_success' %}",
+      redirect: true,
+
+      modal: {
+        ondismiss: function () {
+          console.log("Razorpay payment popup closed.");
+        }
+      },
+
+      prefill: {
+        name: "{{ request.user.fullname|default:request.user.email|escapejs }}",
+        email: "{{ request.user.email|escapejs }}",
+        contact: "{{ request.user.phone|default:''|escapejs }}"
+      },
+
+      theme: {
+        color: "#000000"
+      },
+    };
+  }
+
+  const razorpayButton = document.getElementById("rzp-button");
+
+  if (razorpayButton) {
+    razorpayButton.onclick = function (e) {
+      e.preventDefault();
+
+      if (typeof Razorpay === "undefined") {
+        alert("Payment script failed to load. Please refresh and try again.");
+        return;
+      }
+
+      const rzp = new Razorpay(buildRazorpayOptions());
+      rzp.open();
+    };
+  }
+  {% endif %}
+</script>
+
+{% endblock %}

@@ -113,11 +113,11 @@
   <!-- Full-bleed model image -->
   <div class="absolute inset-0 z-0 h-img-anim">
     <div class="hero-slide absolute inset-0 transition-opacity duration-1000 opacity-100">
-      <img src="https://media.wonderlandmagazine.com/uploads/2018/11/MAT-by-Antonio-Eugenio-7.jpg" 
+      <img src="https://static.zara.net/assets/public/3c62/a4b2/657e4257a5cd/e676851dd9ba/image-landscape-fill-8215e663-8c12-4a4e-ad95-d6f9b3e6fa63-default_0/image-landscape-fill-8215e663-8c12-4a4e-ad95-d6f9b3e6fa63-default_0.jpg?ts=1783079110205&w=1920" 
            alt="Model" class="hero-img-zoom bw-img w-full h-full object-cover object-top"/>
     </div>
     <div class="hero-slide absolute inset-0 transition-opacity duration-1000 opacity-0">
-      <img src="https://media.wonderlandmagazine.com/uploads/2019/01/10.26-Wonderland0163.jpg" 
+      <img src="https://static.massimodutti.net/assets/public/193c/3962/0a4343b9b800/7a229e048214/m-amalfi-desktop-4_3-01/m-amalfi-desktop-4_3-01.jpg?ts=1782833965753&w=1920&f=auto" 
            alt="Model" class="hero-img-zoom bw-img w-full h-full object-cover object-center"/>
     </div>
     <div class="hero-slide absolute inset-0 transition-opacity duration-1000 opacity-0">
@@ -139,7 +139,7 @@
     <!-- Season tag -->
     <div class="h-anim-1 flex items-center gap-3 mb-4">
       <div class="w-8 h-0.5 bg-white"></div>
-      <span class="mono text-white/80 text-[10px] tracking-[.3em] font-semibold">SS25_COLLECTION</span>
+      <span class="mono text-white/80 text-[10px] tracking-[.3em] font-semibold">THE EDIT</span>
     </div>
 
     <!-- Main headline — stacked editorial style -->
@@ -157,10 +157,10 @@
       <p class="mono text-white/60 text-[11px] tracking-widest leading-relaxed max-w-xs uppercase">
         Premium Essentials<br/>for Real Confidence
       </p>
-      <button id="explore-btn" class="cta-btn mono text-xs tracking-widest px-10 py-4 bg-white text-black font-bold hover:bg-gray-200 active:scale-[0.98] transition-all flex items-center gap-3">
+      <a href="{% url 'product_list' %}" ><button id="explore-btn" class="cta-btn mono text-xs tracking-widest px-10 py-4 bg-white text-black font-bold hover:bg-gray-200 active:scale-[0.98] transition-all flex items-center gap-3">
         EXPLORE DROP
         <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-      </button>
+      </button></a>
     </div>
   </div>
 
@@ -255,7 +255,7 @@
 <!-- ══════════════════════════════════════════
      THIS WEEK'S DROP
 ══════════════════════════════════════════ -->
-<section class="relative bg-white px-6 md:px-12 py-20 overflow-hidden">
+<section class="bg-white px-1 md:px-12 py-16">
 
   <!-- Section header -->
     <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-black/20 to-transparent pointer-events-none"></div>  <div class="flex items-end justify-between mb-12 reveal">
@@ -272,20 +272,21 @@
   </div>
 
   <!-- Product grid -->
-<div id="product-grid" class="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-6">
+<div id="product-grid" class="grid grid-cols-2 md:grid-cols-4 gap-x-0 gap-y-0">
 
   {% for product in latest_products %}
 
-  <div class="product-card bg-white border border-black/15 overflow-hidden reveal reveal-d{{ forloop.counter }}">
+    <div class="product-card bg-white overflow-hidden reveal flex flex-col h-full">
 
     <!-- Product Image -->
     <a href="{% url 'product_detail' product.id %}">
-      <div class="relative h-64 md:h-72 overflow-hidden bg-neutral-100">
+      <div class="relative aspect-[3/4] overflow-hidden bg-neutral-100">
 
         {% if product.thumbnail %}
           <img src="{{ product.thumbnail }}"
                alt="{{ product.name }}"
-               class="product-img w-full h-full object-cover"/>
+               loading="lazy"
+               class="absolute inset-0 w-full h-full object-cover object-top"/>
         {% else %}
           <div class="w-full h-full flex items-center justify-center bg-neutral-100">
             <span class="mono text-[10px] tracking-widest text-black/30">
@@ -303,7 +304,7 @@
         {% endif %}
 
         <div class="absolute top-3 left-3 z-10">
-          <span class="mono text-[8px] tracking-widest px-2 py-1 bg-black text-white font-bold">
+          <span class="mono text-[8px] tracking-widest px-2 py-1 text-red-600 font-bold">
             NEW
           </span>
         </div>
@@ -312,7 +313,7 @@
     </a>
 
     <!-- Product Info -->
-    <div class="p-4">
+    <div class="pt-3 px-1 pb-2 flex flex-col flex-1">
 
       <p class="mono text-black/40 text-[9px] tracking-widest mb-1.5">
         {% if product.subcategory %}
@@ -322,12 +323,12 @@
         {% endif %}
       </p>
 
-      <a href="{% url 'product_detail' product.id %}" class="flex items-start justify-between mb-1">
-        <p class="text-black text-sm font-medium leading-snug">
+      <a href="{% url 'product_detail' product.id %}" class="flex items-start justify-between gap-2 mb-1 min-h-[2.6rem]">
+        <p class="text-black text-sm font-medium leading-snug min-w-0 line-clamp-2">
           {{ product.name }}
         </p>
 
-        <div class="text-right shrink-0 ml-2">
+        <div class="text-right shrink-0">
           <p class="mono text-black text-sm font-bold">
             ₹{{ product.display_price|floatformat:0 }}
           </p>
@@ -339,18 +340,6 @@
           {% endif %}
         </div>
       </a>
-
-      {% if product.total_stock > 0 %}
-        <a href="{% url 'product_detail' product.id %}"
-           class="block text-center w-full mono text-[10px] border border-black/15 tracking-widest py-3 bg-white text-black font-bold hover:bg-gray-100 active:scale-[0.98] transition-all">
-          VIEW PRODUCT
-        </a>
-      {% else %}
-        <button disabled
-                class="w-full mono text-[10px] border border-black/10 tracking-widest py-3 bg-white text-black/30 font-bold cursor-not-allowed">
-          SOLD OUT
-        </button>
-      {% endif %}
 
     </div>
   </div>
@@ -377,7 +366,7 @@
 ══════════════════════════════════════════ -->
 <footer class="relative bg-white border-t border-black/10 px-8 md:px-12 pt-14 pb-8">
   <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-black/5 to-transparent pointer-events-none"></div>
-  <div class="flex flex-col md:flex-row justify-between gap-12 mb-12">
+  <div class="flex flex-col md:flex-row justify-between gap-10 md:gap-12 mb-12">
 
     <!-- Brand column -->
     <div class="max-w-xs">
@@ -393,13 +382,17 @@
     </div>
 
     <!-- Help links -->
+    <!-- Help + Shop row on mobile -->
+    <div class="grid grid-cols-2 gap-8 md:contents">
+
+    <!-- Help links -->
     <div>
       <p class="mono text-black/40 text-[10px] tracking-widest mb-5">HELP</p>
       <ul class="space-y-3">
-        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">ABOUT US</a></li>
+        <li><a href="{% url 'about' %}" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">ABOUT US</a></li>
         <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">CONTACT</a></li>
-        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">PRIVACY POLICY</a></li>
-        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">TERMS OF SERVICE</a></li>
+        <li><a href="{% url 'about' %}" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">PRIVACY POLICY</a></li>
+        <li><a href="{% url 'about' %}" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">TERMS OF SERVICE</a></li>
       </ul>
     </div>
 
@@ -407,11 +400,11 @@
     <div>
       <p class="mono text-black/40 text-[10px] tracking-widest mb-5">SHOP</p>
       <ul class="space-y-3">
-        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">T-SHIRTS</a></li>
-        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">SHIRTS</a></li>
-        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">BOTTOMS</a></li>
-        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">ACCESSORIES</a></li>
+        {% for category in categories %}
+          <li><a href="{% url 'product_list' %}?category={{ category.id }}" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">{{ category.name }}</a></li>
+        {% endfor %}
       </ul>
+    </div>
     </div>
 
     <!-- Social -->
@@ -474,19 +467,6 @@
       card.addEventListener('mouseleave', () => { line.style.width = '0'; });
     }
   });
-
-  /* Smooth scroll to categories */
-const exploreBtn = document.getElementById('explore-btn');
-
-if (exploreBtn) {
-  exploreBtn.addEventListener('click', () => {
-    const categorySection = document.getElementById('category-section');
-
-    categorySection.scrollIntoView({
-      behavior: 'smooth'
-    });
-  });
-}
 
 </script>
 {% endblock %}

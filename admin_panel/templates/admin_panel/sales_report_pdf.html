@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @page { size: A4; margin: 24px; }
+    body { font-family: 'DejaVu Sans', sans-serif; font-size: 11px; color: #111; }
+    h1 { font-size: 20px; margin-bottom: 4px; }
+    .meta { color: #555; font-size: 11px; margin-bottom: 20px; }
+    .stats { display: flex; width: 100%; margin-bottom: 24px; }
+    .stat-box {
+      border: 1px solid #ddd;
+      padding: 10px 14px;
+      margin-right: 10px;
+      width: 23%;
+      display: inline-block;
+    }
+    .stat-label { color: #777; font-size: 9px; text-transform: uppercase; margin-bottom: 4px; }
+    .stat-value { font-size: 16px; font-weight: bold; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #eee; font-size: 10px; }
+    th { background: #f5f5f5; text-transform: uppercase; color: #555; font-size: 9px; }
+    .section-title { font-size: 13px; font-weight: bold; margin: 18px 0 8px; }
+  </style>
+</head>
+<body>
+
+  <h1>Sales Report & Revenue</h1>
+  <p class="meta">Period: {{ date_from }} to {{ date_to }} &nbsp;|&nbsp; Generated: {{ generated_at }}</p>
+
+  <div class="stats">
+    <div class="stat-box">
+      <div class="stat-label">Total Revenue</div>
+      <div class="stat-value">₹{{ total_revenue|floatformat:2 }}</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Total Orders</div>
+      <div class="stat-value">{{ total_orders }}</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Avg. Order Value</div>
+      <div class="stat-value">₹{{ avg_order_value|floatformat:2 }}</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Refunds/Returns</div>
+      <div class="stat-value">₹{{ refunds_total|floatformat:2 }}</div>
+    </div>
+  </div>
+
+  <div class="section-title">Revenue by Category</div>
+  <table>
+    <thead>
+      <tr><th>Category</th><th>Revenue</th></tr>
+    </thead>
+    <tbody>
+      {% for row in category_table %}
+      <tr>
+        <td>{{ row.name }}</td>
+        <td>₹{{ row.revenue|floatformat:2 }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="2">No data</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="section-title">Revenue by Payment Method</div>
+  <table>
+    <thead>
+      <tr><th>Payment Method</th><th>Revenue</th></tr>
+    </thead>
+    <tbody>
+      {% for row in payment_table %}
+      <tr>
+        <td>{{ row.name }}</td>
+        <td>₹{{ row.revenue|floatformat:2 }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="2">No data</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="section-title">Revenue by Product</div>
+  <table>
+    <thead>
+      <tr><th>Product</th><th>Category</th><th>Units Sold</th><th>Revenue</th></tr>
+    </thead>
+    <tbody>
+      {% for row in all_product_rows %}
+      <tr>
+        <td>{{ row.name }}</td>
+        <td>{{ row.category }}</td>
+        <td>{{ row.units_sold }}</td>
+        <td>₹{{ row.revenue|floatformat:2 }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4">No data</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</body>
+</html>

@@ -134,12 +134,20 @@
       color: #dc2626;
     }
 
+    .status-return-rejected {
+      color: #dc2626;
+    }
+
     .status-return {
       color: #2563eb;
     }
 
     .status-returned {
       color: #16a34a;
+    }
+
+    .status-return-approved {
+      color: #059669;
     }
 
     .summary-wrap {
@@ -189,6 +197,7 @@
       letter-spacing: 1px;
       text-transform: uppercase;
     }
+
   </style>
 </head>
 
@@ -205,8 +214,8 @@
 
       <div>
         <div class="invoice-title">Invoice</div>
-        <div class="mono muted">Invoice No: INV-{{ order.order_id }}</div>
-        <div class="mono muted">Order ID: {{ order.order_id }}</div>
+        <div class="mono muted">Invoice No: INV-{{ order.display_id }}</div>
+        <div class="mono muted">Order ID: {{ order.display_id }}</div>
         <div class="mono muted">Invoice Date: {% now "Y.m.d" %}</div>
       </div>
     </div>
@@ -309,17 +318,24 @@
               Rs. {{ item.subtotal|floatformat:2 }}
             </td>
 
+            
+              <!-- New -->
             <td>
               {% if item.item_status == "CANCELLED" %}
                 <span class="status status-cancelled">Cancelled</span>
               {% elif item.item_status == "RETURN_REQUESTED" %}
                 <span class="status status-return">Return Requested</span>
-              {% comment %} {% elif item.item_status == "RETURNED" %}
-                <span class="status status-returned">Returned</span> {% endcomment %}
+              {% elif item.item_status == "RETURN_APPROVED" %}
+                <span class="status status-return-approved">Return Approved</span>
+              {% elif item.item_status == "RETURN_REJECTED" %}
+                <span class="status status-return-rejected">Return Rejected</span>
+              {% elif item.item_status == "RETURNED" %}
+                <span class="status status-returned">Refunded</span>
               {% else %}
                 <span class="status">Ordered</span>
               {% endif %}
             </td>
+            
           </tr>
         {% endfor %}
       </tbody>
@@ -330,7 +346,7 @@
       <div class="summary">
 
         <div class="summary-row">
-          <span>Subtotal</span>
+          <span>Subtotal (GST incl.)</span>
           <strong>Rs. {{ billable_subtotal|floatformat:2 }}</strong>
         </div>
 
@@ -345,15 +361,26 @@
           </strong>
         </div>
 
-        <div class="summary-row">
+        {% comment %} <div class="summary-row">
           <span>Discount</span>
           <strong class="negative">- Rs. {{ display_discount_amount|floatformat:2 }}</strong>
-        </div>
+        </div> {% endcomment %}
 
         <div class="summary-row">
-          <span>GST and Taxes</span>
-          <strong>Rs. {{ display_tax_amount|floatformat:2 }}</strong>
+          <span>GST ({{ display_gst_rate|floatformat:0 }}% incl.)</span>
+          <strong>Rs. {{ display_gst_amount|floatformat:2 }}</strong>
         </div>
+
+        {% if order.coupon %}
+          <div class="summary-row">
+              <span>
+                  Coupon Discount-{{ order.coupon.code}}
+              </span>
+              <span>
+                  -₹{{ coupon_discount|floatformat:2 }}
+              </span>
+          </div>
+          {% endif %}
 
         {% if cancelled_subtotal > 0 %}
           <div class="summary-row">

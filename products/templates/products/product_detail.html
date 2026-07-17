@@ -66,6 +66,27 @@
     transform: scale(1.5);
     }
 
+    .product-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+}
+
+@media (min-width: 1024px) {
+  .product-layout {
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    grid-template-areas:
+      "img info"
+      "thumbs info"
+      "details info";
+  }
+  .product-layout .area-img     { grid-area: img; }
+  .product-layout .area-info    { grid-area: info; }
+  .product-layout .area-thumbs  { grid-area: thumbs; }
+  .product-layout .area-details { grid-area: details; }
+}
+
 </style>
 {% endblock %}
 
@@ -74,7 +95,7 @@
 <section class="bg-white pt-10 md:pt-12 px-6 md:px-12 pb-20">
 
 <!-- Breadcrumb -->
-<div class="mb-8 flex items-center gap-2">
+<div class="mb-8 flex items-center gap-2 flex-wrap">
   <a href="{% url 'product_list' %}"
      class="mono text-[10px] tracking-widest text-black/40 hover:text-black transition-colors uppercase">
     SHOP
@@ -96,13 +117,11 @@
   {% endif %}
 </div>
 
-  <!-- Main Product Detail -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+<!-- Main Product Detail -->
+  <div class="product-layout">
 
-    <!-- LEFT: Product Images -->
-    <div>
-
-      <!-- Main Image -->
+    <!-- Main Image -->
+    <div class="area-img">
       <div class="max-w-[600px] mx-auto lg:mx-0">
         <div id="zoom-container"
             class="relative bg-neutral-100 border border-black/10 overflow-hidden mb-4 cursor-zoom-in aspect-square">
@@ -119,57 +138,30 @@
             </div>
             {% endif %}
         </div>
-        </div>
-
-      <!-- Thumbnails -->
-   {% if images %}
-    <div class="max-w-[600px] mx-auto lg:mx-0">
-    <div id="thumbnail-container" class="grid grid-cols-4 gap-3">
-        {% for image in images %}
-        <button type="button"
-                onclick="changeMainImage('{{ image.image.url }}', this)"
-                class="thumb-btn border {% if forloop.first %}border-black{% else %}border-black/10{% endif %} bg-neutral-100 overflow-hidden aspect-square hover:border-black transition-colors">
-            <img src="{{ image.image.url }}"
-                alt="{{ product.name }}"
-                class="w-full h-full object-cover">
-        </button>
-        {% endfor %}
+      </div>
     </div>
+
+    <!-- Thumbnails -->
+    {% if images %}
+    <div class="area-thumbs">
+      <div class="max-w-[600px] mx-auto lg:mx-0">
+        <div id="thumbnail-container" class="grid grid-cols-4 gap-3">
+            {% for image in images %}
+            <button type="button"
+                    onclick="changeMainImage('{{ image.image.url }}', this)"
+                    class="thumb-btn border {% if forloop.first %}border-black{% else %}border-black/10{% endif %} bg-neutral-100 overflow-hidden aspect-square hover:border-black transition-colors">
+                <img src="{{ image.image.url }}"
+                    alt="{{ product.name }}"
+                    class="w-full h-full object-cover">
+            </button>
+            {% endfor %}
+        </div>
+      </div>
     </div>
     {% endif %}
 
-          <!-- Product Details Box -->
-    <div class="pt-8">
-      {% if product.product_details %}
-      <div class="border border-black/10 mb-8">
-        <div class="flex items-center justify-between px-4 py-4 border-b border-black/10">
-          <p class="mono text-[10px] tracking-widest text-black/60 uppercase">
-            Product Details
-          </p>
-        </div>
-
-        <div class="px-4 py-4 space-y-3">
-          {% for key, value in product.product_details.items %}
-            {% if value %}
-              <div class="{% if not forloop.last %}detail-row pb-3{% endif %} flex justify-between gap-6">
-                <p class="mono text-[9px] tracking-widest text-black/35 uppercase">
-                  {{ key|title }}
-                </p>
-                <p class="mono text-[10px] tracking-widest text-black/50 text-right">
-                  {{ value }}
-                </p>
-              </div>
-            {% endif %}
-          {% endfor %}
-        </div>
-      </div>
-      {% endif %}
-    </div>
-
-    </div>
-
     <!-- RIGHT: Product Info -->
-    <div class="lg:sticky lg:top-24 h-fit">
+    <div class="area-info h-fit lg:sticky lg:top-24">
 
       <!-- Category -->
       <p class="mono text-[10px] tracking-widest text-black/40 uppercase mb-3">
@@ -181,7 +173,7 @@
       </p>
 
       <!-- Product Name -->
-      <h1 class="bebas text-black text-6xl md:text-8xl leading-none tracking-wide mb-5">
+      <h1 class="bebas text-black text-5xl sm:text-6xl md:text-8xl leading-none tracking-wide mb-5 break-words">
         {{ product.name }}
       </h1>
 
@@ -192,25 +184,27 @@
         </p>
 
         {% if default_variant %}
-            <div class="flex items-end gap-3">
-            <p id="variant-price" class="mono text-2xl md:text-3xl font-bold text-black">
-                ₹{{ default_variant.discounted_price|floatformat:0 }}
-            </p>
+          {% with savings=default_variant.savings_display %}
+          <div class="flex items-end gap-2 sm:gap-3 flex-wrap">
+          <p id="variant-price" class="mono text-2xl md:text-3xl font-bold text-black">
+              ₹{{ default_variant.discounted_price|floatformat:0 }}
+          </p>
 
-            <p id="variant-original-price"
-                class="mono text-sm text-black/35 line-through mb-1 {% if default_variant.discount <= 0 %}hidden{% endif %}">
-                ₹{{ default_variant.price|floatformat:0 }}
-            </p>
+          <p id="variant-original-price"
+              class="mono text-sm text-black/35 line-through mb-1 {% if default_variant.effective_discount_percent <= 0 %}hidden{% endif %}">
+              ₹{{ default_variant.price|floatformat:0 }}
+          </p>
 
-            <span id="variant-discount"
-                    class="mono text-[9px] tracking-widest bg-black text-white px-2 py-1 mb-1 {% if default_variant.discount <= 0 %}hidden{% endif %}">
-                {{ default_variant.discount|floatformat:0 }}% OFF
-            </span>
-            </div>
-        {% else %}
-            <p class="mono text-2xl md:text-3xl font-bold text-black">
-            ₹{{ product.base_price|floatformat:0 }}
-            </p>
+          <span id="variant-discount"
+                  class="mono text-[9px] tracking-widest text-red-600 py-1 mb-1 {% if default_variant.effective_discount_percent <= 0 %}hidden{% endif %}">
+              {% if savings.type == 'FLAT' %}
+                  ₹{{ savings.amount|floatformat:0 }} OFF
+              {% else %}
+                  {{ savings.amount|floatformat:0 }}% OFF
+              {% endif %}
+          </span>
+          </div>
+          {% endwith %}
         {% endif %}
         </div>
 
@@ -235,7 +229,7 @@
           </p>
         </div>
 
-        <div class="flex items-start gap-4">
+        <div class="flex items-start gap-4 flex-wrap">
           {% for color in available_colors %}
             <button type="button"
                     data-color="{{ color.name }}"
@@ -302,13 +296,13 @@
 <div id="quantity-box"
      class="mb-6 {% if not default_variant or default_variant.stock <= 0 %}opacity-40 pointer-events-none{% endif %}">
 
-  <div class="flex items-center justify-between mb-3">
-    <p class="mono text-[10px] tracking-widest text-black/50 uppercase">
+  <div class="flex items-center justify-between mb-3 gap-2 flex-wrap">
+    <p class="mono text-[10px] tracking-widest text-black/50 uppercase shrink-0">
       Quantity
     </p>
 
     <p id="quantity-help"
-       class="mono text-[9px] tracking-widest text-black/35">
+       class="mono text-[9px] tracking-widest text-black/35 text-right">
       {% if default_variant and default_variant.stock > 0 %}
         MAX {{ default_variant.stock }} AVAILABLE
       {% else %}
@@ -429,6 +423,35 @@
 
     </div>
 
+
+    <!-- Product Details Box -->
+    <div class="area-details">
+      {% if product.product_details %}
+      <div class="border border-black/10">
+        <div class="flex items-center justify-between px-4 py-4 border-b border-black/10">
+          <p class="mono text-[10px] tracking-widest text-black/60 uppercase">
+            Product Details
+          </p>
+        </div>
+
+        <div class="px-4 py-4 space-y-3">
+          {% for key, value in product.product_details.items %}
+            {% if value %}
+              <div class="{% if not forloop.last %}detail-row pb-3{% endif %} flex justify-between gap-4 flex-wrap">
+                <p class="mono text-[9px] tracking-widest text-black/35 uppercase shrink-0">
+                  {{ key|title }}
+                </p>
+                <p class="mono text-[10px] tracking-widest text-black/50 text-right break-words">
+                  {{ value }}
+                </p>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
   </div>
 
 </section>
@@ -541,7 +564,7 @@
     {% for related in related_products %}
       <a href="{% url 'product_detail' related.id %}"
          class="related-card bg-white border border-black/15 overflow-hidden">
-        <div class="h-64 bg-neutral-100 overflow-hidden">
+        <div class="aspect-[3/4] bg-neutral-100 overflow-hidden">
           {% if related.thumbnail %}
             <img src="{{ related.thumbnail }}"
                  alt="{{ related.name }}"
@@ -579,7 +602,7 @@
 </section>
 
 <div id="cart-toast"
-     class="fixed top-20 right-6 z-[1000] hidden border border-black/10 bg-white shadow-xl px-5 py-4">
+     class="fixed top-20 right-4 left-4 sm:left-auto sm:right-6 z-[1000] hidden border border-black/10 bg-white shadow-xl px-5 py-4">
   <p id="cart-toast-message"
      class="mono text-[10px] tracking-widest text-black uppercase">
     Added to cart
@@ -824,7 +847,7 @@
     }
 
     if (originalPriceEl) {
-      if (Number(variant.discount) > 0) {
+      if (Number(variant.effective_discount_percent) > 0) {
         originalPriceEl.textContent = formatPrice(variant.price);
         originalPriceEl.classList.remove('hidden');
       } else {
@@ -833,8 +856,12 @@
     }
 
     if (discountEl) {
-      if (Number(variant.discount) > 0) {
-        discountEl.textContent = `${Math.round(Number(variant.discount))}% OFF`;
+      if (Number(variant.effective_discount_percent) > 0) {
+        if (variant.savings_type === 'FLAT') {
+          discountEl.textContent = `₹${Math.round(Number(variant.savings_amount))} OFF`;
+        } else {
+          discountEl.textContent = `${Math.round(Number(variant.savings_amount))}% OFF`;
+        }
         discountEl.classList.remove('hidden');
       } else {
         discountEl.classList.add('hidden');
@@ -970,7 +997,9 @@
     const zoomContainer = document.getElementById('zoom-container');
     const zoomImage = document.getElementById('main-product-image');
 
-    if (zoomContainer && zoomImage) {
+    const isTouchDevice = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+
+    if (zoomContainer && zoomImage && !isTouchDevice) {
     zoomContainer.addEventListener('mousemove', function (e) {
         const rect = zoomContainer.getBoundingClientRect();
 

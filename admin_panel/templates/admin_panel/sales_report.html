@@ -1,0 +1,450 @@
+{% extends 'admin_base/base.html' %}
+
+{% block title %}
+Sales Report & Revenue
+{% endblock %}
+
+{% block content %}
+<div class="p-4 md:p-8 max-w-screen-xl mx-auto space-y-6 md:space-y-8">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <h1 class="text-xl md:text-2xl font-bold">Sales Report & Revenue</h1>
+
+    <a href="?category={{ category_id }}&payment_method={{ payment_method }}&range={{ range_filter }}&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}&export=csv"
+       class="w-full sm:w-auto">
+      <button class="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-black rounded-sm text-sm font-semibold hover:bg-white/90 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+          Export CSV
+      </button>
+    </a>
+  </div>
+
+  <!-- ── QUICK RANGE FILTERS ── -->
+  <div class="flex flex-wrap gap-2">
+
+    <a href="?category={{ category_id }}&payment_method={{ payment_method }}&range=today"
+       class="px-4 py-2 rounded-sm text-xs mono tracking-wide transition-colors {% if range_filter == 'today' %}bg-white text-black font-semibold{% else %}border border-white/15 text-white/60 hover:bg-white/10 hover:text-white{% endif %}">
+      Today
+    </a>
+
+    <a href="?category={{ category_id }}&payment_method={{ payment_method }}&range=week"
+       class="px-4 py-2 rounded-sm text-xs mono tracking-wide transition-colors {% if range_filter == 'week' %}bg-white text-black font-semibold{% else %}border border-white/15 text-white/60 hover:bg-white/10 hover:text-white{% endif %}">
+      This Week
+    </a>
+
+    <a href="?category={{ category_id }}&payment_method={{ payment_method }}&range=month"
+       class="px-4 py-2 rounded-sm text-xs mono tracking-wide transition-colors {% if range_filter == 'month' %}bg-white text-black font-semibold{% else %}border border-white/15 text-white/60 hover:bg-white/10 hover:text-white{% endif %}">
+      This Month
+    </a>
+
+    <a href="?category={{ category_id }}&payment_method={{ payment_method }}&range=year"
+       class="px-4 py-2 rounded-sm text-xs mono tracking-wide transition-colors {% if range_filter == 'year' %}bg-white text-black font-semibold{% else %}border border-white/15 text-white/60 hover:bg-white/10 hover:text-white{% endif %}">
+      This Year
+    </a>
+
+    {% if not range_filter %}
+      <span class="px-4 py-2 rounded-sm text-xs mono tracking-wide bg-white/10 text-white/70 border border-white/15">
+        Custom Range
+      </span>
+    {% endif %}
+
+  </div>
+
+  <!-- ── FILTERS ── -->
+  <form method="GET" class="bg-[#111] border border-white/10 rounded-sm p-4 md:p-5 flex flex-col lg:flex-row lg:flex-wrap lg:items-end gap-4">
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 lg:flex lg:flex-wrap gap-4 flex-1">
+
+      <div class="flex flex-col gap-1.5">
+        <label class="mono text-xs text-white/40">Category</label>
+        <select name="category" class="box-border w-full lg:w-auto mono bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-2 rounded-sm outline-none cursor-pointer lg:min-w-[140px]">
+          <option value="">All</option>
+          {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if category_id == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="flex flex-col gap-1.5 w-full lg:w-auto">
+        <label class="mono text-xs text-white/40">Date From</label>
+        <input type="date" name="date_from" value="{{ date_from|date:'Y-m-d' }}"
+               class="box-border w-full lg:w-auto mono bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-2 rounded-sm outline-none"/>
+      </div>
+
+      <div class="flex flex-col gap-1.5 w-full lg:w-auto">
+        <label class="mono text-xs text-white/40">Date To</label>
+        <input type="date" name="date_to" value="{{ date_to|date:'Y-m-d' }}"
+               class="box-border w-full lg:w-auto mono bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-2 rounded-sm outline-none"/>
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label class="mono text-xs text-white/40">Payment Method</label>
+        <select name="payment_method" class="box-border w-full lg:w-auto mono bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-2 rounded-sm outline-none cursor-pointer lg:min-w-[140px]">
+          <option value="">All</option>
+          <option value="COD" {% if payment_method == "COD" %}selected{% endif %}>Cash on Delivery</option>
+          <option value="WALLET" {% if payment_method == "WALLET" %}selected{% endif %}>Wallet</option>
+          <option value="RAZORPAY" {% if payment_method == "RAZORPAY" %}selected{% endif %}>Razorpay</option>
+        </select>
+      </div>
+
+    </div>
+
+    <div class="grid grid-cols-2 lg:flex gap-3 lg:gap-4">
+      <button type="submit" class="px-5 py-2 bg-white/10 border border-white/20 hover:bg-white/20 rounded-sm text-sm mono transition-colors">
+        Apply
+      </button>
+
+      <a href="{% url 'admin_analytics' %}" class="px-5 py-2 border border-white/15 hover:bg-white/10 rounded-sm text-sm mono text-white/60 transition-colors text-center">
+        Reset
+      </a>
+    </div>
+
+  </form>
+
+  <!-- ── STAT CARDS ── -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+
+    <div class="stat-card bg-[#111] border border-white/10 rounded-sm p-4 md:p-5">
+      <p class="text-white/40 text-xs mb-3">Total Revenue</p>
+      <p class="text-xl md:text-2xl font-bold break-words">₹{{ total_revenue|floatformat:2 }}</p>
+      {% if revenue_change is not None %}
+        <p class="{% if revenue_change >= 0 %}text-green-400{% else %}text-red-400{% endif %} text-xs mt-2 mono">{% if revenue_change >= 0 %}+{% endif %}{{ revenue_change }}%</p>
+      {% else %}
+        <p class="text-white/40 text-xs mt-2 mono">—</p>
+      {% endif %}
+    </div>
+
+    <div class="stat-card bg-[#111] border border-white/10 rounded-sm p-4 md:p-5">
+      <p class="text-white/40 text-xs mb-3">Total Orders</p>
+      <p class="text-xl md:text-2xl font-bold">{{ total_orders }}</p>
+      {% if orders_change is not None %}
+        <p class="{% if orders_change >= 0 %}text-green-400{% else %}text-red-400{% endif %} text-xs mt-2 mono">{% if orders_change >= 0 %}+{% endif %}{{ orders_change }}%</p>
+      {% else %}
+        <p class="text-white/40 text-xs mt-2 mono">—</p>
+      {% endif %}
+    </div>
+
+    <div class="stat-card bg-[#111] border border-white/10 rounded-sm p-4 md:p-5">
+      <p class="text-white/40 text-xs mb-3">Avg. Order Value</p>
+      <p class="text-xl md:text-2xl font-bold break-words">₹{{ avg_order_value|floatformat:2 }}</p>
+      {% if aov_change is not None %}
+        <p class="{% if aov_change >= 0 %}text-green-400{% else %}text-red-400{% endif %} text-xs mt-2 mono">{% if aov_change >= 0 %}+{% endif %}{{ aov_change }}%</p>
+      {% else %}
+        <p class="text-white/40 text-xs mt-2 mono">—</p>
+      {% endif %}
+    </div>
+
+    <div class="stat-card bg-[#111] border border-white/10 rounded-sm p-4 md:p-5">
+      <p class="text-white/40 text-xs mb-3">Refunds/Returns</p>
+      <p class="text-xl md:text-2xl font-bold break-words">₹{{ refunds_total|floatformat:2 }}</p>
+      {% if refunds_change is not None %}
+        <p class="{% if refunds_change >= 0 %}text-red-400{% else %}text-green-400{% endif %} text-xs mt-2 mono">{% if refunds_change >= 0 %}+{% endif %}{{ refunds_change }}%</p>
+      {% else %}
+        <p class="text-white/40 text-xs mt-2 mono">—</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- ── REVENUE + ORDERS OVER TIME ── -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+    <div class="bg-[#111] border border-white/10 rounded-sm p-4 md:p-6">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="w-1 h-4 bg-white/40"></span>
+        <span class="mono text-sm tracking-wider">Revenue Over Time</span>
+      </div>
+      <p class="text-2xl md:text-3xl font-bold mb-6 break-words">₹{{ total_revenue|floatformat:2 }}</p>
+      <div class="relative h-40 md:h-48">
+        <canvas id="revenueChart"></canvas>
+      </div>
+    </div>
+
+    <div class="bg-[#111] border border-white/10 rounded-sm p-4 md:p-6">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="w-1 h-4 bg-white/40"></span>
+        <span class="mono text-sm tracking-wider">Orders Over Time</span>
+      </div>
+      <p class="text-2xl md:text-3xl font-bold mb-6">{{ total_orders }}</p>
+      <div class="relative h-40 md:h-48">
+        <canvas id="ordersChart"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── REVENUE BY CATEGORY + PAYMENT METHOD ── -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+    <div class="bg-[#111] border border-white/10 rounded-sm p-4 md:p-6">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="w-1 h-4 bg-white/40"></span>
+        <span class="mono text-sm tracking-wider">Revenue by Category</span>
+      </div>
+      <p class="text-2xl md:text-3xl font-bold mb-6 break-words">₹{{ total_revenue|floatformat:2 }}</p>
+      <div class="relative h-48 md:h-56">
+        <canvas id="categoryChart"></canvas>
+      </div>
+    </div>
+
+    <div class="bg-[#111] border border-white/10 rounded-sm p-4 md:p-6">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="w-1 h-4 bg-white/40"></span>
+        <span class="mono text-sm tracking-wider">Revenue By Payment Method</span>
+      </div>
+      <p class="text-2xl md:text-3xl font-bold mb-6 break-words">₹{{ total_revenue|floatformat:2 }}</p>
+      <div class="relative h-48 md:h-56">
+        <canvas id="paymentChart"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── PRODUCT TABLE ── -->
+  <div class="bg-[#111] border border-white/10 rounded-sm overflow-hidden">
+    <div class="px-4 md:px-6 py-4 border-b border-white/10 flex items-center gap-2">
+      <span class="w-1 h-4 bg-white/40"></span>
+      <span class="mono text-sm tracking-wider">Total Revenue by Product</span>
+    </div>
+
+    <!-- Desktop header -->
+    <div class="hidden lg:grid grid-cols-[2fr_140px_120px_140px] px-6 py-3 border-b border-white/10 bg-[#161616]">
+      <span class="text-left mono text-xs text-white/40 font-normal">Product</span>
+      <span class="text-left mono text-xs text-white/40 font-normal">Category</span>
+      <span class="text-left mono text-xs text-white/40 font-normal">Units Sold</span>
+      <span class="text-left mono text-xs text-white/40 font-normal">Total Revenue</span>
+    </div>
+
+    <!-- Rows -->
+    {% for row in product_rows %}
+    <div class="grid grid-cols-1 lg:grid-cols-[2fr_140px_120px_140px] gap-3 lg:gap-0 lg:items-center px-4 md:px-6 py-4 border-b border-white/5 last:border-b-0 hover:bg-white/[0.03] transition-colors">
+
+      <!-- Product -->
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-10 h-10 bg-white/5 rounded-sm overflow-hidden flex-shrink-0">
+          {% if row.thumbnail %}
+            <img src="{{ row.thumbnail }}" class="w-full h-full object-cover"/>
+          {% endif %}
+        </div>
+        <span class="text-sm font-semibold truncate">{{ row.name }}</span>
+      </div>
+
+      <!-- Category -->
+      <div class="flex items-center justify-between lg:block">
+        <span class="mono text-[10px] text-white/30 tracking-widest uppercase lg:hidden">Category</span>
+        <span class="mono text-xs px-2 py-1 border border-white/15 rounded-sm text-white/60 inline-block w-fit">{{ row.category }}</span>
+      </div>
+
+      <!-- Units Sold -->
+      <div class="flex items-center justify-between lg:block">
+        <span class="mono text-[10px] text-white/30 tracking-widest uppercase lg:hidden">Units Sold</span>
+        <span class="mono text-xs text-white/70">{{ row.units_sold }}</span>
+      </div>
+
+      <!-- Total Revenue -->
+      <div class="flex items-center justify-between lg:block">
+        <span class="mono text-[10px] text-white/30 tracking-widest uppercase lg:hidden">Total Revenue</span>
+        <span class="mono text-xs">₹{{ row.revenue|floatformat:2 }}</span>
+      </div>
+
+    </div>
+    {% empty %}
+    <div class="px-6 py-8 text-center mono text-xs text-white/40">No sales in this range.</div>
+    {% endfor %}
+
+    <!-- Pagination -->
+    {% if product_page.paginator.num_pages > 1 %}
+    <div class="flex flex-wrap items-center justify-center lg:justify-end gap-3 px-4 md:px-6 py-4 border-t border-white/10">
+      {% if product_page.has_previous %}
+        <a href="?category={{ category_id }}&payment_method={{ payment_method }}&range={{ range_filter }}&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}&page={{ product_page.previous_page_number }}">
+          <button class="px-4 py-2 border border-white/15 hover:bg-white/10 rounded-sm text-xs mono text-white/60 transition-colors">Prev</button>
+        </a>
+      {% else %}
+        <button disabled class="px-4 py-2 border border-white/10 rounded-sm text-xs mono text-white/20 cursor-not-allowed">Prev</button>
+      {% endif %}
+
+      <span class="mono text-xs text-white/50">{{ product_page.number|stringformat:"02d" }} / {{ product_page.paginator.num_pages|stringformat:"02d" }}</span>
+
+      {% if product_page.has_next %}
+        <a href="?category={{ category_id }}&payment_method={{ payment_method }}&range={{ range_filter }}&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}&page={{ product_page.next_page_number }}">
+          <button class="px-4 py-2 border border-white/15 hover:bg-white/10 rounded-sm text-xs mono text-white/60 transition-colors">Next</button>
+        </a>
+      {% else %}
+        <button disabled class="px-4 py-2 border border-white/10 rounded-sm text-xs mono text-white/20 cursor-not-allowed">Next</button>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+  const timeLabels = {{ time_series_labels|safe }};
+  const timeRevenue = {{ time_series_revenue|safe }};
+  const timeOrders = {{ time_series_orders|safe }};
+  const categoryLabels = {{ category_labels|safe }};
+  const categoryRevenue = {{ category_revenue|safe }};
+  const paymentLabels = {{ payment_labels|safe }};
+  const paymentRevenue = {{ payment_revenue|safe }};
+
+  // Revenue Over Time (line)
+  new Chart(document.getElementById('revenueChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: timeLabels,
+      datasets: [{
+        data: timeRevenue,
+        borderColor: 'rgba(255,255,255,0.7)',
+        borderWidth: 1.5,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        pointHoverBackgroundColor: '#fff',
+        fill: true,
+        backgroundColor: (ctx) => {
+          const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 200);
+          gradient.addColorStop(0, 'rgba(255,255,255,0.08)');
+          gradient.addColorStop(1, 'rgba(255,255,255,0)');
+          return gradient;
+        },
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        backgroundColor: '#1a1a1a',
+        borderColor: 'rgba(255,255,255,0.1)',
+        borderWidth: 1,
+        titleColor: '#fff',
+        bodyColor: 'rgba(255,255,255,0.6)',
+        titleFont: { family: 'Share Tech Mono' },
+        bodyFont: { family: 'Share Tech Mono' },
+        callbacks: { label: ctx => '₹' + ctx.raw.toLocaleString() }
+      }},
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
+          ticks: { color: 'rgba(255,255,255,0.3)', font: { family: 'Share Tech Mono', size: 10 } }
+        },
+        y: { display: false, grid: { display: false } }
+      }
+    }
+  });
+
+  // Orders Over Time (bar)
+  new Chart(document.getElementById('ordersChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: timeLabels,
+      datasets: [{
+        data: timeOrders,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        borderColor: 'rgba(255,255,255,0.4)',
+        borderWidth: 1,
+        borderRadius: 2,
+        maxBarThickness: 28
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        backgroundColor: '#1a1a1a',
+        borderColor: 'rgba(255,255,255,0.1)',
+        borderWidth: 1,
+        titleColor: '#fff',
+        bodyColor: 'rgba(255,255,255,0.6)',
+        titleFont: { family: 'Share Tech Mono' },
+        bodyFont: { family: 'Share Tech Mono' }
+      }},
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: 'rgba(255,255,255,0.3)', font: { family: 'Share Tech Mono', size: 10 } }
+        },
+        y: { display: false, grid: { display: false } }
+      }
+    }
+  });
+
+  // Revenue by Category (bar)
+  new Chart(document.getElementById('categoryChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: categoryLabels,
+      datasets: [{
+        data: categoryRevenue,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        borderColor: 'rgba(255,255,255,0.4)',
+        borderWidth: 1,
+        borderRadius: 2,
+        maxBarThickness: 40
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        backgroundColor: '#1a1a1a',
+        borderColor: 'rgba(255,255,255,0.1)',
+        borderWidth: 1,
+        titleColor: '#fff',
+        bodyColor: 'rgba(255,255,255,0.6)',
+        titleFont: { family: 'Share Tech Mono' },
+        bodyFont: { family: 'Share Tech Mono' },
+        callbacks: { label: ctx => '₹' + ctx.raw.toLocaleString() }
+      }},
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: 'rgba(255,255,255,0.3)', font: { family: 'Share Tech Mono', size: 10 } }
+        },
+        y: { display: false, grid: { display: false } }
+      }
+    }
+  });
+
+  // Revenue by Payment Method (bar)
+  new Chart(document.getElementById('paymentChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: paymentLabels,
+      datasets: [{
+        data: paymentRevenue,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        borderColor: 'rgba(255,255,255,0.4)',
+        borderWidth: 1,
+        borderRadius: 2,
+        maxBarThickness: 40
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        backgroundColor: '#1a1a1a',
+        borderColor: 'rgba(255,255,255,0.1)',
+        borderWidth: 1,
+        titleColor: '#fff',
+        bodyColor: 'rgba(255,255,255,0.6)',
+        titleFont: { family: 'Share Tech Mono' },
+        bodyFont: { family: 'Share Tech Mono' },
+        callbacks: { label: ctx => '₹' + ctx.raw.toLocaleString() }
+      }},
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: 'rgba(255,255,255,0.3)', font: { family: 'Share Tech Mono', size: 10 } }
+        },
+        y: { display: false, grid: { display: false } }
+      }
+    }
+  });
+
+</script>
+{% endblock %}

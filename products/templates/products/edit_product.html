@@ -1,18 +1,18 @@
 {% extends 'admin_base/base.html' %}
-{% block title %}Add New Product{% endblock %}
+{% block title %}Edit Product{% endblock %}
 
 {% block content %}
-<div class="p-8 max-w-screen-xl mx-auto">
+<div class="p-4 sm:p-8 max-w-screen-xl mx-auto">
 
   <!-- Top Bar -->
   <div class="flex items-center gap-4 mb-8">
     <a href="{% url 'products' %}"
-       class="text-white/40 hover:text-white transition-colors">
+       class="text-white/40 hover:text-white transition-colors shrink-0">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
       </svg>
     </a>
-    <h1 class="mono text-white text-4xl font-bold tracking-tight">Edit Product</h1>
+    <h1 class="mono text-white text-2xl sm:text-4xl font-bold tracking-tight">Edit Product</h1>
   </div>
 
 
@@ -23,11 +23,11 @@
     <!-- ── Section: Basic Information ── -->
     <div class="mb-8">
       <div class="flex items-center gap-4 mb-5">
-        <span class="mono text-xs text-white/40 tracking-widest uppercase">Basic Information</span>
+        <span class="mono text-xs text-white/40 tracking-widest uppercase whitespace-nowrap">Basic Information</span>
         <div class="flex-1 h-px bg-white/10"></div>
       </div>
 
-      <div class="grid grid-cols-2 gap-4 mb-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
 
         <!-- Product Name -->
         <div class="flex flex-col gap-2">
@@ -37,7 +37,7 @@
             name="name"
             value="{{ form_data.name|default:'' }}"
             placeholder="Enter product name"
-            class="bg-[#111] border px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none transition-colors
+            class="w-full bg-[#111] border px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none transition-colors
             {% if errors.name %}border-red-500/60 focus:border-red-500{% else %}border-white/10 focus:border-white/30{% endif %}"
           >
 
@@ -51,7 +51,7 @@
         <div class="flex flex-col gap-2">
         <label class="mono text-xs text-white/50 tracking-widest">Category</label>
         <select name="category_id" id="category-select"
-          class="bg-[#111] border px-4 py-2.5 text-sm text-white font-mono outline-none transition-colors appearance-none
+          class="w-full bg-[#111] border px-4 py-2.5 text-sm text-white font-mono outline-none transition-colors appearance-none
                 {% if errors.subcategory_id %}border-red-500/60{% else %}border-white/10 focus:border-white/30{% endif %}"
           style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23555'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\"); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;">
           <option value="">Select category</option>
@@ -66,13 +66,13 @@
 
       </div>
 
-      <div class="grid grid-cols-2 gap-4 mb-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
 
         <!-- Sub Category -->
         <div class="flex flex-col gap-2">
         <label class="mono text-xs text-white/50 tracking-widest">Sub Category</label>
         <select name="subcategory_id" id="subcategory-select"
-          class="bg-[#111] border px-4 py-2.5 text-sm text-white font-mono outline-none transition-colors appearance-none
+          class="w-full bg-[#111] border px-4 py-2.5 text-sm text-white font-mono outline-none transition-colors appearance-none
                 {% if errors.subcategory_id %}border-red-500/60 focus:border-red-500{% else %}border-white/10 focus:border-white/30{% endif %}"
           style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23555'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\"); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;">
           <option value="">Select subcategory</option>
@@ -112,7 +112,7 @@
         name="description"
         rows="5"
         placeholder="Describe the product features and details"
-        class="bg-[#111] border px-4 py-3 text-sm text-white placeholder-white/20 font-mono outline-none transition-colors resize-none
+        class="w-full bg-[#111] border px-4 py-3 text-sm text-white placeholder-white/20 font-mono outline-none transition-colors resize-none
               {% if errors.description %}border-red-500/60 focus:border-red-500{% else %}border-white/10 focus:border-white/30{% endif %}"
       >{{ form_data.description|default:'' }}</textarea>
       {% if errors.description %}
@@ -125,46 +125,46 @@
     <!-- ── Section: Product Details ── -->
     <div class="mb-8">
       <div class="flex items-center gap-4 mb-5">
-        <span class="mono text-xs text-white/40 tracking-widest uppercase">Product Details</span>
+        <span class="mono text-xs text-white/40 tracking-widest uppercase whitespace-nowrap">Product Details</span>
         <div class="flex-1 h-px bg-white/10"></div>
       </div>
 
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
         <div class="flex flex-col gap-2">
           <label class="mono text-xs text-white/50 tracking-widest">Material</label>
           <input type="text" name="material" value="{{ form_data.material|default:'' }}" placeholder="e.g. 100% Cotton"
-            class="bg-[#111] border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none focus:border-white/30 transition-colors">
+            class="w-full bg-[#111] border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none focus:border-white/30 transition-colors">
         </div>
 
         <div class="flex flex-col gap-2">
           <label class="mono text-xs text-white/50 tracking-widest">Fabric Weight</label>
           <input type="text" name="fabric_weight" value="{{ form_data.fabric_weight|default:'' }}" placeholder="e.g. 180 GSM"
-            class="bg-[#111] border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none focus:border-white/30 transition-colors">
+            class="w-full bg-[#111] border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none focus:border-white/30 transition-colors">
         </div>
 
         <div class="flex flex-col gap-2">
           <label class="mono text-xs text-white/50 tracking-widest">Fit</label>
           <input type="text" name="fit" value="{{ form_data.fit|default:'' }}" placeholder="e.g. Regular Fit"
-            class="bg-[#111] border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none focus:border-white/30 transition-colors">
+            class="w-full bg-[#111] border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none focus:border-white/30 transition-colors">
         </div>
 
         <div class="flex flex-col gap-2">
           <label class="mono text-xs text-white/50 tracking-widest">Design</label>
           <input type="text" name="design" value="{{ form_data.design|default:'' }}" placeholder="e.g. Solid"
-            class="bg-[#111] border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none focus:border-white/30 transition-colors">
+            class="w-full bg-[#111] border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none focus:border-white/30 transition-colors">
         </div>
 
         <div class="flex flex-col gap-2">
           <label class="mono text-xs text-white/50 tracking-widest">Care</label>
           <input type="text" name="care" value="{{ form_data.care|default:'' }}" placeholder="e.g. Machine wash cold"
-            class="bg-[#111] border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none focus:border-white/30 transition-colors">
+            class="w-full bg-[#111] border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none focus:border-white/30 transition-colors">
         </div>
 
         <div class="flex flex-col gap-2">
           <label class="mono text-xs text-white/50 tracking-widest">Durability</label>
           <input type="text" name="durability" value="{{ form_data.durability|default:'' }}" placeholder="e.g. High"
-            class="bg-[#111] border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none focus:border-white/30 transition-colors">
+            class="w-full bg-[#111] border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/20 font-mono outline-none focus:border-white/30 transition-colors">
         </div>
 
       </div>
@@ -174,10 +174,10 @@
     <div class="h-px bg-white/10 mb-8"></div>
 
     <!-- ── Action Buttons ── -->
-    <div class="flex items-center justify-end gap-3">
+    <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3">
 
       <a href="{% url 'products' %}"
-         class="mono text-xs px-6 py-2.5 border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors tracking-widest">
+         class="text-center mono text-xs px-6 py-2.5 border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors tracking-widest">
         Cancel
       </a>
 

@@ -2,7 +2,7 @@
 URL configuration for fashio project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/6.0/topics/http/urls/
+    https://docs.djangoproject.com/en/6.0/topics/http/urls/path
 Examples:
 Function views
     1. Add an import:  from my_app import views
@@ -14,14 +14,18 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('accounts/', include('allauth.urls')),
-    path('fashio-admin/',include('admin_panel.urls')),
-    path('',include('products.urls')),
-    path('',include('user.urls')),
-    path('',include('orders.urls')),
+    path("admin/", admin.site.urls),
+    path("accounts/", include("allauth.urls")),
+    path("fashio-admin/", include("admin_panel.urls")),
+    path("", include("products.urls")),
+    path("", include("user.urls")),
+    path("", include("orders.urls")),
+    path("", include("payment.urls")),
+    path("", include("discounts.urls")),
+    path("", include("info.urls")),
 ]

@@ -44,7 +44,7 @@ SHOPPING BAG | FASHIO
 <section class="bg-white pt-10 md:pt-12 px-6 md:px-12 pb-20">
 
   <!-- Breadcrumb -->
-  <div class="mb-8 flex items-center gap-2">
+  <div class="mb-8 flex items-center gap-2 flex-wrap">
     <a href="{% url 'product_list' %}"
        class="mono text-[10px] tracking-widest text-black/40 hover:text-black transition-colors uppercase">
       SHOP
@@ -63,13 +63,13 @@ SHOPPING BAG | FASHIO
       <div class="w-1 h-12 bg-black"></div>
 
       <div>
-        <h1 class="bebas text-black text-6xl md:text-8xl leading-none tracking-wide">
+        <h1 class="bebas text-black text-4xl sm:text-6xl md:text-8xl leading-none tracking-wide">
           MY SHOPPING BAG
         </h1>
       </div>
     </div>
 
-    <p class="mono text-[10px] tracking-widest text-black/40 uppercase">
+    <p id="total-items-label" class="mono text-[10px] tracking-widest text-black/40 uppercase">
       {{ total_items }} ITEM{% if total_items != 1 %}S{% endif %} IN YOUR SHOPPING BAG
     </p>
   </div>
@@ -167,39 +167,41 @@ SHOPPING BAG | FASHIO
 
             </div>
 
-            <!-- Quantity -->
-            <div class="flex md:justify-center">
-              <div class="flex items-center border border-black/15 w-fit">
+            <!-- Quantity + Price + Remove (mobile: one row w/ labels; desktop: 3 grid cells) -->
+            <div class="flex items-center justify-between gap-4 md:contents">
 
-                <form method="POST" action="{% url 'update_cart_quantity' %}">
-                  {% csrf_token %}
-                  <input type="hidden" name="item_id" value="{{ item.id }}">
-                  <input type="hidden" name="action" value="decrease">
+              <!-- Quantity -->
+              <div class="md:flex md:justify-center">
+                <p class="mono text-[8px] tracking-widest text-black/35 uppercase mb-2 md:hidden">
+                  Qty
+                </p>
 
-                  <button type="submit"
+                <div class="flex items-center border border-black/15 w-fit">
+
+                  <button type="button"
+                        data-item-id="{{ item.id }}"
+                        data-action="decrease"
                         {% if not item.is_available %}disabled{% endif %}
-                        class="qty-btn w-10 h-10 mono border-r border-black/10
+                        class="qty-btn cart-qty-btn w-9 h-9 md:w-10 md:h-10 mono border-r border-black/10
                         {% if not item.is_available %}
                           text-black/20 cursor-not-allowed
                         {% else %}
                           text-black/50
                         {% endif %}">
-                  −
-                </button>
-                </form>
+                    −
+                  </button>
 
-                <span class="w-12 h-10 flex items-center justify-center mono text-[11px] text-black">
-                  {{ item.quantity }}
-                </span>
+                  <span id="qty-value-{{ item.id }}"
+                        class="w-10 h-9 md:w-12 md:h-10 flex items-center justify-center mono text-[11px] text-black">
+                    {{ item.quantity }}
+                  </span>
 
-                <form method="POST" action="{% url 'update_cart_quantity' %}">
-                  {% csrf_token %}
-                  <input type="hidden" name="item_id" value="{{ item.id }}">
-                  <input type="hidden" name="action" value="increase">
-
-                  <button type="submit"
+                  <button type="button"
+                          data-item-id="{{ item.id }}"
+                          data-action="increase"
+                          data-max="{{ item.max_quantity }}"
                           {% if not item.is_available or item.quantity >= item.max_quantity %}disabled{% endif %}
-                          class="qty-btn w-10 h-10 mono border-l border-black/10
+                          class="qty-btn cart-qty-btn w-9 h-9 md:w-10 md:h-10 mono border-l border-black/10
                           {% if item.quantity >= item.max_quantity %}
                             text-black/20 cursor-not-allowed
                           {% else %}
@@ -207,33 +209,60 @@ SHOPPING BAG | FASHIO
                           {% endif %}">
                     +
                   </button>
-                </form>
 
+                </div>
               </div>
-            </div>
 
-            <!-- Price -->
-            <div class="md:text-right">
-              <p class="mono text-base font-bold text-black">
-                ₹{{ item.subtotal|floatformat:0 }}
-              </p>
+              <!-- Price -->
+              <div class="text-right md:text-right">
+                <p class="mono text-[8px] tracking-widest text-black/35 uppercase mb-2 md:hidden">
+                  Price
+                </p>
 
-              <p class="mono text-[9px] tracking-widest text-black/30 mt-1 uppercase">
-                ₹{{ item.unit_price|floatformat:0 }} each
-              </p>
-            </div>
+                <p id="item-subtotal-{{ item.id }}" class="mono text-sm md:text-base font-bold text-black">
+                    ₹{{ item.subtotal|floatformat:0 }}
+                </p>
 
-            <!-- Remove -->
-            <div class="md:text-right">
-              <form method="POST" action="{% url 'remove_cart_item' %}">
-                {% csrf_token %}
-                <input type="hidden" name="item_id" value="{{ item.id }}">
+                {% if item.variant.effective_discount_percent > 0 %}
+                    {% with savings=item.variant.savings_display %}
+                    <div class="flex items-center justify-end gap-1.5 mt-1 flex-wrap">
+                        <p class="mono text-[10px] text-black/35 line-through">
+                        ₹{{ item.variant.price|floatformat:0 }} each
+                        </p>
 
-                <button type="submit"
-                        class="mono text-[9px] tracking-widest text-black/35 hover:text-red-600 transition-colors uppercase">
+                        <p class="mono text-red-600 text-[9px] font-bold tracking-wide whitespace-nowrap">
+                            {% if savings.type == 'FLAT' %}
+                                ₹{{ savings.amount|floatformat:0 }} OFF
+                            {% else %}
+                                {{ savings.amount|floatformat:0 }}% OFF
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% endwith %}
+                {% else %}
+                    <p class="mono text-[9px] tracking-widest text-black/30 mt-1 uppercase">
+                    ₹{{ item.unit_price|floatformat:0 }} each
+                    </p>
+                {% endif %}
+                </div>
+
+              <!-- Remove -->
+              <div class="text-right md:text-right shrink-0">
+                <p class="mono text-[8px] tracking-widest text-black/35 uppercase mb-2 md:hidden invisible">
                   Remove
-                </button>
-              </form>
+                </p>
+
+                <form method="POST" action="{% url 'remove_cart_item' %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="item_id" value="{{ item.id }}">
+
+                  <button type="submit"
+                          class="mono text-[9px] tracking-widest text-red-600 hover:text-red-700 transition-colors uppercase">
+                    Remove
+                  </button>
+                </form>
+              </div>
+
             </div>
 
           </div>
@@ -270,10 +299,17 @@ SHOPPING BAG | FASHIO
               Subtotal
             </p>
 
-            <p class="mono text-sm font-bold text-black">
+            <p id="summary-subtotal" class="mono text-sm font-bold text-black">
               ₹{{ total_price|floatformat:0 }}
             </p>
           </div>
+
+          {% if coupon_discount > 0 %}
+          <div id="summary-coupon-row" class="flex justify-between gap-6">
+            <p class="text-sm text-green-700">Coupon ({{ applied_coupon.code }})</p>
+            <p id="summary-coupon-discount" class="mono text-sm font-bold text-green-700">-₹{{ coupon_discount|floatformat:0 }}</p>
+          </div>
+          {% endif %}
 
           <div class="flex justify-between gap-6 border-b border-black/10 pb-4">
             <p class="text-sm text-black/55">
@@ -285,34 +321,105 @@ SHOPPING BAG | FASHIO
             </p>
           </div>
 
-          <div class="flex justify-between items-end gap-6 pt-2">
+          <div class="flex justify-between items-end gap-4 pt-2 flex-wrap">
             <p class="mono text-[10px] tracking-widest text-black/50 uppercase">
               Total
             </p>
 
-            <p class="mono text-3xl font-bold text-black">
-              ₹{{ total_price|floatformat:0 }}
+            <p id="summary-final-total" class="mono text-2xl sm:text-3xl font-bold text-black">
+              ₹{{ final_total|floatformat:0 }}
             </p>
           </div>
 
         </div>
 
-        <!-- Coupon Placeholder -->
+        <!-- Coupon -->
         <div class="mt-8">
           <label class="block mono text-[10px] tracking-widest text-black/45 uppercase mb-3">
             Coupon Code
           </label>
 
-          <div class="flex border border-black/15">
-            <input type="text"
-                   placeholder="ENTER CODE"
-                   class="mono text-[10px] tracking-widest flex-1 px-3 py-3 outline-none placeholder-black/25">
+          {% if applied_coupon %}
+            <div class="flex items-center justify-between border border-black/15 px-4 py-3 mb-4">
+              <div>
+                <p class="mono text-xs font-bold text-black">{{ applied_coupon.code }}</p>
+                <p class="mono text-[10px] text-green-700">-₹{{ coupon_discount|floatformat:2 }} applied</p>
+              </div>
+              <form method="POST" action="{% url 'remove_coupon' %}">
+                {% csrf_token %}
+                <button type="submit" class="mono text-[10px] text-black/40 hover:text-red-600 uppercase">
+                  Remove
+                </button>
+              </form>
+            </div>
+          {% endif %}
 
-            <button type="button"
-                    class="mono text-[10px] tracking-widest bg-black text-white px-5 font-bold hover:bg-black/80 transition-colors">
-              APPLY
-            </button>
-          </div>
+          {% if available_coupons %}
+            <form method="POST" action="{% url 'apply_coupon' %}">
+              {% csrf_token %}
+
+              <div class="space-y-2 mb-3">
+                {% for entry in available_coupons %}
+                  <label class="relative flex items-center gap-3 border px-4 py-3 transition-colors
+                        {% if not entry.is_applicable %}
+                          overflow-hidden cursor-not-allowed border-black/10
+                        {% elif applied_coupon and applied_coupon.code == entry.coupon.code %}
+                          border-black bg-neutral-50 cursor-pointer
+                        {% else %}
+                          border-black/10 hover:border-black/30 cursor-pointer
+                        {% endif %}">
+
+                    <input type="radio" name="code" value="{{ entry.coupon.code }}"
+                          {% if not entry.is_applicable %}disabled{% endif %}
+                          {% if applied_coupon and applied_coupon.code == entry.coupon.code %}checked{% endif %}
+                          class="accent-black shrink-0 {% if not entry.is_applicable %}invisible{% endif %}">
+
+                    <div class="min-w-0 flex-1 {% if not entry.is_applicable %}blur-[3px] select-none{% endif %}">
+                      <p class="mono text-xs font-bold text-black break-words">{{ entry.coupon.code }}</p>
+                      <p class="mono text-[9px] text-black/40 uppercase mt-0.5 break-words">
+                        {{ entry.coupon.display_discount }} off · Min ₹{{ entry.coupon.min_order_value|floatformat:0 }}
+                      </p>
+                    </div>
+
+                    {% if not entry.is_applicable %}
+                      <div class="absolute inset-0 flex items-center justify-center bg-white/40">
+                        <p class="mono text-[9px] tracking-widest text-black/60 uppercase font-bold">
+                          {{ entry.reason }}
+                        </p>
+                      </div>
+                    {% endif %}
+
+                  </label>
+                {% endfor %}
+              </div>
+
+              <button type="submit"
+                      {% if not have_applicable_coupon %}disabled{% endif %}
+                      class="w-full mono text-[10px] tracking-widest py-3 font-bold uppercase transition-colors
+                      {% if have_applicable_coupon %}
+                        bg-black text-white hover:bg-black/80
+                      {% else %}
+                        bg-black/20 text-black/40 cursor-not-allowed
+                      {% endif %}">
+                  {% if applied_coupon %}Switch Coupon{% else %}Apply Coupon{% endif %}
+              </button>
+            </form>
+          {% endif %}
+
+          <details class="mt-4">
+            <summary class="mono text-[10px] tracking-widest text-black/40 uppercase cursor-pointer hover:text-black transition-colors">
+             {% if applied_coupon or available_coupons %}Have a different code?{% else %}Have a coupon code?{% endif %}
+            </summary>
+            <form method="POST" action="{% url 'apply_coupon' %}" class="flex border border-black/15 mt-3">
+              {% csrf_token %}
+              <input type="text" name="code" placeholder="ENTER CODE" required
+                    class="mono text-[10px] tracking-widest flex-1 px-3 py-3 outline-none placeholder-black/25 uppercase">
+              <button type="submit"
+                      class="mono text-[10px] tracking-widest bg-black text-white px-5 font-bold hover:bg-black/80 transition-colors">
+                APPLY
+              </button>
+            </form>
+          </details>
         </div>
 
         {% if can_checkout and total_items > 0 %}
@@ -364,7 +471,7 @@ SHOPPING BAG | FASHIO
   <!-- Empty Cart -->
   <div class="border border-black/10 py-24 px-6 text-center">
 
-    <h2 class="bebas text-5xl md:text-7xl text-black leading-none mb-4">
+    <h2 class="bebas text-3xl sm:text-5xl md:text-7xl text-black leading-none mb-4 break-words px-2">
       YOUR SHOPPING BAG IS EMPTY
     </h2>
 
@@ -383,4 +490,112 @@ SHOPPING BAG | FASHIO
 
 </section>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}
+
+const CSRF_TOKEN = getCookie('csrftoken');
+
+function formatPrice(value) {
+  return `₹${Math.round(Number(value))}`;
+}
+
+document.querySelectorAll('.cart-qty-btn').forEach(btn => {
+  btn.addEventListener('click', function () {
+    if (btn.disabled) return;
+
+    const itemId = btn.dataset.itemId;
+    const action = btn.dataset.action;
+
+    btn.disabled = true;
+
+    fetch("{% url 'update_cart_quantity' %}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': CSRF_TOKEN
+      },
+      body: new URLSearchParams({
+        item_id: itemId,
+        action: action
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (!data.success) {
+        alert(data.message || 'Could not update quantity.');
+        return;
+      }
+
+      if (data.item_removed) {
+        const row = btn.closest('.cart-card');
+        if (row) {
+          row.style.transition = 'opacity .2s ease';
+          row.style.opacity = '0';
+          setTimeout(() => {
+            row.remove();
+            if (data.total_items === 0) {
+              location.reload(); // fall back to server-rendered empty-cart state
+            }
+          }, 200);
+        }
+
+        const summarySubtotal = document.getElementById('summary-subtotal');
+        const summaryFinalTotal = document.getElementById('summary-final-total');
+        const totalItemsLabel = document.getElementById('total-items-label');
+
+        if (summarySubtotal) summarySubtotal.textContent = formatPrice(data.total_price);
+        if (summaryFinalTotal) summaryFinalTotal.textContent = formatPrice(data.final_total);
+        if (totalItemsLabel) totalItemsLabel.textContent = `${data.total_items} ITEM${data.total_items !== 1 ? 'S' : ''} IN YOUR SHOPPING BAG`;
+
+        return;
+      }
+
+      const qtyEl = document.getElementById(`qty-value-${itemId}`);
+      const subtotalEl = document.getElementById(`item-subtotal-${itemId}`);
+      const decreaseBtn = document.querySelector(`.cart-qty-btn[data-item-id="${itemId}"][data-action="decrease"]`);
+      const increaseBtn = document.querySelector(`.cart-qty-btn[data-item-id="${itemId}"][data-action="increase"]`);
+
+      if (qtyEl) qtyEl.textContent = data.quantity;
+      if (subtotalEl) subtotalEl.textContent = formatPrice(data.item_subtotal);
+
+      if (decreaseBtn) {
+        decreaseBtn.disabled = data.quantity <= 1;
+      }
+
+      if (increaseBtn) {
+        increaseBtn.disabled = data.quantity >= data.max_quantity;
+      }
+
+      const summarySubtotal = document.getElementById('summary-subtotal');
+      const summaryFinalTotal = document.getElementById('summary-final-total');
+      const summaryCouponDiscount = document.getElementById('summary-coupon-discount');
+      const totalItemsLabel = document.getElementById('total-items-label');
+
+      if (summarySubtotal) summarySubtotal.textContent = formatPrice(data.total_price);
+      if (summaryFinalTotal) summaryFinalTotal.textContent = formatPrice(data.final_total);
+      if (summaryCouponDiscount && data.coupon_discount !== undefined) {
+        summaryCouponDiscount.textContent = `-${formatPrice(data.coupon_discount)}`;
+      }
+      if (totalItemsLabel && data.total_items !== undefined) {
+        totalItemsLabel.textContent = `${data.total_items} ITEM${data.total_items !== 1 ? 'S' : ''} IN YOUR SHOPPING BAG`;
+      }
+    })
+    .catch(() => {
+      alert('Something went wrong updating quantity.');
+    })
+    .finally(() => {
+      btn.disabled = false;
+    });
+  });
+});
+</script>
 {% endblock %}

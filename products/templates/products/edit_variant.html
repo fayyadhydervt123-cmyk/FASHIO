@@ -17,26 +17,26 @@
 {% endblock %}
 
 {% block content %}
-<div class="p-8 max-w-screen-xl mx-auto">
+<div class="p-4 md:p-8 max-w-screen-xl mx-auto">
 
   <!-- Top Bar -->
-  <div class="flex items-center gap-4 mb-8">
+  <div class="flex items-center gap-4 mb-6 md:mb-8">
     <a href="{% url 'product_variants' product_id=product.id %}"
        class="text-white/40 hover:text-white transition-colors">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
       </svg>
     </a>
-    <h1 class="mono text-white text-4xl font-bold tracking-tight">Edit Variant</h1>
+    <h1 class="mono text-white text-2xl md:text-4xl font-bold tracking-tight">Edit Variant</h1>
   </div>
 
   <!-- ── Product Summary Card ── -->
-  <div class="border border-white/10 bg-[#0d0d0d] p-5 mb-8 flex items-center gap-6">
+  <div class="border border-white/10 bg-[#0d0d0d] p-5 mb-6 md:mb-8 flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
 
     <!-- Product Info -->
     <div class="flex-1">
       <span class="mono text-[10px] text-white/30 tracking-widest uppercase">Product</span>
-      <h2 class="mono text-white text-2xl font-bold tracking-tight mt-0.5">{{ product.name }}</h2>
+      <h2 class="mono text-white text-xl md:text-2xl font-bold tracking-tight mt-0.5 break-words">{{ product.name }}</h2>
       <div class="flex items-center gap-2 mt-1">
         <span class="mono text-[10px] tracking-widest">Status:</span>
         {% if product.is_active %}
@@ -47,16 +47,21 @@
       </div>
     </div>
 
-    <!-- Base Price -->
-    <div class="text-right border-l border-white/10 pl-6">
-      <span class="mono text-[10px] text-white/30 tracking-widest uppercase block mb-1">Base Price</span>
-      <span class="mono text-white text-2xl font-bold">₹{{ product.base_price }}</span>
-    </div>
+    <!-- Stats row -->
+    <div class="flex gap-4 border-t md:border-t-0 border-white/10 pt-4 md:pt-0 md:contents">
 
-    <!-- Total Stock -->
-    <div class="text-right border-l border-white/10 pl-6">
-      <span class="mono text-[10px] text-white/30 tracking-widest uppercase block mb-1">Total Stock</span>
-      <span class="mono text-white text-2xl font-bold">{{ product.total_stock|default:0 }}</span>
+      <!-- Base Price -->
+      <div class="flex-1 text-left md:text-right md:border-l border-white/10 md:pl-6">
+        <span class="mono text-[10px] text-white/30 tracking-widest uppercase block mb-1">Base Price</span>
+        <span class="mono text-white text-lg md:text-2xl font-bold">₹{{ product.base_price }}</span>
+      </div>
+
+      <!-- Total Stock -->
+      <div class="flex-1 text-left md:text-right md:border-l border-white/10 md:pl-6">
+        <span class="mono text-[10px] text-white/30 tracking-widest uppercase block mb-1">Total Stock</span>
+        <span class="mono text-white text-lg md:text-2xl font-bold">{{ product.total_stock|default:0 }}</span>
+      </div>
+
     </div>
 
   </div>
@@ -67,14 +72,14 @@
 
     <!-- ── Section: Variant Information ── -->
     <div class="mb-6">
-      <div class="flex items-center gap-4 mb-5">
+      <div class="flex items-center gap-4 mb-4 md:mb-5">
         <span class="mono text-xs text-white/40 tracking-widest uppercase">Variant Information</span>
         <div class="flex-1 h-px bg-white/10"></div>
       </div>
 
-      <div class="border border-white/10 bg-[#0d0d0d] p-6">
+      <div class="border border-white/10 bg-[#0d0d0d] p-4 md:p-6">
 
-        <div class="grid grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
 
           <!-- Color Display -->
           <div class="flex flex-col gap-2">
@@ -95,13 +100,13 @@
           <!-- Size -->
           <div class="flex flex-col gap-2">
             <label class="mono text-xs text-white/50 tracking-widest">Size</label>
-            <div class="flex gap-2">
+            <div class="flex flex-wrap gap-2">
               {% for size_val, size_label in size_choices %}
               <label class="cursor-pointer">
                 <input type="radio" name="size" value="{{ size_val }}"
                   {% if form_data.size == size_val %}checked{% endif %}
                   class="sr-only peer">
-                <span class="mono text-xs px-5 py-2.5 border border-white/10 text-white/50
+                <span class="mono text-xs px-4 md:px-5 py-2.5 border border-white/10 text-white/50
                              peer-checked:border-white peer-checked:text-white
                              hover:border-white/30 hover:text-white/80
                              transition-colors block">
@@ -121,7 +126,7 @@
         <div class="mt-4 flex flex-col gap-2">
           <label class="mono text-xs text-white/50 tracking-widest">Color</label>
           <div class="flex items-center gap-3">
-            <div class="relative">
+            <div class="relative shrink-0">
               <input
                 type="color"
                 name="color_hex"
@@ -130,7 +135,7 @@
                 class="w-10 h-10 border border-white/10 bg-[#111] cursor-pointer p-0.5"
               >
             </div>
-            <div class="flex-1 relative">
+            <div class="flex-1 relative min-w-0">
               <span class="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-xs text-white/30">#</span>
               <input
                 type="text"
@@ -151,7 +156,7 @@
 
     <!-- ── Section: Price / Stock / Status ── -->
     <div class="mb-6">
-      <div class="grid grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
         <!-- Price -->
         <div class="border border-white/10 bg-[#0d0d0d] p-5">
@@ -203,7 +208,7 @@
             <label class="mono text-xs text-white/50 tracking-widest">Select Status</label>
             <select
               name="status"
-              class="bg-[#111] border border-white/10 px-4 py-2.5 text-sm font-mono outline-none focus:border-white/30 transition-colors appearance-none
+              class="w-full bg-[#111] border border-white/10 px-4 py-2.5 text-sm font-mono outline-none focus:border-white/30 transition-colors appearance-none
               {% if form_data.status == 'ACTIVE' %}text-green-400{% else %}text-white{% endif %}"
               style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23555'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\"); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;"
               id="status-select"
@@ -219,16 +224,16 @@
 
     <!-- ── Section: Variant Images ── -->
     <div class="mb-6">
-      <div class="flex items-center gap-4 mb-5">
-        <span class="mono text-xs text-white/40 tracking-widest uppercase">Variant Images</span>
+      <div class="flex items-center gap-4 mb-4 md:mb-5">
+        <span class="mono text-xs text-white/40 tracking-widest uppercase whitespace-nowrap">Variant Images</span>
         <div class="flex-1 h-px bg-white/10"></div>
-        <span class="mono text-xs text-white/30">Min. 3 required</span>
+        <span class="mono text-xs text-white/30 whitespace-nowrap">Min. 3 required</span>
       </div>
 
-      <div class="border border-white/10 bg-[#0d0d0d] p-6">
+      <div class="border border-white/10 bg-[#0d0d0d] p-4 md:p-6">
 
         <!-- Keep / Replace toggle -->
-        <div class="flex items-center gap-6 mb-5 pb-5 border-b border-white/10">
+        <div class="flex flex-wrap items-center gap-4 sm:gap-6 mb-5 pb-5 border-b border-white/10">
           <span class="mono text-xs text-white/30 tracking-widest">Images:</span>
           <label class="flex items-center gap-2 cursor-pointer group">
             <input type="radio" name="image_mode" value="keep"
@@ -258,13 +263,13 @@
         <input type="hidden" name="keep_existing_images" id="keep-existing-input" value="true">
         <input type="hidden" name="removed_image_ids" id="removed-image-ids" value="">
 
-        <div class="grid grid-cols-[260px_1fr] gap-5 items-start">
+        <div class="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-5 items-start">
 
           <!-- Upload Box -->
           <div class="w-full">
             <div
               id="image-drop-zone"
-              class="border border-dashed border-white/20 h-[260px]
+              class="border border-dashed border-white/20 h-[200px] md:h-[260px]
                      flex flex-col items-center justify-center gap-3
                      cursor-pointer hover:border-white/40 transition-colors">
               <input type="file" id="image-input" accept="image/*" class="hidden">
@@ -291,25 +296,24 @@
               <p class="mono text-xs text-white/30 mb-3 tracking-widest">
                 <span id="existing-count">{{ existing_images|length }}</span> existing image(s)
               </p>
-              <!-- AFTER -->
-            <div class="grid grid-cols-2 lg:grid-cols-3 gap-3" id="existing-grid">
-            {% for img in existing_images %}
-            <div class="relative border border-white/10 bg-[#111] aspect-square overflow-hidden group"
-                data-image-id="{{ img.id }}">
-                <img src="{{ img.image.url }}"
-                    class="existing-preview w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity">
-                <button type="button"
-                        class="remove-existing absolute top-1.5 right-1.5
-                            w-5 h-5 bg-black/70 text-white
-                            flex items-center justify-center
-                            opacity-0 group-hover:opacity-100 transition-opacity text-xs leading-none">
-                ✕
-                </button>
-            </div>
-            {% empty %}
-            <p class="mono text-xs text-white/20 col-span-3">No existing images.</p>
-            {% endfor %}
-            </div>
+              <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3" id="existing-grid">
+              {% for img in existing_images %}
+              <div class="relative border border-white/10 bg-[#111] aspect-square overflow-hidden group"
+                  data-image-id="{{ img.id }}">
+                  <img src="{{ img.image.url }}"
+                      class="existing-preview w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity">
+                  <button type="button"
+                          class="remove-existing absolute top-1.5 right-1.5
+                              w-6 h-6 md:w-5 md:h-5 bg-black/70 text-white
+                              flex items-center justify-center
+                              opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-xs leading-none">
+                  ✕
+                  </button>
+              </div>
+              {% empty %}
+              <p class="mono text-xs text-white/20 col-span-2 sm:col-span-2 lg:col-span-3">No existing images.</p>
+              {% endfor %}
+              </div>
             </div>
 
             <!-- New cropped image count -->
@@ -320,12 +324,12 @@
 
             <!-- New cropped previews -->
             <div id="image-preview-grid"
-                 class="grid grid-cols-2 lg:grid-cols-3 gap-3 hidden">
+                 class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 hidden">
             </div>
 
             <!-- Empty state (only shown in replace mode with 0 new images) -->
             <div id="image-empty-state"
-                 class="border border-dashed border-white/5 h-[120px]
+                 class="border border-dashed border-white/5 h-[100px] md:h-[120px]
                         flex items-center justify-center hidden">
               <span class="mono text-xs text-white/20 tracking-widest">
                 Cropped previews appear here
@@ -363,9 +367,9 @@
     <!-- ── Lightbox overlay ── -->
     <div id="lightbox"
          class="fixed inset-0 bg-black/90 z-50 hidden
-                flex items-center justify-center p-8">
+                flex items-center justify-center p-4 md:p-8">
       <button id="lightbox-close"
-              class="absolute top-6 right-6 text-white/50 hover:text-white
+              class="absolute top-4 right-4 md:top-6 md:right-6 text-white/50 hover:text-white
                      transition-colors mono text-xs tracking-widest">
         Close
       </button>
@@ -374,22 +378,22 @@
     </div>
 
     <!-- ── Crop modal ── -->
-    <div id="crop-modal" class="fixed inset-0 bg-black/95 z-[60] hidden flex items-center justify-center p-8">
-      <div class="bg-[#111] border border-white/10 p-6 w-full max-w-5xl">
+    <div id="crop-modal" class="fixed inset-0 bg-black/95 z-[60] hidden flex items-center justify-center p-4 md:p-8">
+      <div class="bg-[#111] border border-white/10 p-4 md:p-6 w-full max-w-5xl max-h-[92vh] overflow-y-auto">
         <div class="flex items-center justify-between mb-4">
           <span class="mono text-sm text-white tracking-widest">Crop &amp; Resize</span>
           <button type="button" id="crop-modal-close" class="text-white/40 hover:text-white mono text-xs">close</button>
         </div>
-        <div class="w-full h-[500px] bg-black overflow-hidden flex items-center justify-center">
+        <div class="w-full h-[280px] sm:h-[380px] md:h-[500px] bg-black overflow-hidden flex items-center justify-center">
           <img id="crop-image" class="block max-w-full"/>
         </div>
-        <div class="flex justify-end gap-3 mt-4">
+        <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-4">
           <button type="button" id="crop-cancel"
-                  class="mono text-xs px-5 py-2 border border-white/20 text-white/60 hover:text-white transition-colors tracking-widest">
+                  class="mono text-xs px-5 py-2.5 sm:py-2 border border-white/20 text-white/60 hover:text-white transition-colors tracking-widest w-full sm:w-auto">
             Cancel
           </button>
           <button type="button" id="crop-apply"
-                  class="mono text-xs px-5 py-2 bg-white text-black font-bold hover:bg-white/80 transition-colors tracking-widest">
+                  class="mono text-xs px-5 py-2.5 sm:py-2 bg-white text-black font-bold hover:bg-white/80 transition-colors tracking-widest w-full sm:w-auto">
             Apply
           </button>
         </div>
@@ -397,12 +401,12 @@
     </div>
 
     <!-- ── Divider ── -->
-    <div class="h-px bg-white/10 mb-8"></div>
+    <div class="h-px bg-white/10 mb-6 md:mb-8"></div>
 
     <!-- ── Action Buttons ── -->
-    <div class="flex items-center justify-end gap-3">
+    <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
       <a href="{% url 'product_variants' product_id=product.id %}"
-         class="mono text-xs px-6 py-2.5 border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors tracking-widest">
+         class="mono text-xs px-6 py-2.5 border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors tracking-widest text-center">
         Cancel
       </a>
       <button type="submit"
@@ -718,10 +722,18 @@ document.addEventListener("DOMContentLoaded", () => {
         croppedFiles.forEach((file, index) => {
             const url = URL.createObjectURL(file);
             const div = document.createElement("div");
-            div.className = "relative border border-white/10 bg-[#111] aspect-square overflow-hidden";
+            div.className = "relative border border-white/10 bg-[#111] aspect-square overflow-hidden group";
             div.innerHTML = `
                 <img src="${url}" data-index="${index}"
                      class="preview-image w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity">
+                <button type="button"
+                    data-remove-new="${index}"
+                    class="remove-new absolute top-1.5 right-1.5
+                        w-6 h-6 md:w-5 md:h-5 bg-black/70 text-white
+                        flex items-center justify-center
+                        opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-xs leading-none">
+                ✕
+                </button>
             `;
             previewGrid.appendChild(div);
         });
@@ -729,6 +741,14 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelectorAll(".preview-image").forEach(img => {
             img.addEventListener("click", () => {
                 openLightbox(parseInt(img.dataset.index));
+            });
+        });
+
+        document.querySelectorAll(".remove-new").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const index = parseInt(btn.dataset.removeNew);
+                croppedFiles.splice(index, 1);
+                renderPreviews();
             });
         });
 

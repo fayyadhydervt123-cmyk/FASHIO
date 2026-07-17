@@ -5,139 +5,196 @@ Customers
 {% endblock %}
 
 {% block content %}
-<!-- ── CUSTOMERS PAGE (main content only) ── -->
+<div class="p-4 md:p-8 max-w-screen-xl mx-auto">
+
   <!-- Page Title -->
-  <h1 class="mono text-white text-4xl font-bold tracking-tight mb-8">User Management</h1>
+  <h1 class="mono text-white text-2xl md:text-4xl font-bold tracking-tight mb-6 md:mb-8">
+    User Management
+  </h1>
 
-  <!-- Search Bar -->
-  <div class="relative mb-6">
-    <div class="relative">
-      <form method="GET" class="mb-4">
-          <input 
-              type="text" 
-              name="q" 
-              value="{{ search_query }}"
-              placeholder="Search by Name, Email, or Phone"
-              class="bg-black border border-white/10 px-4 py-2 text-sm placeholder-[#2e2e2e]"
-          >
+  <!-- Search + Filters -->
+  <form method="GET" action="">
 
-          {% if search_query %}
-            <a href="{% url 'admin_customerlist' %}"
-              class="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-sm">
-              ✕
-            </a>
-          {% endif %}
+    <!-- Search Row -->
+    <div class="relative mb-4">
+      <input
+        type="text"
+        name="q"
+        value="{{ search_query }}"
+        placeholder="Search by Name, Email, or Phone"
+        class="w-full bg-black border border-white/10 px-4 py-3 text-sm text-white placeholder-[#2e2e2e] outline-none focus:border-white/30 transition-colors"
+      >
+
+      {% if search_query %}
+        <a href="{% url 'admin_customerlist' %}"
+           class="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-sm">
+          ✕
+        </a>
+      {% endif %}
+    </div>
+
+    <!-- Filter Row -->
+    <div class="flex flex-col lg:flex-row lg:flex-wrap lg:items-center gap-4 mb-6 bg-[#111] border border-white/10 rounded-sm px-4 md:px-5 py-4 lg:py-3.5">
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap gap-4 lg:gap-4 flex-1">
+
+        <!-- Status -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3">
+          <span class="mono text-xs text-white/50">Status:</span>
+
+          <select name="status"
+                  class="w-full sm:w-auto bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-1.5 outline-none">
+            <option value="">All</option>
+            <option value="active" {% if status_filter == "active" %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if status_filter == "inactive" %}selected{% endif %}>Inactive</option>
+          </select>
         </div>
 
-        <!-- Filters Row -->
-        <div class="flex items-center gap-4 mb-6 bg-[#111] border border-white/10 rounded-sm px-5 py-3.5">
+        <!-- Date -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3">
+          <span class="mono text-xs text-white/50">Registration Date:</span>
 
-          <!-- Status -->
-          <div class="flex items-center gap-3">
-            <span class="mono text-xs text-white/50">Status:</span>
-            <select name="status"
-                class="bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-1.5">
-            
-                <option value="">All</option>
-                <option value="active" {% if status_filter == "active" %}selected{% endif %}>Active</option>
-                <option value="inactive" {% if status_filter == "inactive" %}selected{% endif %}>Inactive</option>
-            </select>
-          </div>
+          <select name="date"
+                  class="w-full sm:w-auto bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-1.5 outline-none">
+            <option value="">All</option>
+            <option value="today" {% if date_filter == "today" %}selected{% endif %}>Today</option>
+            <option value="last_7_days" {% if date_filter == "last_7_days" %}selected{% endif %}>Last 7 Days</option>
+            <option value="last_30_days" {% if date_filter == "last_30_days" %}selected{% endif %}>Last 30 Days</option>
+          </select>
+        </div>
 
-          <!-- Date -->
-          <div class="flex items-center gap-3">
-            <span class="mono text-xs text-white/50">Registration Date:</span>
-            <select name="date"
-                class="bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-1.5">
+      </div>
 
-                <option value="">All</option>
-                <option value="today" {% if date_filter == "today" %}selected{% endif %}>Today</option>
-                <option value="last_7_days" {% if date_filter == "last_7_days" %}selected{% endif %}>Last 7 Days</option>
-                <option value="last_30_days" {% if date_filter == "last_30_days" %}selected{% endif %}>Last 30 Days</option>
-            </select>
-          </div>
+      <div class="grid grid-cols-2 lg:flex gap-3 lg:gap-4">
+        <button type="submit"
+                class="mono text-xs px-4 py-2.5 lg:py-1.5 bg-white text-black font-bold hover:bg-white/80 transition-colors">
+          Apply Filter
+        </button>
 
-          <div class="flex-1"></div>
-
-          <!-- Buttons -->
-          <button type="submit"
-            class="mono text-xs px-4 py-1.5 bg-white text-black font-bold">
-            Apply Filter
-          </button>
-
-          <a href="{% url 'admin_customerlist' %}"
-          class="mono text-xs px-4 py-1.5 border border-white/20 text-white/60">
+        <a href="{% url 'admin_customerlist' %}"
+           class="mono text-xs px-4 py-2.5 lg:py-1.5 border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors text-center">
           Reset
-          </a>
+        </a>
+      </div>
 
-        </div>
+    </div>
+  </form>
 
-    </form>
-  </div>
-
-  <!-- Table -->
+  <!-- Table Panel -->
   <div class="border border-white/10 rounded-sm overflow-hidden">
-    <table class="w-full text-sm">
-      <thead>
-        <tr class="bg-[#141414] border-b border-white/10">
-          <th class="text-left px-5 py-4 mono text-xs text-white font-semibold">Full Name</th>
-          <th class="text-left px-5 py-4 mono text-xs text-white font-semibold">Email</th>
-          <th class="text-left px-5 py-4 mono text-xs text-white font-semibold">Phone</th>
-          <th class="text-left px-5 py-4 mono text-xs text-white font-semibold">Orders</th>
-          <th class="text-left px-5 py-4 mono text-xs text-white font-semibold">Status</th>
-          <th class="text-left px-5 py-4 mono text-xs text-white font-semibold">Joined Date</th>
-          <th class="text-left px-5 py-4 mono text-xs text-white font-semibold">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-      {% for user in userlist %}
-      <tr class="border-t border-white/10">
-        <td class="p-3">{{ user.fullname }}</td>
-        <td class="p-3">{{ user.email }}</td>
-        <td class="p-3">{{ user.phone }}</td>
-        <td class="p-3">--</td> <!-- Orders (optional later) -->
 
-        <td class="p-3">
-          {% if user.is_active %}
-            <span class="bg-green-900 text-green-400 px-2 py-1 text-xs">Active</span>
-          {% else %}
-            <span class="bg-yellow-900 text-yellow-400 px-2 py-1 text-xs">Inactive</span>
-          {% endif %}
-        </td>
+    <!-- Table Header (desktop only) -->
+    <div class="hidden lg:grid grid-cols-[1fr_1.2fr_150px_120px_140px_90px] px-6 py-3 border-b border-white/10 bg-[#141414]">
+      <span class="text-left mono text-xs text-white font-semibold">Full Name</span>
+      <span class="text-left mono text-xs text-white font-semibold">Email</span>
+      <span class="text-left mono text-xs text-white font-semibold">Phone</span>
+      <span class="text-left mono text-xs text-white font-semibold">Status</span>
+      <span class="text-left mono text-xs text-white font-semibold">Joined Date</span>
+      <span class="text-left mono text-xs text-white font-semibold">Action</span>
+    </div>
 
-        <td class="p-3">{{ user.date_joined|date:"d-m-Y" }}</td>
+    <!-- Rows -->
+    {% for user in userlist %}
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr_150px_120px_140px_90px] gap-3 lg:gap-0 lg:items-center px-5 lg:px-6 py-4 border-b border-[#1a1a1a] last:border-b-0 hover:bg-[#1a1a1a] transition-colors">
 
-        <td class="p-3">
-            <a href="{% url 'admin_user_details' user.id %}" class="underline">View</a>
-        </td>
+      <!-- Name (mobile: name + view button | desktop: name only) -->
+      <div class="flex items-center justify-between lg:block">
+        <span class="font-mono text-sm text-gray-200 truncate">
+          {% if user.fullname %}{{ user.fullname }}{% else %}--{% endif %}
+        </span>
 
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="7" class="text-center p-4 text-white/40">
-            No users found
-        </td>
-      </tr>
-      {% endfor %}
-      </tbody>
-    </table>
+        <a href="{% url 'admin_user_details' user.id %}"
+           class="lg:hidden mono text-xs text-white border border-white/15 px-3 py-1.5 hover:text-white/70 transition-colors tracking-widest">
+          View
+        </a>
+      </div>
+
+      <!-- Email -->
+      <div class="flex items-center justify-between lg:block min-w-0">
+        <span class="mono text-[10px] text-white/30 tracking-widest uppercase lg:hidden">Email</span>
+        <span class="font-mono text-sm text-gray-300 truncate text-right lg:text-left">
+          {% if user.email %}{{ user.email }}{% else %}--{% endif %}
+        </span>
+      </div>
+
+      <!-- Phone -->
+      <div class="flex items-center justify-between lg:block">
+        <span class="mono text-[10px] text-white/30 tracking-widest uppercase lg:hidden">Phone</span>
+        <span class="font-mono text-sm text-gray-300">
+          {% if user.phone %}{{ user.phone }}{% else %}--{% endif %}
+        </span>
+      </div>
+
+      <!-- Status -->
+      <div class="flex items-center justify-between lg:block">
+        <span class="mono text-[10px] text-white/30 tracking-widest uppercase lg:hidden">Status</span>
+        {% if user.is_active %}
+          <span class="bg-[#0f4c2a] text-green-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit inline-block">
+            Active
+          </span>
+        {% else %}
+          <span class="bg-[#4a3a0a] text-yellow-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit inline-block">
+            Inactive
+          </span>
+        {% endif %}
+      </div>
+
+      <!-- Joined Date -->
+      <div class="flex items-center justify-between lg:block">
+        <span class="mono text-[10px] text-white/30 tracking-widest uppercase lg:hidden">Joined</span>
+        <span class="font-mono text-sm text-gray-300">
+          {{ user.date_joined|date:"d-m-Y" }}
+        </span>
+      </div>
+
+      <!-- Action (desktop only, mobile view button lives in Name cell) -->
+      <div class="hidden lg:flex lg:items-center">
+        <a href="{% url 'admin_user_details' user.id %}"
+           class="mono text-xs text-white hover:text-white/50 transition-colors tracking-widest">
+          View
+        </a>
+      </div>
+
+    </div>
+    {% empty %}
+    <div class="px-6 py-16 text-center text-gray-600 font-mono text-sm tracking-widest">
+      NO USERS FOUND
+    </div>
+    {% endfor %}
+
+    <!-- Pagination -->
+    <div class="flex items-center justify-center lg:justify-end gap-2 px-4 md:px-6 py-4 border-t border-[#1f1f1f] flex-wrap">
+
+      {% if userlist.has_previous %}
+        <a href="?page={{ userlist.previous_page_number }}&q={{ search_query }}&status={{ status_filter }}&date={{ date_filter }}"
+           class="font-mono text-xs text-gray-500 border border-[#1f1f1f] px-4 py-2 rounded hover:border-gray-500 hover:text-gray-200 transition-colors">
+          Prev
+        </a>
+      {% else %}
+        <span class="font-mono text-xs text-gray-700 border border-[#1f1f1f] px-4 py-2 rounded cursor-not-allowed">
+          Prev
+        </span>
+      {% endif %}
+
+      <span class="font-mono text-xs text-gray-300 border border-[#1f1f1f] px-5 py-2 rounded">
+        {{ userlist.number|stringformat:"02d" }} / {{ userlist.paginator.num_pages|stringformat:"02d" }}
+      </span>
+
+      {% if userlist.has_next %}
+        <a href="?page={{ userlist.next_page_number }}&q={{ search_query }}&status={{ status_filter }}&date={{ date_filter }}"
+           class="font-mono text-xs text-gray-500 border border-[#1f1f1f] px-4 py-2 rounded hover:border-gray-500 hover:text-gray-200 transition-colors">
+          Next
+        </a>
+      {% else %}
+        <span class="font-mono text-xs text-gray-700 border border-[#1f1f1f] px-4 py-2 rounded cursor-not-allowed">
+          Next
+        </span>
+      {% endif %}
+
+    </div>
+
   </div>
+  <!-- End Table Panel -->
 
-  <!-- Pagination -->
-  <div class="flex justify-center gap-4 mt-6">
-
-    {% if userlist.has_previous %}
-        <a href="?page={{ userlist.previous_page_number }}&q={{ search_query }}&status={{ status_filter }}&date={{ date_filter }}">Prev</a>
-    {% endif %}
-
-    <span class="px-4 py-2">
-        {{ userlist.number }} / {{ userlist.paginator.num_pages }}
-    </span>
-
-    {% if userlist.has_next %}
-        <a href="?page={{ userlist.next_page_number }}&q={{ search_query }}&status={{ status_filter }}&date={{ date_filter }}">Next</a>
-    {% endif %}
-
-  </div>
-
+</div>
 {% endblock %}

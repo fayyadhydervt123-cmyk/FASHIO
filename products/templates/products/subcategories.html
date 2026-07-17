@@ -2,7 +2,7 @@
 {% block title %}Subcategories{% endblock %}
 
 {% block content %}
-<div class="p-8 max-w-screen-xl mx-auto">
+<div class="p-4 sm:p-8 max-w-screen-xl mx-auto">
 
   <!-- Django messages -->
   {% if messages %}
@@ -18,18 +18,18 @@
   {% endif %}
 
   <!-- Top Bar -->
-  <div class="flex items-center justify-between mb-10">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
     <div class="flex items-center gap-4">
-      <a href="{% url 'products' %}" class="text-gray-600 hover:text-white transition-colors">
+      <a href="{% url 'products' %}" class="text-gray-600 hover:text-white transition-colors shrink-0">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
         </svg>
       </a>
-      <h1 class="mono text-white text-3xl font-bold tracking-tight">Sub Categories</h1>
+      <h1 class="mono text-white text-xl sm:text-3xl font-bold tracking-tight">Sub Categories</h1>
     </div>
     <!-- Opens Add modal -->
     <button onclick="openAddModal()"
-            class="border border-white/10 text-white px-5 py-2 text-sm tracking-widest">
+            class="border border-white/10 text-white px-5 py-2 text-sm tracking-widest w-full sm:w-auto">
       + Add New
     </button>
   </div>
@@ -55,13 +55,13 @@
         {% endif %}
       {% endfor %}
 
-      <div class="relative mb-4">
+      <div class="relative mb-4 max-w-sm">
         <input
           type="text"
           name="q_{{ section.category.id }}"
           value="{{ section.query }}"
           placeholder="Search by Name or ID ..."
-          class="bg-black border border-white/10 px-4 py-2 text-sm placeholder-[#2e2e2e]"
+          class="w-full bg-black border border-white/10 px-4 py-2 text-sm placeholder-[#2e2e2e]"
         >
         <button type="submit" class="hidden"></button>
         {% if section.query %}
@@ -70,8 +70,10 @@
       </div>
     </form>
 
-    <!-- Table -->
-    <div class="border border-white/10 rounded-sm overflow-hidden max-w-5xl">
+    <!-- ═══════════════════════════════════════════
+         DESKTOP / TABLET — TABLE (sm and up)
+    ════════════════════════════════════════════ -->
+    <div class="hidden sm:block border border-white/10 rounded-sm overflow-hidden max-w-5xl">
 
       <!-- Header -->
       <div class="grid grid-cols-[140px_1fr_200px] px-6 py-3 border-b border-white/10 border-[#1f1f1f] bg-[#141414]">
@@ -136,6 +138,63 @@
       </div>
 
     </div>
+
+    <!-- ═══════════════════════════════════════════
+         MOBILE — STACKED CARDS (below sm)
+         No side-scrolling, everything fits the viewport.
+    ════════════════════════════════════════════ -->
+    <div class="sm:hidden border border-white/10 rounded-sm overflow-hidden max-w-5xl">
+      {% for subcat in section.subcategories %}
+      <div class="px-4 py-4 border-b border-[#141414] last:border-b-0 bg-[#0f0f0f]">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <span class="font-mono text-[10px] text-gray-600 tracking-wider block">
+              #{{ subcat.id|stringformat:"s"|slice:":8"|upper }}
+            </span>
+            <span class="font-mono text-sm text-gray-200 tracking-wide break-words">{{ subcat.name }}</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 mt-3">
+          <button
+            onclick="openEditModal('{{ subcat.id }}', '{{ subcat.name|escapejs }}', '{{ section.category.id }}')"
+            class="flex-1 font-mono text-[0.7rem] tracking-widest text-gray-400 border border-[#1f1f1f] px-3 py-1.5 rounded hover:border-gray-500 hover:text-white transition-colors">
+            Edit
+          </button>
+          <button
+            onclick="openDeleteModal('{{ subcat.id }}', '{{ subcat.name|escapejs }}')"
+            class="flex-1 font-mono text-[0.7rem] tracking-widest text-red-900 border border-[#2a1010] px-3 py-1.5 rounded hover:border-red-500 hover:text-red-400 hover:bg-[#1a0808] transition-colors">
+            Delete
+          </button>
+        </div>
+      </div>
+      {% empty %}
+      <div class="px-6 py-10 text-center font-mono text-xs text-gray-700 tracking-widest">
+        NO SUBCATEGORIES FOUND
+      </div>
+      {% endfor %}
+
+      <!-- Pagination -->
+      <div class="flex items-center justify-center gap-3 px-6 py-3 border-t border-[#181818] bg-[#0f0f0f]">
+        {% if section.subcategories.has_previous %}
+          <a href="?{% for other in sections %}{% if other.category.id == section.category.id %}page_{{ section.category.id }}={{ section.subcategories.previous_page_number }}&q_{{ section.category.id }}={{ section.query }}{% else %}&page_{{ other.category.id }}={{ other.subcategories.number }}&q_{{ other.category.id }}={{ other.query }}{% endif %}{% endfor %}"
+             class="font-mono text-xs text-gray-500 hover:text-white transition-colors">Prev</a>
+        {% else %}
+          <span class="font-mono text-xs text-gray-700 cursor-not-allowed">Prev</span>
+        {% endif %}
+
+        <span class="font-mono text-xs text-gray-300">
+          {{ section.subcategories.number|stringformat:"02d" }} / {{ section.subcategories.paginator.num_pages|stringformat:"02d" }}
+        </span>
+
+        {% if section.subcategories.has_next %}
+          <a href="?{% for other in sections %}{% if other.category.id == section.category.id %}page_{{ section.category.id }}={{ section.subcategories.next_page_number }}&q_{{ section.category.id }}={{ section.query }}{% else %}&page_{{ other.category.id }}={{ other.subcategories.number }}&q_{{ other.category.id }}={{ other.query }}{% endif %}{% endfor %}"
+             class="font-mono text-xs text-gray-500 hover:text-white transition-colors">Next</a>
+        {% else %}
+          <span class="font-mono text-xs text-gray-700 cursor-not-allowed">Next</span>
+        {% endif %}
+      </div>
+    </div>
+
   </div>
   {% empty %}
   <div class="text-center font-mono text-sm text-gray-700 tracking-widest py-20">
@@ -147,8 +206,8 @@
 
 
 <!-- ══════════ ADD MODAL ══════════ -->
-<div id="modal-add" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-  <div class="bg-[#0f0f0f] border border-[#1f1f1f] rounded-lg w-full max-w-md p-6">
+<div id="modal-add" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+  <div class="bg-[#0f0f0f] border border-[#1f1f1f] rounded-lg w-full max-w-md p-5 sm:p-6 max-h-[90vh] overflow-y-auto">
 
     <div class="flex items-center justify-between mb-6">
       <h2 class="font-mono text-white text-lg tracking-tight">Add Subcategory</h2>
@@ -180,13 +239,13 @@
         >
       </div>
 
-      <div class="flex items-center gap-3 justify-end">
+      <div class="flex flex-col-reverse sm:flex-row items-center gap-3 sm:justify-end">
         <button type="button" onclick="closeAddModal()"
-                class="font-mono text-xs tracking-widest text-gray-500 border border-[#1f1f1f] px-4 py-2 rounded hover:text-white hover:border-white/20 transition-colors">
+                class="w-full sm:w-auto font-mono text-xs tracking-widest text-gray-500 border border-[#1f1f1f] px-4 py-2 rounded hover:text-white hover:border-white/20 transition-colors">
           Cancel
         </button>
         <button type="submit"
-                class="font-mono text-xs tracking-widest bg-white text-black px-5 py-2 rounded hover:bg-white/80 transition-colors">
+                class="w-full sm:w-auto font-mono text-xs tracking-widest bg-white text-black px-5 py-2 rounded hover:bg-white/80 transition-colors">
           Add Subcategory
         </button>
       </div>
@@ -197,8 +256,8 @@
 
 
 <!-- ══════════ EDIT MODAL ══════════ -->
-<div id="modal-edit" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-  <div class="bg-[#0f0f0f] border border-[#1f1f1f] rounded-lg w-full max-w-md p-6">
+<div id="modal-edit" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+  <div class="bg-[#0f0f0f] border border-[#1f1f1f] rounded-lg w-full max-w-md p-5 sm:p-6 max-h-[90vh] overflow-y-auto">
 
     <div class="flex items-center justify-between mb-6">
       <h2 class="font-mono text-white text-lg tracking-tight">Edit Subcategory</h2>
@@ -218,13 +277,13 @@
         >
       </div>
 
-      <div class="flex items-center gap-3 justify-end">
+      <div class="flex flex-col-reverse sm:flex-row items-center gap-3 sm:justify-end">
         <button type="button" onclick="closeEditModal()"
-                class="font-mono text-xs tracking-widest text-gray-500 border border-[#1f1f1f] px-4 py-2 rounded hover:text-white hover:border-white/20 transition-colors">
+                class="w-full sm:w-auto font-mono text-xs tracking-widest text-gray-500 border border-[#1f1f1f] px-4 py-2 rounded hover:text-white hover:border-white/20 transition-colors">
           Cancel
         </button>
         <button type="submit"
-                class="font-mono text-xs tracking-widest bg-white text-black px-5 py-2 rounded hover:bg-white/80 transition-colors">
+                class="w-full sm:w-auto font-mono text-xs tracking-widest bg-white text-black px-5 py-2 rounded hover:bg-white/80 transition-colors">
           Save Changes
         </button>
       </div>
@@ -235,8 +294,8 @@
 
 
 <!-- ══════════ DELETE CONFIRM MODAL ══════════ -->
-<div id="modal-delete" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-  <div class="bg-[#0f0f0f] border border-red-900/40 rounded-lg w-full max-w-sm p-6">
+<div id="modal-delete" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+  <div class="bg-[#0f0f0f] border border-red-900/40 rounded-lg w-full max-w-sm p-5 sm:p-6 max-h-[90vh] overflow-y-auto">
 
     <div class="flex items-center justify-between mb-4">
       <h2 class="font-mono text-white text-lg tracking-tight">Delete Subcategory</h2>
@@ -244,7 +303,7 @@
     </div>
 
     <p class="font-mono text-xs text-gray-500 mb-1 tracking-wide">You are about to delete:</p>
-    <p id="delete-name-display" class="font-mono text-sm text-red-400 mb-5 tracking-wide"></p>
+    <p id="delete-name-display" class="font-mono text-sm text-red-400 mb-5 tracking-wide break-words"></p>
     <p class="font-mono text-xs text-gray-600 mb-6">
     This cannot be undone. Subcategories with products assigned cannot be deleted.
     </p>
@@ -253,13 +312,13 @@
       {% csrf_token %}
       <input type="hidden" name="subcat_id" id="delete-subcat-id">
 
-      <div class="flex items-center gap-3 justify-end">
+      <div class="flex flex-col-reverse sm:flex-row items-center gap-3 sm:justify-end">
         <button type="button" onclick="closeDeleteModal()"
-                class="font-mono text-xs tracking-widest text-gray-500 border border-[#1f1f1f] px-4 py-2 rounded hover:text-white hover:border-white/20 transition-colors">
+                class="w-full sm:w-auto font-mono text-xs tracking-widest text-gray-500 border border-[#1f1f1f] px-4 py-2 rounded hover:text-white hover:border-white/20 transition-colors">
           Cancel
         </button>
         <button type="submit"
-                class="font-mono text-xs tracking-widest bg-red-900 text-red-200 px-5 py-2 rounded hover:bg-red-800 transition-colors">
+                class="w-full sm:w-auto font-mono text-xs tracking-widest bg-red-900 text-red-200 px-5 py-2 rounded hover:bg-red-800 transition-colors">
           Confirm Delete
         </button>
       </div>
@@ -296,6 +355,14 @@
     document.getElementById(id).addEventListener('click', function(e) {
       if (e.target === this) this.classList.add('hidden');
     });
+  });
+
+  // Close modals on Escape key
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    closeAddModal();
+    closeEditModal();
+    closeDeleteModal();
   });
 </script>
 

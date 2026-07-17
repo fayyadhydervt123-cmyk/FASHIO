@@ -18,27 +18,26 @@
 {% endblock %}
 
 {% block content %}
-<div class="p-8 max-w-screen-xl mx-auto">
+<div class="p-4 sm:p-8 max-w-screen-xl mx-auto">
 
   <!-- Top Bar -->
-  <div class="flex items-center gap-4 mb-8">
+  <div class="flex items-center gap-4 mb-6 sm:mb-8">
     <a href="{% url 'products' %}"
-       class="text-white/40 hover:text-white transition-colors">
+       class="text-white/40 hover:text-white transition-colors shrink-0">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
       </svg>
     </a>
-    <h1 class="mono text-white text-4xl font-bold tracking-tight">Add Variant</h1>
+    <h1 class="mono text-white text-2xl sm:text-4xl font-bold tracking-tight">Add Variant</h1>
   </div>
 
   <!-- ── Product Summary Card ── -->
-  <div class="border border-white/10 bg-[#0d0d0d] p-5 mb-8 flex items-center gap-6">
-
+  <div class="border border-white/10 bg-[#0d0d0d] p-5 mb-6 sm:mb-8 grid grid-cols-2 sm:flex sm:items-center gap-4 sm:gap-6">
 
     <!-- Product Info -->
-    <div class="flex-1">
+    <div class="col-span-2 sm:flex-1 min-w-0">
       <span class="mono text-[10px] text-white/30 tracking-widest uppercase">Product</span>
-      <h2 class="mono text-white text-2xl font-bold tracking-tight mt-0.5">{{ product.name }}</h2>
+      <h2 class="mono text-white text-xl sm:text-2xl font-bold tracking-tight mt-0.5 truncate">{{ product.name }}</h2>
       <div class="flex items-center gap-2 mt-1">
         <span class="mono text-[10px] tracking-widest">Status:</span>
         {% if product.is_active %}
@@ -50,15 +49,15 @@
     </div>
 
     <!-- Base Price -->
-    <div class="text-right border-l border-white/10 pl-6">
+    <div class="text-left sm:text-right border-t sm:border-t-0 sm:border-l border-white/10 pt-4 sm:pt-0 sm:pl-6">
       <span class="mono text-[10px] text-white/30 tracking-widest uppercase block mb-1">Base Price</span>
-      <span class="mono text-white text-2xl font-bold">₹{{ product.base_price }}</span>
+      <span class="mono text-white text-xl sm:text-2xl font-bold">₹{{ product.base_price }}</span>
     </div>
 
     <!-- Total Stock -->
-    <div class="text-right border-l border-white/10 pl-6">
+    <div class="text-left sm:text-right border-t sm:border-t-0 sm:border-l border-white/10 pt-4 sm:pt-0 sm:pl-6">
       <span class="mono text-[10px] text-white/30 tracking-widest uppercase block mb-1">Total Stock</span>
-      <span class="mono text-white text-2xl font-bold">{{ product.total_stock|default:0 }}</span>
+      <span class="mono text-white text-xl sm:text-2xl font-bold">{{ product.total_stock|default:0 }}</span>
     </div>
 
   </div>
@@ -74,9 +73,9 @@
         <div class="flex-1 h-px bg-white/10"></div>
       </div>
 
-      <div class="border border-white/10 bg-[#0d0d0d] p-6">
+      <div class="border border-white/10 bg-[#0d0d0d] p-4 sm:p-6">
 
-        <div class="grid grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
           <!-- Color Display -->
           <div class="flex flex-col gap-2">
@@ -97,13 +96,13 @@
           <!-- Size -->
           <div class="flex flex-col gap-2">
             <label class="mono text-xs text-white/50 tracking-widest">Size</label>
-            <div class="flex gap-2">
+            <div class="flex flex-wrap gap-2">
               {% for size_val, size_label in size_choices %}
               <label class="cursor-pointer">
                 <input type="radio" name="size" value="{{ size_val }}"
                   {% if form_data.size == size_val %}checked{% endif %}
                   class="sr-only peer">
-                <span class="mono text-xs px-5 py-2.5 border border-white/10 text-white/50
+                <span class="mono text-xs px-4 sm:px-5 py-2.5 border border-white/10 text-white/50
                              peer-checked:border-white peer-checked:text-white
                              hover:border-white/30 hover:text-white/80
                              transition-colors block">
@@ -123,7 +122,7 @@
         <div class="mt-4 flex flex-col gap-2">
           <label class="mono text-xs text-white/50 tracking-widest">Color</label>
           <div class="flex items-center gap-3">
-            <div class="relative">
+            <div class="relative shrink-0">
               <input
                 type="color"
                 name="color_hex"
@@ -132,7 +131,7 @@
                 class="w-10 h-10 border border-white/10 bg-[#111] cursor-pointer p-0.5"
               >
             </div>
-            <div class="flex-1 relative">
+            <div class="flex-1 relative min-w-0">
               <span class="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-xs text-white/30">#</span>
               <input
                 type="text"
@@ -150,7 +149,7 @@
 
     <!-- ── Section: Price / Stock / Status ── -->
     <div class="mb-6">
-      <div class="grid grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
         <!-- Price -->
         <div class="border border-white/10 bg-[#0d0d0d] p-5">
@@ -186,7 +185,7 @@
               name="stock"
               value="{{ form_data.stock|default:'0' }}"
               min="0"
-              class="bg-[#111] border px-4 py-2.5 text-sm text-white font-mono outline-none transition-colors
+              class="w-full bg-[#111] border px-4 py-2.5 text-sm text-white font-mono outline-none transition-colors
               {% if errors.stock %}border-red-500/60{% else %}border-white/10 focus:border-white/30{% endif %}"
             >
             {% if errors.stock %}
@@ -202,7 +201,7 @@
             <label class="mono text-xs text-white/50 tracking-widest">Select Status</label>
             <select
               name="status"
-              class="bg-[#111] border border-white/10 px-4 py-2.5 text-sm font-mono outline-none focus:border-white/30 transition-colors appearance-none
+              class="w-full bg-[#111] border border-white/10 px-4 py-2.5 text-sm font-mono outline-none focus:border-white/30 transition-colors appearance-none
               {% if form_data.status == 'ACTIVE' %}text-green-400{% else %}text-white{% endif %}"
               style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23555'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\"); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;"
               id="status-select"
@@ -220,22 +219,22 @@
     <!-- ── Section: Image + Default ── -->
     <!-- ── Section: Variant Images ── -->
     <div class="mb-6">
-    <div class="flex items-center gap-4 mb-5">
+    <div class="flex flex-wrap items-center gap-3 sm:gap-4 mb-5">
         <span class="mono text-xs text-white/40 tracking-widest uppercase">Variant Images</span>
-        <div class="flex-1 h-px bg-white/10"></div>
+        <div class="flex-1 h-px bg-white/10 min-w-[20px]"></div>
         <span class="mono text-xs text-white/30">Min. 3 required</span>
     </div>
 
-    <div class="border border-white/10 bg-[#0d0d0d] p-6">
+    <div class="border border-white/10 bg-[#0d0d0d] p-4 sm:p-6">
 
-        <div class="grid grid-cols-[260px_1fr] gap-5 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-5 items-start">
 
     <!-- Upload Box -->
     <div class="w-full">
 
         <div
             id="image-drop-zone"
-            class="border border-dashed border-white/20 h-[260px]
+            class="border border-dashed border-white/20 h-[200px] sm:h-[260px]
                    flex flex-col items-center justify-center gap-3
                    cursor-pointer hover:border-white/40 transition-colors">
 
@@ -294,16 +293,16 @@
 
         <!-- Preview Grid -->
         <div id="image-preview-grid"
-             class="grid grid-cols-2 lg:grid-cols-3 gap-3 hidden">
+             class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3 hidden">
         </div>
 
         <!-- Empty -->
         <div id="image-empty-state"
              class="border border-dashed border-white/5
-                    h-[260px]
+                    h-[200px] sm:h-[260px]
                     flex items-center justify-center">
 
-            <span class="mono text-xs text-white/20 tracking-widest">
+            <span class="mono text-xs text-white/20 tracking-widest text-center px-4">
                 Cropped previews appear here
             </span>
 
@@ -339,10 +338,10 @@
     <!-- SIMPLE IMAGE VIEWER -->
 <div id="lightbox"
      class="fixed inset-0 bg-black/90 z-50 hidden
-            flex items-center justify-center p-8">
+            flex items-center justify-center p-4 sm:p-8">
 
     <button id="lightbox-close"
-            class="absolute top-6 right-6
+            class="absolute top-4 right-4 sm:top-6 sm:right-6
                    text-white/50 hover:text-white
                    transition-colors mono text-xs tracking-widest">
         Close
@@ -356,34 +355,34 @@
     </div>
 
     <!-- ── Crop modal ── -->
-    <div id="crop-modal" class="fixed inset-0 bg-black/95 z-[60] hidden flex items-center justify-center p-8">
-    <div class="bg-[#111] border border-white/10 p-6 w-full max-w-5xl">
+    <div id="crop-modal" class="fixed inset-0 bg-black/95 z-[60] hidden flex items-center justify-center p-3 sm:p-8">
+    <div class="bg-[#111] border border-white/10 p-4 sm:p-6 w-full max-w-5xl max-h-[95vh] overflow-y-auto">
         <div class="flex items-center justify-between mb-4">
         <span class="mono text-sm text-white tracking-widest">Crop &amp; Resize</span>
         <button id="crop-modal-close" type="button" class="text-white/40 hover:text-white mono text-xs">close</button>
         </div>
 
-        <div class="w-full h-[500px] bg-black overflow-hidden flex items-center justify-center">         
+        <div class="w-full h-[300px] sm:h-[500px] bg-black overflow-hidden flex items-center justify-center">         
             <img
                 id="crop-image"
                 class="block max-w-full"
             />
         </div>
 
-        <div class="flex justify-end gap-3">
-        <button id="crop-cancel" type="button" class="mono text-xs px-5 py-2 border border-white/20 text-white/60 hover:text-white transition-colors tracking-widest">Cancel</button>
-        <button id="crop-apply" type="button" class="mono text-xs px-5 py-2 bg-white text-black font-bold hover:bg-white/80 transition-colors tracking-widest">Apply</button>
+        <div class="flex justify-end gap-3 mt-4">
+        <button id="crop-cancel" type="button" class="mono text-xs px-4 sm:px-5 py-2 border border-white/20 text-white/60 hover:text-white transition-colors tracking-widest">Cancel</button>
+        <button id="crop-apply" type="button" class="mono text-xs px-4 sm:px-5 py-2 bg-white text-black font-bold hover:bg-white/80 transition-colors tracking-widest">Apply</button>
         </div>
     </div>
     </div>
 
     <!-- ── Divider ── -->
-    <div class="h-px bg-white/10 mb-8"></div>
+    <div class="h-px bg-white/10 mb-6 sm:mb-8"></div>
 
     <!-- ── Action Buttons ── -->
-    <div class="flex items-center justify-end gap-3">
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3">
       <a href="{% url 'products' %}"
-         class="mono text-xs px-6 py-2.5 border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors tracking-widest">
+         class="mono text-xs px-6 py-2.5 border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors tracking-widest text-center">
         Cancel
       </a>
       <button type="submit"
@@ -700,7 +699,7 @@ document.addEventListener("DOMContentLoaded", () => {
         class="remove-existing absolute top-1.5 right-1.5
                             w-5 h-5 bg-black/70 text-white
                             flex items-center justify-center
-                            opacity-0 group-hover:opacity-100 transition-opacity text-xs leading-none">
+                            opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-xs leading-none">
   ✕
 </button>
 

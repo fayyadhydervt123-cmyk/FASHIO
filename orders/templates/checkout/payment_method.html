@@ -4,14 +4,22 @@
 Payment Method
 {% endblock %}
 
+{% block extra_css %}
+<style>
+  body {
+    overflow-x: hidden;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 
-<section class="bg-white min-h-screen px-8 md:px-12 py-14">
+<section class="bg-white min-h-screen px-4 sm:px-6 md:px-12 py-8 md:py-14">
 
   <div class="max-w-6xl mx-auto">
 
     <!-- Back Button -->
-    <div class="mb-10">
+    <div class="mb-8 md:mb-10">
       <a href="{% url 'checkout_page' %}?source={{ checkout_source }}"
          class="inline-flex items-center gap-3 mono text-[10px] tracking-widest text-black/50 hover:text-black uppercase transition-colors">
         <span class="text-xl leading-none">←</span>
@@ -20,19 +28,19 @@ Payment Method
     </div>
 
     <!-- Page Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-[1.4fr_.8fr] gap-10">
+    <div class="grid grid-cols-1 lg:grid-cols-[1.4fr_.8fr] gap-8 md:gap-10">
 
       <!-- Left Side -->
       <div>
 
         <!-- Header -->
-        <div class="flex items-center gap-4 mb-8">
-          <div class="w-1 h-8 bg-black"></div>
-          <div>
+        <div class="flex items-center gap-3 sm:gap-4 mb-7 md:mb-8">
+          <div class="w-1 h-8 bg-black shrink-0"></div>
+          <div class="min-w-0">
             <p class="mono text-[9px] tracking-[.3em] text-black/35 uppercase mb-1">
               Step 2 of 2
             </p>
-            <h1 class="bebas text-5xl md:text-6xl leading-none text-black tracking-wide">
+            <h1 class="bebas text-4xl sm:text-5xl md:text-6xl leading-none text-black tracking-wide break-words">
               Payment Method
             </h1>
           </div>
@@ -47,17 +55,28 @@ Payment Method
             <input type="hidden" name="address_id" value="{{ selected_address.id }}">
           {% endif %}
 
-          <!-- Only COD enabled for now -->
-          <input type="hidden" name="payment_method" value="COD">
           <input type="hidden" name="source" value="{{ checkout_source }}">
 
           <!-- Payment Options -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-8 md:mb-10">
 
-            <!-- Wallet Disabled -->
-            <div class="border border-black/10 bg-neutral-100 opacity-50 px-5 py-7 cursor-not-allowed">
-              <div class="flex flex-col items-center text-center gap-3">
-                <svg class="w-6 h-6 text-black/40"
+            <!-- Wallet -->
+            <label class="payment-option border-2 border-black bg-white px-4 py-6 sm:px-5 sm:py-7 cursor-pointer relative block"
+                   id="wallet-option">
+              <input type="radio"
+                     name="payment_method"
+                     value="WALLET"
+                     data-payment-radio
+                     data-insufficient="{% if wallet_balance < total_payable %}true{% else %}false{% endif %}"
+                     checked
+                     class="hidden">
+
+              <div class="check-mark absolute top-3 right-3 w-4 h-4 bg-black flex items-center justify-center">
+                <span class="text-white text-[10px] leading-none">✓</span>
+              </div>
+
+              <div class="flex flex-row sm:flex-col items-center text-left sm:text-center gap-3">
+                <svg class="w-6 h-6 text-black shrink-0"
                      fill="none"
                      stroke="currentColor"
                      stroke-width="1.8"
@@ -67,31 +86,27 @@ Payment Method
                   <path d="M8 3v4"/>
                 </svg>
 
-                <div>
+                <div class="min-w-0">
                   <p class="mono text-[10px] tracking-widest text-black uppercase font-bold">
                     Wallet
                   </p>
                   <p class="mono text-[8px] tracking-widest text-black/35 mt-2 uppercase">
-                    Coming Soon
+                    Balance: ₹{{ wallet_balance|floatformat:2 }}
                   </p>
                 </div>
               </div>
-            </div>
+            </label>
 
-            <!-- COD Active -->
-            <label class="border-2 border-black bg-white px-5 py-7 cursor-pointer relative block">
-              <input type="radio"
-                     name="payment_method_display"
-                     value="COD"
-                     checked
-                     class="hidden">
+            <!-- COD -->
+            <label class="payment-option border border-black/15 bg-white px-4 py-6 sm:px-5 sm:py-7 cursor-pointer relative block">
+              <input type="radio" name="payment_method" value="COD" data-payment-radio class="hidden">
 
-              <div class="absolute top-3 right-3 w-4 h-4 bg-black flex items-center justify-center">
+              <div class="check-mark absolute top-3 right-3 w-4 h-4 bg-black flex items-center justify-center hidden">
                 <span class="text-white text-[10px] leading-none">✓</span>
               </div>
 
-              <div class="flex flex-col items-center text-center gap-3">
-                <svg class="w-6 h-6 text-black"
+              <div class="flex flex-row sm:flex-col items-center text-left sm:text-center gap-3">
+                <svg class="w-6 h-6 text-black shrink-0"
                      fill="none"
                      stroke="currentColor"
                      stroke-width="1.8"
@@ -101,7 +116,7 @@ Payment Method
                   <path d="M6 9h.01M18 15h.01"/>
                 </svg>
 
-                <div>
+                <div class="min-w-0">
                   <p class="mono text-[10px] tracking-widest text-black uppercase font-bold">
                     Cash On Delivery
                   </p>
@@ -112,10 +127,16 @@ Payment Method
               </div>
             </label>
 
-            <!-- Razorpay Disabled -->
-            <div class="border border-black/10 bg-neutral-100 opacity-50 px-5 py-7 cursor-not-allowed">
-              <div class="flex flex-col items-center text-center gap-3">
-                <svg class="w-6 h-6 text-black/40"
+            <!-- Razorpay -->
+            <label class="payment-option border border-black/15 bg-white px-4 py-6 sm:px-5 sm:py-7 cursor-pointer relative block">
+              <input type="radio" name="payment_method" value="RAZORPAY" data-payment-radio class="hidden">
+
+              <div class="check-mark absolute top-3 right-3 w-4 h-4 bg-black flex items-center justify-center hidden">
+                <span class="text-white text-[10px] leading-none">✓</span>
+              </div>
+
+              <div class="flex flex-row sm:flex-col items-center text-left sm:text-center gap-3">
+                <svg class="w-6 h-6 text-black shrink-0"
                      fill="none"
                      stroke="currentColor"
                      stroke-width="1.8"
@@ -126,31 +147,58 @@ Payment Method
                   <path d="M14 14h2v2h-2zM18 14h2v6h-2zM14 18h2v2h-2z"/>
                 </svg>
 
-                <div>
+                <div class="min-w-0">
                   <p class="mono text-[10px] tracking-widest text-black uppercase font-bold">
                     Razorpay
                   </p>
                   <p class="mono text-[8px] tracking-widest text-black/35 mt-2 uppercase">
-                    Coming Soon
+                    Cards / UPI / NetBanking
                   </p>
                 </div>
               </div>
-            </div>
+            </label>
 
           </div>
 
-          <!-- COD Info Box -->
-          <div class="border border-black/10 bg-neutral-50 p-6 mb-10">
-            <div class="flex items-start gap-4">
+          <!-- Wallet Info Box -->
+          <div id="wallet-info-box" class="border border-black/10 bg-neutral-50 p-4 sm:p-6 mb-8 md:mb-10">
+            <div class="flex items-start gap-3 sm:gap-4">
               <div class="w-9 h-9 bg-black text-white flex items-center justify-center shrink-0">
                 <span class="mono text-[11px]">₹</span>
               </div>
+              <div class="flex-1 min-w-0">
+                {% if wallet_balance < total_payable %}
+                  <h3 class="mono text-[11px] tracking-widest text-red-600 uppercase font-bold mb-2">
+                    Insufficient Wallet Balance
+                  </h3>
+                  <p class="text-sm text-black/55 leading-relaxed">
+                    Your wallet balance (₹{{ wallet_balance|floatformat:2 }}) is lower than the order total
+                    (₹{{ total_payable|floatformat:2 }}). Please add money to your wallet or choose another
+                    payment method.
+                  </p>
+                {% else %}
+                  <h3 class="mono text-[11px] tracking-widest text-black uppercase font-bold mb-2">
+                    Wallet Selected
+                  </h3>
+                  <p class="text-sm text-black/55 leading-relaxed">
+                    ₹{{ total_payable|floatformat:2 }} will be deducted from your wallet balance
+                    (₹{{ wallet_balance|floatformat:2 }}) instantly. No further action needed.
+                  </p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
 
-              <div>
+          <!-- COD Info Box -->
+          <div id="cod-info-box" class="hidden border border-black/10 bg-neutral-50 p-4 sm:p-6 mb-8 md:mb-10">
+            <div class="flex items-start gap-3 sm:gap-4">
+              <div class="w-9 h-9 bg-black text-white flex items-center justify-center shrink-0">
+                <span class="mono text-[11px]">₹</span>
+              </div>
+              <div class="min-w-0">
                 <h3 class="mono text-[11px] tracking-widest text-black uppercase font-bold mb-2">
                   Cash On Delivery Selected
                 </h3>
-
                 <p class="text-sm text-black/55 leading-relaxed">
                   You can pay the final amount in cash when your order is delivered.
                   Please keep the exact amount ready for faster delivery.
@@ -159,26 +207,44 @@ Payment Method
             </div>
           </div>
 
+          <!-- Razorpay Info Box -->
+          <div id="razorpay-info-box" class="hidden border border-black/10 bg-neutral-50 p-4 sm:p-6 mb-8 md:mb-10">
+            <div class="flex items-start gap-3 sm:gap-4">
+              <div class="w-9 h-9 bg-black text-white flex items-center justify-center shrink-0">
+                <span class="mono text-[11px]">₹</span>
+              </div>
+              <div class="min-w-0">
+                <h3 class="mono text-[11px] tracking-widest text-black uppercase font-bold mb-2">
+                  Razorpay Selected
+                </h3>
+                <p class="text-sm text-black/55 leading-relaxed">
+                  You'll be redirected to Razorpay's secure checkout to complete payment
+                  via card, UPI, or net banking.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <!-- Delivery Address -->
           {% if selected_address %}
-          <div class="border border-black/10 p-6 mb-10">
-            <div class="flex items-center justify-between gap-4 mb-5">
-              <div>
+          <div class="border border-black/10 p-4 sm:p-6 mb-8 md:mb-10">
+            <div class="flex flex-wrap items-start justify-between gap-3 sm:gap-4 mb-5">
+              <div class="min-w-0">
                 <p class="mono text-[9px] tracking-[.25em] text-black/35 uppercase mb-1">
                   Deliver To
                 </p>
-                <h3 class="text-black text-lg font-semibold">
+                <h3 class="text-black text-lg font-semibold break-words">
                   {{ selected_address.name }}
                 </h3>
               </div>
 
               <a href="{% url 'checkout_page' %}?source={{ checkout_source }}"
-                 class="mono text-[10px] tracking-widest text-black/45 hover:text-black uppercase transition-colors">
+                 class="mono text-[10px] tracking-widest text-black/45 hover:text-black uppercase transition-colors shrink-0">
                 Change
               </a>
             </div>
 
-            <p class="text-sm text-black/55 leading-relaxed">
+            <p class="text-sm text-black/55 leading-relaxed break-words">
               {{ selected_address.line1 }}<br>
               {{ selected_address.city }},
               {{ selected_address.get_state_display }} -
@@ -190,41 +256,43 @@ Payment Method
           {% endif %}
 
           <!-- Mobile Order Summary -->
-          <div class="lg:hidden border border-black/10 p-6 mb-8">
-            <h2 class="bebas text-4xl text-black mb-6">
+          <div class="lg:hidden border border-black/10 p-4 sm:p-6 mb-8">
+            <h2 class="bebas text-3xl sm:text-4xl text-black mb-6">
               Order Summary
             </h2>
 
             <div class="space-y-4">
 
-              <div class="flex items-center justify-between">
-                <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
-                  Subtotal
-                </span>
-                <span class="mono text-sm text-black">
+              <div class="flex justify-between gap-4">
+                <p class="text-sm text-black/55">
+                  Subtotal <span class="text-black/35 text-xs">(GST incl.)</span>
+                </p>
+                <p class="mono text-sm font-bold text-black text-right">
                   ₹{{ subtotal|floatformat:2 }}
-                </span>
+                </p>
               </div>
 
-              <div class="flex items-center justify-between">
+              <div class="flex items-center justify-between gap-4">
                 <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
-                  Discount ({{ discount_percentage|floatformat:2 }}%)
-                </span>
-                <span class="mono text-sm text-green-700">
-                  - ₹{{ discount_amount|floatformat:2 }}
-                </span>
-              </div>
-
-              <div class="flex items-center justify-between">
-                <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
-                  Tax ({{ tax_percentage|floatformat:2 }}%)
+                  GST ({{ gst_rate|floatformat:0 }}% incl.)
                 </span>
                 <span class="mono text-sm text-black">
-                  ₹{{ tax_amount|floatformat:2 }}
+                  ₹{{ gst_amount|floatformat:2 }}
                 </span>
               </div>
 
-              <div class="flex items-center justify-between">
+              {% if applied_coupon %}
+              <div class="flex justify-between gap-4">
+                  <p class="text-sm text-green-700">
+                      Coupon ({{ applied_coupon.code }})
+                  </p>
+                  <p class="mono text-sm font-bold text-green-700">
+                      -₹{{ coupon_discount|floatformat:2 }}
+                  </p>
+              </div>
+              {% endif %}
+
+              <div class="flex items-center justify-between gap-4">
                 <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
                   Delivery Fee
                 </span>
@@ -237,11 +305,11 @@ Payment Method
                 </p>
               </div>
 
-              <div class="border-t border-black/10 pt-5 flex items-center justify-between">
-                <span class="bebas text-3xl text-black">
+              <div class="border-t border-black/10 pt-5 flex items-center justify-between gap-4">
+                <span class="bebas text-2xl sm:text-3xl text-black">
                   Total
                 </span>
-                <span class="mono text-2xl font-bold text-black">
+                <span class="mono text-xl sm:text-2xl font-bold text-black">
                   ₹{{ total_payable|floatformat:2 }}
                 </span>
               </div>
@@ -251,8 +319,9 @@ Payment Method
 
           <!-- Submit -->
           <button type="submit"
+                  id="confirm-order-btn"
                   {% if not selected_address %}disabled{% endif %}
-                  class="w-full mono text-[11px] tracking-[.35em] py-5 font-bold uppercase transition-all
+                  class="w-full mono text-[11px] tracking-[.35em] py-4 sm:py-5 font-bold uppercase transition-all
                          {% if selected_address %}
                            bg-black text-white hover:bg-black/80 active:scale-[0.98]
                          {% else %}
@@ -267,6 +336,10 @@ Payment Method
             </p>
           {% endif %}
 
+          <p id="wallet-block-message" class="hidden mono text-[10px] tracking-widest text-red-600 mt-4 uppercase">
+            Insufficient wallet balance. Please choose another payment method.
+          </p>
+
         </form>
 
       </div>
@@ -276,7 +349,7 @@ Payment Method
         <div class="sticky top-24 border border-black/10 bg-white p-6">
 
           <div class="flex items-center gap-3 mb-7">
-            <div class="w-1 h-7 bg-black"></div>
+            <div class="w-1 h-7 bg-black shrink-0"></div>
             <h2 class="bebas text-4xl text-black leading-none">
               Order Summary
             </h2>
@@ -304,7 +377,7 @@ Payment Method
               </a>
 
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-black leading-snug">
+                <p class="text-sm font-medium text-black leading-snug break-words">
                   {{ item.product.name }}
                 </p>
 
@@ -319,9 +392,16 @@ Payment Method
                 {% endif %}
               </div>
 
-              <p class="mono text-sm font-bold text-black shrink-0">
-                ₹{{ item.subtotal_amount|floatformat:2 }}
-              </p>
+             <div class="text-right shrink-0">
+                <p class="mono text-sm font-bold text-black">
+                  ₹{{ item.subtotal_amount|floatformat:2 }}
+                </p>
+                {% if item.savings_amount > 0 %}
+                  <p class="mono text-[9px] text-black/35 line-through">
+                    ₹{{ item.original_unit_price|default:item.variant.price|floatformat:2 }}
+                  </p>
+                {% endif %}
+              </div>
 
             </div>
             {% endfor %}
@@ -331,40 +411,58 @@ Payment Method
           <!-- Price Details -->
           <div class="border-t border-black/10 pt-6 space-y-4">
 
-            <div class="flex items-center justify-between">
-              <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
-                Subtotal
-              </span>
-              <span class="mono text-sm text-black">
+            <div class="flex justify-between gap-6">
+              <p class="text-sm text-black/55">
+                Subtotal <span class="text-black/35 text-xs">(GST incl.)</span>
+              </p>
+              <p class="mono text-sm font-bold text-black">
                 ₹{{ subtotal|floatformat:2 }}
-              </span>
+              </p>
             </div>
 
-            <div class="flex items-center justify-between">
-              <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
+            {% if total_savings > 0 %}
+            <div class="flex justify-between gap-6">
+              <p class="text-sm text-green-700">
                 Discount
-              </span>
-              <span class="mono text-sm text-green-700">
-                - ₹{{ discount_amount|floatformat:2 }}
-              </span>
+              </p>
+              <p class="mono text-sm font-bold text-green-700">
+                -₹{{ total_savings|floatformat:2 }}
+              </p>
+            </div>
+            {% endif %}
+
+            {% if applied_coupon %}
+            <div class="flex justify-between gap-6">
+                <p class="text-sm text-green-700">
+                    Coupon ({{ applied_coupon.code }})
+                </p>
+                <p class="mono text-sm font-bold text-green-700">
+                    -₹{{ coupon_discount|floatformat:2 }}
+                </p>
+            </div>
+            {% endif %}            
+
+            <div class="flex justify-between gap-6">
+              <p class="text-sm text-black/55">
+                Delivery Fee
+              </p>
+
+              <p class="mono text-sm font-bold text-black">
+                {% if delivery_fee > 0 %}
+                  ₹{{ delivery_fee|floatformat:2 }}
+                {% else %}
+                  Free
+                {% endif %}
+              </p>
             </div>
 
-            <div class="flex items-center justify-between">
-              <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
-                Tax
-              </span>
-              <span class="mono text-sm text-black">
-                ₹{{ tax_amount|floatformat:2 }}
-              </span>
-            </div>
-
-            <div class="flex items-center justify-between">
-              <span class="mono text-[10px] tracking-widest text-black/45 uppercase">
-                Shipping
-              </span>
-              <span class="mono text-sm text-black">
-                ₹{{ delivery_fee|floatformat:2 }}
-              </span>
+            <div class="flex justify-between gap-6 border-b border-black/10 pb-5">
+              <p class="text-sm text-black/55">
+                GST ({{ gst_rate|floatformat:0 }}% incl.)
+              </p>
+              <p class="mono text-sm font-bold text-black">
+                ₹{{ gst_amount|floatformat:2 }}
+              </p>
             </div>
 
             <div class="border-t border-black/10 pt-5 flex items-center justify-between">
@@ -387,4 +485,160 @@ Payment Method
 
 </section>
 
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var radios = document.querySelectorAll('[data-payment-radio]');
+    var codBox = document.getElementById('cod-info-box');
+    var razorpayBox = document.getElementById('razorpay-info-box');
+    var walletBox = document.getElementById('wallet-info-box');
+    var confirmBtn = document.getElementById('confirm-order-btn');
+    var blockMessage = document.getElementById('wallet-block-message');
+
+    function updateUI() {
+      var selectedRadio = document.querySelector('[data-payment-radio]:checked');
+      var selected = selectedRadio.value;
+      var walletInsufficient = document.querySelector('[data-payment-radio][value="WALLET"]').dataset.insufficient === 'true';
+
+      radios.forEach(function (radio) {
+        var option = radio.closest('.payment-option');
+        var check = option.querySelector('.check-mark');
+
+        if (radio.checked) {
+          option.classList.remove('border', 'border-black/15');
+          option.classList.add('border-2', 'border-black');
+          check.classList.remove('hidden');
+        } else {
+          option.classList.remove('border-2', 'border-black');
+          option.classList.add('border', 'border-black/15');
+          check.classList.add('hidden');
+        }
+      });
+
+      codBox.classList.toggle('hidden', selected !== 'COD');
+      razorpayBox.classList.toggle('hidden', selected !== 'RAZORPAY');
+      walletBox.classList.toggle('hidden', selected !== 'WALLET');
+
+      // Block submission only when WALLET is selected AND balance is insufficient.
+      var shouldBlock = (selected === 'WALLET' && walletInsufficient);
+
+      if (shouldBlock) {
+        confirmBtn.setAttribute('disabled', 'disabled');
+        confirmBtn.classList.remove('bg-black', 'text-white', 'hover:bg-black/80');
+        confirmBtn.classList.add('border', 'border-black/15', 'text-black/30', 'cursor-not-allowed');
+        blockMessage.classList.remove('hidden');
+      } else {
+        confirmBtn.removeAttribute('disabled');
+        confirmBtn.classList.add('bg-black', 'text-white', 'hover:bg-black/80');
+        confirmBtn.classList.remove('border', 'border-black/15', 'text-black/30', 'cursor-not-allowed');
+        blockMessage.classList.add('hidden');
+      }
+    }
+
+    radios.forEach(function (radio) {
+      radio.addEventListener('change', updateUI);
+    });
+
+    updateUI(); // run once on load
+  });
+</script>
+
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+ {% if open_razorpay %}
+<div id="payment-ready-modal"
+     class="fixed inset-0 z-[999] flex items-center justify-center px-4">
+
+  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+  <div class="relative bg-white border border-black/10 w-full max-w-md p-5 sm:p-6 md:p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
+
+    <a href="{% url 'payment_method' %}?source={{ checkout_source }}&address_id={{ selected_address.id }}"
+       class="absolute top-4 right-4 w-8 h-8 border border-black/10 flex items-center justify-center mono text-sm text-black/50 hover:text-black hover:border-black transition-colors">
+      ×
+    </a>
+
+    <p class="mono text-[10px] tracking-widest text-black/40 uppercase mb-3 pr-8">
+      Payment Ready
+    </p>
+
+    <h2 class="bebas text-black text-4xl sm:text-5xl leading-none tracking-wide mb-5 break-words pr-8">
+      Complete Payment
+    </h2>
+
+    <div class="border border-black/10 bg-neutral-50 p-4 sm:p-5 mb-6">
+      <p class="mono text-[9px] tracking-widest text-black/35 uppercase mb-2">
+        Order Total
+      </p>
+      <p class="mono text-2xl sm:text-3xl font-bold text-black break-words">
+        ₹{{ total_payable|floatformat:2 }}
+      </p>
+    </div>
+
+    <p class="text-sm text-black/50 leading-relaxed mb-6">
+      Your Razorpay payment is ready. Click the button below to open the secure payment popup.
+    </p>
+
+    <button id="rzp-button"
+            type="button"
+            class="w-full mono text-[10px] tracking-widest bg-black text-white py-4 font-bold hover:bg-black/80 active:scale-[0.98] transition-all uppercase break-words">
+      Pay ₹{{ total_payable|floatformat:2 }}
+    </button>
+
+  </div>
+</div>
+
+<form id="payment-success-form"
+      method="POST"
+      action="{% url 'razorpay_payment_success' %}"
+      style="display:none;">
+  {% csrf_token %}
+  <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
+  <input type="hidden" name="razorpay_order_id" id="razorpay_order_id">
+  <input type="hidden" name="razorpay_signature" id="razorpay_signature">
+</form>
+
+<script>
+  function buildRazorpayOptions() {
+  return {
+    key: "{{ razorpay_key_id }}",
+    amount: "{{ amount_in_paise }}",
+    currency: "INR",
+    name: "FASHIO",
+    description: "Order Payment",
+    order_id: "{{ razorpay_order_id }}",
+
+    callback_url: "{{ request.scheme }}://{{ request.get_host }}{% url 'razorpay_payment_success' %}",
+    redirect: true,
+
+    prefill: {
+      name: "{{ request.user.fullname|default:request.user.email|escapejs }}",
+      email: "{{ request.user.email|escapejs }}"
+    },
+
+    theme: { color: "#000000" },
+
+    modal: {
+      ondismiss: function () {
+        console.log("Payment cancelled");
+      }
+    }
+  };
+}
+
+  const razorpayButton = document.getElementById("rzp-button");
+  if (razorpayButton) {
+    razorpayButton.onclick = function (e) {
+      e.preventDefault();
+
+      if (typeof Razorpay === "undefined") {
+        alert("Payment script failed to load. Please refresh and try again.");
+        return;
+      }
+
+      const rzp = new Razorpay(buildRazorpayOptions());
+      rzp.open();
+    };
+  }
+</script>
+{% endif %}
 {% endblock %}

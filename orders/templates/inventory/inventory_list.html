@@ -2,66 +2,66 @@
 {% block title %}Inventory{% endblock %}
 
 {% block content %}
-<div class="p-8 max-w-screen-xl mx-auto">
+<div class="p-4 md:p-8 max-w-screen-xl mx-auto">
 
   <!-- Top Bar -->
-  <div class="flex items-start justify-between mb-8">
+  <div class="flex items-start justify-between mb-6 md:mb-8">
     <div>
-      <h1 class="mono text-white text-4xl font-bold tracking-tight">
+      <h1 class="mono text-white text-2xl md:text-4xl font-bold tracking-tight">
         Inventory Management
       </h1>
     </div>
   </div>
 
   <!-- Stats Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 md:mb-8">
 
     <!-- Total Products -->
-    <div class="bg-[#141414] border border-white/10 px-6 py-6">
-      <p class="mono text-xs text-white/35 tracking-widest mb-4 uppercase">
-        Total Products
+    <div class="bg-[#141414] border border-white/10 px-5 md:px-6 py-5 md:py-6">
+      <p class="mono text-xs text-white/35 tracking-widest mb-4 ">
+        Total Stock
       </p>
 
       <div class="flex items-center justify-between">
-        <h2 class="mono text-white text-3xl font-bold">
+        <h2 class="mono text-white text-2xl md:text-3xl font-bold">
           {{ total_products|default:0 }}
         </h2>
 
-        <div class="w-11 h-11 bg-white/5 border border-white/10 flex items-center justify-center">
+        <div class="w-10 h-10 md:w-11 md:h-11 bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
           <span class="text-xl">📦</span>
         </div>
       </div>
     </div>
 
     <!-- Out Of Stock -->
-    <div class="bg-[#141414] border border-white/10 px-6 py-6">
-      <p class="mono text-xs text-white/35 tracking-widest mb-4 uppercase">
-        Out Of Stock
+    <div class="bg-[#141414] border border-white/10 px-5 md:px-6 py-5 md:py-6">
+      <p class="mono text-xs text-white/35 tracking-widest mb-4 ">
+        Out Of Stock Variants
       </p>
 
       <div class="flex items-center justify-between">
-        <h2 class="mono text-red-400 text-3xl font-bold">
+        <h2 class="mono text-red-400 text-2xl md:text-3xl font-bold">
           {{ out_of_stock_count|default:0 }}
         </h2>
 
-        <div class="w-11 h-11 bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+        <div class="w-10 h-10 md:w-11 md:h-11 bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
           <span class="text-xl">⊘</span>
         </div>
       </div>
     </div>
 
     <!-- Low Stock -->
-    <div class="bg-[#141414] border border-white/10 px-6 py-6">
-      <p class="mono text-xs text-white/35 tracking-widest mb-4 uppercase">
-        Low Stock
+    <div class="bg-[#141414] border border-white/10 px-5 md:px-6 py-5 md:py-6">
+      <p class="mono text-xs text-white/35 tracking-widest mb-4 ">
+        Low Stock Variants
       </p>
 
       <div class="flex items-center justify-between">
-        <h2 class="mono text-orange-400 text-3xl font-bold">
+        <h2 class="mono text-orange-400 text-2xl md:text-3xl font-bold">
           {{ low_stock_count|default:0 }}
         </h2>
 
-        <div class="w-11 h-11 bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
+        <div class="w-10 h-10 md:w-11 md:h-11 bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
           <span class="text-xl">⚠</span>
         </div>
       </div>
@@ -72,7 +72,7 @@
   <!-- Search + Filters -->
   <form method="GET" action="">
 
-    <div class="flex flex-col lg:flex-row gap-4 mb-6">
+    <div class="flex flex-col lg:flex-row gap-3 lg:gap-4 mb-6">
 
       <!-- Search -->
       <div class="relative flex-1">
@@ -101,45 +101,49 @@
         {% endif %}
       </div>
 
-      <!-- Stock Filter -->
-      <select name="stock"
-              class="bg-[#111] border border-white/10 text-white text-xs px-4 py-3 outline-none min-w-[180px]">
-        <option value="">All Stock Levels</option>
-        <option value="in_stock" {% if stock_filter == 'in_stock' %}selected{% endif %}>
-          In Stock
-        </option>
-        <option value="low_stock" {% if stock_filter == 'low_stock' %}selected{% endif %}>
-          Low Stock
-        </option>
-        <option value="out_of_stock" {% if stock_filter == 'out_of_stock' %}selected{% endif %}>
-          Out Of Stock
-        </option>
-      </select>
-
-      <!-- Category Filter -->
-      <select name="category"
-              class="bg-[#111] border border-white/10 text-white text-xs px-4 py-3 outline-none min-w-[180px]">
-        <option value="">All Categories</option>
-
-        {% for category in categories %}
-          <option value="{{ category.id }}"
-                  {% if category_filter == category.id|stringformat:'s' %}selected{% endif %}>
-            {{ category.name }}
+      <!-- Filter row (stock + category side by side even on mobile) -->
+      <div class="grid grid-cols-2 lg:flex gap-3 lg:gap-4">
+        <!-- Stock Filter -->
+        <select name="stock"
+                class="w-full bg-[#111] border border-white/10 text-white text-xs px-4 py-3 outline-none lg:min-w-[180px]">
+          <option value="">All Stock Levels</option>
+          <option value="in_stock" {% if stock_filter == 'in_stock' %}selected{% endif %}>
+            In Stock
           </option>
-        {% endfor %}
-      </select>
+          <option value="low_stock" {% if stock_filter == 'low_stock' %}selected{% endif %}>
+            Low Stock
+          </option>
+          <option value="out_of_stock" {% if stock_filter == 'out_of_stock' %}selected{% endif %}>
+            Out Of Stock
+          </option>
+        </select>
 
-      <!-- Apply -->
-      <button type="submit"
-              class="mono bg-white text-black text-xs font-bold tracking-widest px-6 py-3 hover:bg-white/80 transition-colors">
-        Filter
-      </button>
+        <!-- Category Filter -->
+        <select name="category"
+                class="w-full bg-[#111] border border-white/10 text-white text-xs px-4 py-3 outline-none lg:min-w-[180px]">
+          <option value="">All Categories</option>
 
-      <!-- Reset -->
-      <a href="{% url 'inventory_list' %}"
-         class="mono border border-white/10 text-white/60 text-xs font-bold tracking-widest px-6 py-3 hover:text-white hover:border-white/30 transition-colors text-center">
-        Reset
-      </a>
+          {% for category in categories %}
+            <option value="{{ category.id }}"
+                    {% if category_filter == category.id|stringformat:'s' %}selected{% endif %}>
+              {{ category.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Apply / Reset -->
+      <div class="grid grid-cols-2 lg:flex gap-3 lg:gap-4">
+        <button type="submit"
+                class="mono bg-white text-black text-xs font-bold tracking-widest px-6 py-3 hover:bg-white/80 transition-colors">
+          Filter
+        </button>
+
+        <a href="{% url 'inventory_list' %}"
+           class="mono border border-white/10 text-white/60 text-xs font-bold tracking-widest px-6 py-3 hover:text-white hover:border-white/30 transition-colors text-center">
+          Reset
+        </a>
+      </div>
 
     </div>
 
@@ -148,115 +152,124 @@
   <!-- Table Panel -->
   <div class="border border-white/10 rounded-sm overflow-hidden">
 
-    <!-- Table Header -->
-    <div class="grid grid-cols-[40px_370px_180px_140px_140px_170px_1fr] px-6 py-3 border-b border-white/10 bg-[#141414]">
-      <span class="mono text-xs text-white/60 font-semibold">#</span>
+    <!-- Table Header (desktop only) -->
+    <div class="hidden md:grid grid-cols-[40px_1fr_180px_120px_120px_170px_120px] px-6 py-3 border-b border-white/10 bg-[#141414]">
+      <span class="mono text-xs text-white/60 font-semibold">No.</span>
       <span class="mono text-xs text-white/60 font-semibold">Product</span>
       <span class="mono text-xs text-white/60 font-semibold">Category</span>
       <span class="mono text-xs text-white/60 font-semibold">Variants</span>
       <span class="mono text-xs text-white/60 font-semibold">Total Stock</span>
       <span class="mono text-xs text-white/60 font-semibold">Status</span>
-      <span class="mono text-xs text-white/60 font-semibold">Edit Stock</span>
+      <span class="mono text-xs text-white/60 font-semibold">Action</span>
     </div>
 
     <!-- Rows -->
     {% for product in products %}
-    <div class="grid grid-cols-[40px_370px_180px_140px_140px_170px_1fr] items-center px-6 py-4 border-b border-[#1a1a1a] last:border-b-0 hover:bg-[#1a1a1a] transition-colors">
+    <div class="grid grid-cols-1 md:grid-cols-[40px_1fr_180px_120px_120px_170px_120px] gap-3 md:gap-0 md:items-center px-5 md:px-6 py-4 border-b border-[#1a1a1a] last:border-b-0 hover:bg-[#1a1a1a] transition-colors">
 
-      <!-- Number -->
-      <span class="mono text-sm text-white/40">
-        {{ forloop.counter }}
-      </span>
+      <!-- Number + Product (grouped on mobile) -->
+      <div class="flex items-center gap-3 md:contents">
 
-      <!-- Product -->
-      <div class="flex items-center gap-4 min-w-0">
+        <span class="mono text-sm text-white/40">
+          {{ products.start_index|add:forloop.counter0 }}
+        </span>
 
-        <div class="w-12 h-12 border border-white/10 bg-[#111] overflow-hidden shrink-0">
-          {% if product.thumbnail %}
-            <img src="{{ product.thumbnail }}"
-                 alt="{{ product.name }}"
-                 class="w-full h-full object-cover">
-          {% else %}
-            <div class="w-full h-full flex items-center justify-center">
-              <span class="mono text-[8px] text-white/20 tracking-widest">
-                NO IMG
-              </span>
-            </div>
-          {% endif %}
-        </div>
-
-        <div class="min-w-0">
-          <p class="mono text-sm text-white font-semibold truncate">
-            {{ product.name }}
-          </p>
+        <!-- Product -->
+        <div class="flex items-center gap-4 min-w-0 flex-1">
+          <div class="min-w-0">
+            <p class="mono text-sm text-white font-semibold truncate">
+              {{ product.name }}
+            </p>
+          </div>
         </div>
 
       </div>
 
       <!-- Category -->
-      <div>
-        {% if product.subcategory %}
-          <span class="mono text-xs text-white/60">
-            {{ product.subcategory.category.name }}
-          </span>
+      <div class="flex items-center justify-between md:block">
+        <span class="mono text-[10px] text-white/30 tracking-widest uppercase md:hidden">Category</span>
+        <div class="text-right md:text-left">
+          {% if product.subcategory %}
+            <span class="mono text-xs text-white/60">
+              {{ product.subcategory.category.name }}
+            </span>
 
-          <p class="mono text-[10px] text-white/30 mt-1">
-            {{ product.subcategory.name }}
-          </p>
-        {% else %}
-          <span class="mono text-xs text-white/25">
-            No Category
-          </span>
-        {% endif %}
+            <p class="mono text-[10px] text-white/30 mt-1">
+              {{ product.subcategory.name }}
+            </p>
+          {% else %}
+            <span class="mono text-xs text-white/25">
+              No Category
+            </span>
+          {% endif %}
+        </div>
       </div>
 
       <!-- Variants -->
-      <span class="mono text-sm text-white/60">
-        {{ product.variant_count|default:0 }}
-        {% if product.variant_count == 1 %}
-          variant
-        {% else %}
-          variants
-        {% endif %}
-      </span>
+      <div class="flex items-center justify-between md:block">
+        <span class="mono text-[10px] text-white/30 tracking-widest uppercase md:hidden">Variants</span>
+        <span class="mono text-sm text-white/60">
+          {{ product.variant_count|default:0 }}
+        </span>
+      </div>
 
       <!-- Total Stock -->
-      <span class="mono text-sm font-bold
-        {% if product.total_stock == 0 %}
-          text-red-400
-        {% elif product.total_stock <= low_stock_limit %}
-          text-orange-400
-        {% else %}
-          text-white
-        {% endif %}
-      ">
-        {{ product.total_stock|default:0 }}
-      </span>
+      <div class="flex items-center justify-between md:block">
+        <span class="mono text-[10px] text-white/30 tracking-widest uppercase md:hidden">Total Stock</span>
+        <span class="mono text-sm font-bold
+          {% if product.total_stock == 0 %}
+            text-red-400
+          {% elif product.total_stock <= low_stock_limit %}
+            text-orange-400
+          {% else %}
+            text-white
+          {% endif %}
+        ">
+          {{ product.total_stock|default:0 }}
+        </span>
+      </div>
 
       <!-- Status -->
-      <div>
-        {% if product.total_stock == 0 %}
-          <span class="bg-[#0f4c2a] text-red-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit">
-            Out Of Stock
-          </span>
+      <div class="flex items-start justify-between md:block">
+        <span class="mono text-[10px] text-white/30 tracking-widest uppercase md:hidden">Status</span>
+        <div class="text-right md:text-left">
+          {% if product.total_stock == 0 %}
+            <span class="bg-red-500/10 text-red-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit inline-block">
+              Out Of Stock
+            </span>
 
-        {% elif product.total_stock <= low_stock_limit %}
-          <span class="bg-[#0f4c2a] text-orange-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit">
-            Low Stock
-          </span>
+          {% elif product.total_stock <= low_stock_limit %}
+            <span class="bg-orange-500/10 text-orange-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit inline-block">
+              Low Stock
+            </span>
 
-        {% else %}
-          <span class="bg-[#0f4c2a] text-green-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit">
-            In Stock
-          </span>
-        {% endif %}
+          {% else %}
+            <span class="bg-green-500/10 text-green-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit inline-block">
+              In Stock
+            </span>
+          {% endif %}
+
+          {% if product.total_stock > 0 %}
+            {% if product.out_of_stock_variants > 0 %}
+              <p class="mono text-[0.65rem] text-red-400/70 tracking-wide mt-1 md:mt-0">
+                {{ product.out_of_stock_variants }} variant{{ product.out_of_stock_variants|pluralize }} out of stock
+              </p>
+            {% endif %}
+
+            {% if product.low_stock_variants > 0 %}
+              <p class="mono text-[0.65rem] text-orange-400/70 tracking-wide mt-1 md:mt-0">
+                {{ product.low_stock_variants }} variant{{ product.low_stock_variants|pluralize }} low stock
+              </p>
+            {% endif %}
+          {% endif %}
+        </div>
       </div>
 
       <!-- Edit Stock -->
-      <div>
+      <div class="pt-2 md:pt-0 border-t md:border-t-0 border-white/5">
         <button type="button"
                 onclick="openStockModal('{{ product.id }}')"
-                class="mono text-xs text-white/50 hover:text-white transition-colors tracking-widest">
+                class="mono text-xs text-white/50 hover:text-white transition-colors tracking-widest w-full md:w-auto text-center md:text-left py-2 md:py-0 border border-white/10 md:border-0">
         Edit-Stock
         </button>
       </div>
@@ -267,74 +280,73 @@
 <div id="stock-modal-{{ product.id }}"
      class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm px-4">
 
-  <div class="w-full max-w-3xl bg-black border border-white/10">
+  <div class="w-full max-w-3xl bg-black border border-white/10 max-h-[90vh] flex flex-col">
 
     <!-- Modal Header -->
-    <div class="flex items-center justify-between px-6 py-5 border-b border-white/10">
-      <div>
-        <h2 class="mono text-white text-lg font-bold tracking-wide">
+    <div class="flex items-center justify-between px-4 md:px-6 py-4 md:py-5 border-b border-white/10">
+      <div class="min-w-0">
+        <h2 class="mono text-white text-base md:text-lg font-bold tracking-wide">
           Edit Stock
         </h2>
 
-        <p class="mono text-xs text-white/35 tracking-widest mt-2">
+        <p class="mono text-xs text-white/35 tracking-widest mt-2 truncate">
           {{ product.name }}
         </p>
       </div>
 
       <button type="button"
               onclick="closeStockModal('{{ product.id }}')"
-              class="text-white/40 hover:text-white transition-colors text-xl">
+              class="text-white/40 hover:text-white transition-colors text-xl shrink-0 ml-3">
         ✕
       </button>
     </div>
 
     <!-- Form -->
-    <form method="POST" action="{% url 'update_inventory_stock' product.id %}">
+    <form method="POST" action="{% url 'update_inventory_stock' product.id %}" class="flex flex-col min-h-0 flex-1">
       {% csrf_token %}
 
-      <div class="px-6 py-5 max-h-[60vh] overflow-y-auto">
+      <div class="px-4 md:px-6 py-5 overflow-y-auto flex-1">
 
         {% for variant in product.variants.all %}
-        <div class="grid grid-cols-[1fr_180px] items-center gap-5 border-b border-white/10 last:border-b-0 py-4">
+        <div class="flex flex-col sm:grid sm:grid-cols-[1fr_180px] items-start sm:items-center gap-4 sm:gap-5 border-b border-white/10 last:border-b-0 py-4">
 
           <!-- Variant Info -->
-          <!-- Variant Image Only -->
-        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-4">
 
-        <div class="w-20 h-20 border border-white/10 bg-[#111] overflow-hidden shrink-0">
-            {% with first_image=variant.images.first %}
-            {% if first_image %}
-                <img src="{{ first_image.image.url }}"
-                    alt="Variant image"
-                    class="w-full h-full object-cover">
-            {% else %}
-                <div class="w-full h-full flex items-center justify-center">
-                <span class="mono text-[8px] text-white/20 tracking-widest">
-                    NO IMG
+            <div class="w-16 h-16 md:w-20 md:h-20 border border-white/10 bg-[#111] overflow-hidden shrink-0">
+                {% with first_image=variant.images.first %}
+                {% if first_image %}
+                    <img src="{{ first_image.image.url }}"
+                        alt="Variant image"
+                        class="w-full h-full object-cover">
+                {% else %}
+                    <div class="w-full h-full flex items-center justify-center">
+                    <span class="mono text-[8px] text-white/20 tracking-widest">
+                        NO IMG
+                    </span>
+                    </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+                <span class="mono text-[10px] text-white/45 border border-white/10 px-2 py-1">
+                {{ variant.size|default:"-" }}
                 </span>
-                </div>
-            {% endif %}
-            {% endwith %}
-        </div>
 
-        <div class="flex flex-wrap gap-2">
-            <span class="mono text-[10px] text-white/45 border border-white/10 px-2 py-1">
-            {{ variant.size|default:"-" }}
-            </span>
+                <span class="mono text-[10px] text-white/45 border border-white/10 px-2 py-1">
+                {{ variant.color|default:"-" }}
+                </span>
+            </div>
 
-            <span class="mono text-[10px] text-white/45 border border-white/10 px-2 py-1">
-            {{ variant.color|default:"-" }}
-            </span>
-        </div>
-
-        </div>
+          </div>
 
           <!-- Stock Control -->
-          <div class="flex items-center justify-end gap-2">
+          <div class="flex items-center justify-start sm:justify-end gap-2 w-full sm:w-auto">
 
             <button type="button"
                     onclick="decreaseStock('stock-input-{{ variant.id }}')"
-                    class="w-10 h-10 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors">
+                    class="w-10 h-10 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors shrink-0">
               −
             </button>
 
@@ -343,11 +355,11 @@
                    name="stock_{{ variant.id }}"
                    value="{{ variant.stock }}"
                    min="0"
-                   class="w-20 h-10 bg-[#111] border border-white/10 text-white text-center mono text-sm outline-none focus:border-white/30">
+                   class="w-20 h-10 bg-[#111] border border-white/10 text-white text-center mono text-sm outline-none focus:border-white/30 shrink-0">
 
             <button type="button"
                     onclick="increaseStock('stock-input-{{ variant.id }}')"
-                    class="w-10 h-10 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors">
+                    class="w-10 h-10 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors shrink-0">
               +
             </button>
 
@@ -365,7 +377,7 @@
       </div>
 
       <!-- Footer -->
-      <div class="flex items-center justify-end gap-4 px-6 py-5 border-t border-white/10">
+      <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4 px-4 md:px-6 py-4 md:py-5 border-t border-white/10">
 
         <button type="button"
                 onclick="closeStockModal('{{ product.id }}')"
@@ -394,13 +406,13 @@
   </div>
 
   <!-- Pagination -->
-  <div class="flex items-center justify-between mt-6">
+  <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6">
 
     <p class="mono text-xs text-white/50">
       Page {{ products.number }} of {{ products.paginator.num_pages }}
     </p>
 
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 flex-wrap justify-center">
 
       {% if products.has_previous %}
         <a href="?q={{ query }}&stock={{ stock_filter }}&category={{ category_filter }}&page={{ products.previous_page_number }}"

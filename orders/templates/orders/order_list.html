@@ -2,55 +2,55 @@
 {% block title %}Orders{% endblock %}
 
 {% block content %}
-<div class="p-8 max-w-screen-xl mx-auto">
+<div class="p-4 md:p-8 max-w-screen-xl mx-auto">
 
   <!-- Top Bar -->
-  <div class="flex items-start justify-between mb-8">
+  <div class="flex items-start justify-between mb-6 md:mb-8">
     <div>
-      <h1 class="mono text-white text-4xl font-bold tracking-tight">
+      <h1 class="mono text-white text-2xl md:text-4xl font-bold tracking-tight">
         Order Management
       </h1>
-      <p class="mono text-xs text-white/30 tracking-widest mt-3 uppercase">
+      <p class="mono text-xs text-white/30 tracking-widest mt-2 md:mt-3">
         Manage customer orders, delivery status, and payments
       </p>
     </div>
   </div>
 
   <!-- Stats Cards -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+  <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-6 md:mb-8">
 
-    <div class="bg-[#141414] border border-white/10 px-6 py-6">
-      <p class="mono text-xs text-white/35 tracking-widest mb-4">
+    <div class="bg-[#141414] border border-white/10 px-4 md:px-6 py-5 md:py-6">
+      <p class="mono text-xs text-white/35 tracking-widest mb-3 md:mb-4">
         Total Orders
       </p>
-      <h2 class="mono text-white text-3xl font-bold">
+      <h2 class="mono text-white text-2xl md:text-3xl font-bold">
         {{ total_orders|default:0 }}
       </h2>
     </div>
 
-    <div class="bg-[#141414] border border-white/10 px-6 py-6">
-      <p class="mono text-xs text-white/35 tracking-widest mb-4">
+    <div class="bg-[#141414] border border-white/10 px-4 md:px-6 py-5 md:py-6">
+      <p class="mono text-xs text-white/35 tracking-widest mb-3 md:mb-4">
         Pending Orders
       </p>
-      <h2 class="mono text-yellow-400 text-3xl font-bold">
+      <h2 class="mono text-yellow-400 text-2xl md:text-3xl font-bold">
         {{ pending_orders|default:0 }}
       </h2>
     </div>
 
-    <div class="bg-[#141414] border border-white/10 px-6 py-6">
-      <p class="mono text-xs text-white/35 tracking-widest mb-4">
+    <div class="bg-[#141414] border border-white/10 px-4 md:px-6 py-5 md:py-6">
+      <p class="mono text-xs text-white/35 tracking-widest mb-3 md:mb-4">
         Delivered Orders
       </p>
-      <h2 class="mono text-green-400 text-3xl font-bold">
+      <h2 class="mono text-green-400 text-2xl md:text-3xl font-bold">
         {{ delivered_orders|default:0 }}
       </h2>
     </div>
 
-    <div class="bg-[#141414] border border-white/10 px-6 py-6">
-      <p class="mono text-xs text-white/35 tracking-widest mb-4">
+    <div class="bg-[#141414] border border-white/10 px-4 md:px-6 py-5 md:py-6">
+      <p class="mono text-xs text-white/35 tracking-widest mb-3 md:mb-4">
         Cancelled Orders
       </p>
-      <h2 class="mono text-red-400 text-3xl font-bold">
+      <h2 class="mono text-red-400 text-2xl md:text-3xl font-bold">
         {{ cancelled_orders|default:0 }}
       </h2>
     </div>
@@ -79,99 +79,103 @@
     </div>
 
     <!-- Filter Row -->
-    <div class="flex flex-wrap items-center gap-4 mb-6 bg-[#111] border border-white/10 rounded-sm px-5 py-3.5">
+    <div class="flex flex-col lg:flex-row lg:flex-wrap lg:items-center gap-4 mb-6 bg-[#111] border border-white/10 rounded-sm px-4 md:px-5 py-4 lg:py-3.5">
 
-      <!-- Status -->
-      <div class="flex items-center gap-3">
-        <span class="mono text-xs text-white/50">Status:</span>
+      <div class="grid grid-cols-2 sm:grid-cols-4 lg:flex lg:flex-wrap gap-4 lg:gap-4 flex-1">
 
-        <select name="status"
-                class="bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-1.5 outline-none">
-          <option value="">All</option>
+        <!-- Status -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3">
+          <span class="mono text-xs text-white/50">Status:</span>
 
-          <option value="PENDING" {% if status_filter == 'PENDING' %}selected{% endif %}>
-            Pending
-          </option>
+          <select name="status"
+                  class="w-full sm:w-auto bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-1.5 outline-none">
+            <option value="">All</option>
 
-          <option value="SHIPPED" {% if status_filter == 'SHIPPED' %}selected{% endif %}>
-            Shipped
-          </option>
+            <option value="PENDING" {% if status_filter == 'PENDING' %}selected{% endif %}>
+              Pending
+            </option>
 
-          <option value="OUT_FOR_DELIVERY" {% if status_filter == 'OUT_FOR_DELIVERY' %}selected{% endif %}>
-            Out For Delivery
-          </option>
+            <option value="SHIPPED" {% if status_filter == 'SHIPPED' %}selected{% endif %}>
+              Shipped
+            </option>
 
-          <option value="DELIVERED" {% if status_filter == 'DELIVERED' %}selected{% endif %}>
-            Delivered
-          </option>
+            <option value="OUT_FOR_DELIVERY" {% if status_filter == 'OUT_FOR_DELIVERY' %}selected{% endif %}>
+              Out For Delivery
+            </option>
 
-          <option value="CANCELLED" {% if status_filter == 'CANCELLED' %}selected{% endif %}>
-            Cancelled
-          </option>
-        </select>
+            <option value="DELIVERED" {% if status_filter == 'DELIVERED' %}selected{% endif %}>
+              Delivered
+            </option>
+
+            <option value="CANCELLED" {% if status_filter == 'CANCELLED' %}selected{% endif %}>
+              Cancelled
+            </option>
+          </select>
+        </div>
+
+        <!-- Sort -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3">
+          <span class="mono text-xs text-white/50">Sort:</span>
+
+          <select name="sort"
+                  class="w-full sm:w-auto bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-1.5 outline-none">
+            <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>
+              Newest First
+            </option>
+
+            <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>
+              Oldest First
+            </option>
+
+            <option value="amount_high" {% if sort_by == 'amount_high' %}selected{% endif %}>
+              Amount High
+            </option>
+
+            <option value="amount_low" {% if sort_by == 'amount_low' %}selected{% endif %}>
+              Amount Low
+            </option>
+          </select>
+        </div>
+
+        <!-- Min Amount -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3">
+          <span class="mono text-xs text-white/50">Min:</span>
+
+          <input
+            type="number"
+            name="min_amount"
+            value="{{ min_amount }}"
+            placeholder="0.00"
+            class="w-full sm:w-28 bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-1.5 outline-none placeholder-white/20"
+          >
+        </div>
+
+        <!-- Max Amount -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3">
+          <span class="mono text-xs text-white/50">Max:</span>
+
+          <input
+            type="number"
+            name="max_amount"
+            value="{{ max_amount }}"
+            placeholder="9999"
+            class="w-full sm:w-28 bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-1.5 outline-none placeholder-white/20"
+          >
+        </div>
+
       </div>
 
-      <!-- Sort -->
-      <div class="flex items-center gap-3">
-        <span class="mono text-xs text-white/50">Sort:</span>
+      <div class="grid grid-cols-2 lg:flex gap-3 lg:gap-4">
+        <button type="submit"
+                class="mono text-xs px-4 py-2.5 lg:py-1.5 bg-white text-black font-bold hover:bg-white/80 transition-colors">
+          Apply Filter
+        </button>
 
-        <select name="sort"
-                class="bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-1.5 outline-none">
-          <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>
-            Newest First
-          </option>
-
-          <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>
-            Oldest First
-          </option>
-
-          <option value="amount_high" {% if sort_by == 'amount_high' %}selected{% endif %}>
-            Amount High
-          </option>
-
-          <option value="amount_low" {% if sort_by == 'amount_low' %}selected{% endif %}>
-            Amount Low
-          </option>
-        </select>
+        <a href="{% url 'admin_order_list' %}"
+           class="mono text-xs px-4 py-2.5 lg:py-1.5 border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors text-center">
+          Reset
+        </a>
       </div>
-
-      <!-- Min Amount -->
-      <div class="flex items-center gap-3">
-        <span class="mono text-xs text-white/50">Min:</span>
-
-        <input
-          type="number"
-          name="min_amount"
-          value="{{ min_amount }}"
-          placeholder="0.00"
-          class="w-28 bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-1.5 outline-none placeholder-white/20"
-        >
-      </div>
-
-      <!-- Max Amount -->
-      <div class="flex items-center gap-3">
-        <span class="mono text-xs text-white/50">Max:</span>
-
-        <input
-          type="number"
-          name="max_amount"
-          value="{{ max_amount }}"
-          placeholder="9999"
-          class="w-28 bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-1.5 outline-none placeholder-white/20"
-        >
-      </div>
-
-      <div class="flex-1"></div>
-
-      <button type="submit"
-              class="mono text-xs px-4 py-1.5 bg-white text-black font-bold hover:bg-white/80 transition-colors">
-        Apply Filter
-      </button>
-
-      <a href="{% url 'admin_order_list' %}"
-         class="mono text-xs px-4 py-1.5 border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors">
-        Reset
-      </a>
 
     </div>
   </form>
@@ -179,8 +183,8 @@
   <!-- Table Panel -->
   <div class="border border-white/10 rounded-sm overflow-hidden">
 
-    <!-- Table Header -->
-    <div class="grid grid-cols-[150px_220px_190px_140px_170px_150px_1fr] px-6 py-3 border-b border-white/10 bg-[#141414]">
+    <!-- Table Header (desktop only) -->
+    <div class="hidden lg:grid grid-cols-[130px_300px_160px_140px_170px_170px_60px] px-6 py-3 border-b border-white/10 bg-[#141414]">
       <span class="text-left mono text-xs text-white font-semibold">
         Order ID
       </span>
@@ -212,19 +216,30 @@
 
     <!-- Rows -->
     {% for order in orders %}
-    <div class="grid grid-cols-[150px_220px_190px_140px_170px_150px_1fr] items-center px-6 py-4 border-b border-[#1a1a1a] last:border-b-0 hover:bg-[#1a1a1a] transition-colors">
+    <div class="grid grid-cols-1 lg:grid-cols-[130px_300px_160px_140px_170px_170px_60px] gap-3 lg:gap-0 lg:items-center px-5 lg:px-6 py-4 border-b border-[#1a1a1a] last:border-b-0 hover:bg-[#1a1a1a] transition-colors">
 
-      <!-- Order ID -->
-      <div>
+      <!-- Order ID (mobile: id + view button | desktop: id only) -->
+      <div class="flex items-center justify-between lg:block">
         <span class="font-mono text-sm text-gray-200 tracking-wide">
-          {{ order.order_id }}
+          {{ order.display_id }}
         </span>
+
+        <a href="{% url 'admin_order_detail' order.order_id %}"
+           class="lg:hidden mono text-xs text-white border border-white/15 px-3 py-1.5 hover:text-white/70 transition-colors tracking-widest">
+          View
+        </a>
       </div>
 
       <!-- Customer -->
       <div class="flex flex-col gap-1 min-w-0">
         <span class="font-mono text-sm text-gray-200 truncate">
-          {{ order.user.get_full_name|default:order.user.username }}
+          {% if order.user.get_full_name %}
+            {{ order.user.get_full_name }}
+          {% elif order.user.fullname %}
+            {{ order.user.fullname }}
+          {% else %}
+          -
+          {% endif %}
         </span>
 
         <span class="font-mono text-[11px] text-gray-500 truncate">
@@ -233,92 +248,128 @@
       </div>
 
       <!-- Date -->
-      <div class="flex flex-col gap-1">
-        <span class="font-mono text-sm text-gray-300">
-          {{ order.created_at|date:"Y.m.d" }}
-        </span>
+      <div class="flex items-center justify-between lg:block">
+        <span class="mono text-[10px] text-white/30 tracking-widest uppercase lg:hidden">Date</span>
+        <div class="flex flex-col gap-1 text-right lg:text-left">
+          <span class="font-mono text-sm text-gray-300">
+            {{ order.created_at|date:"Y.m.d" }}
+          </span>
 
-        <span class="font-mono text-[11px] text-gray-500">
-          {{ order.created_at|time:"H:i:s" }}
-        </span>
+          <span class="font-mono text-[11px] text-gray-500">
+            {{ order.created_at|time:"H:i:s" }}
+          </span>
+        </div>
       </div>
 
       <!-- Amount -->
-      <span class="font-mono text-sm text-gray-300">
-        ₹{{ order.display_total_amount|floatformat:2 }}
-        {% if order.cancelled_items_count > 0 and order.billable_subtotal > 0 %}
-            <div class="font-mono text-[11px] text-gray-500 truncate">
-                {{ order.cancelled_items_count }}
-                {% if order.cancelled_items_count == 1 %}
-                    item cancelled
-                {% else %}
-                    items cancelled
-                {% endif %}
-                <br>
-                - ₹{{ order.cancelled_subtotal }}
-            </div>
-        {% endif %}
-      </span>
-      
+      <div class="flex items-start justify-between lg:block">
+        <span class="mono text-[10px] text-white/30 tracking-widest uppercase lg:hidden">Amount</span>
+        <span class="font-mono text-sm text-gray-300 text-right lg:text-left">
+          ₹{{ order.display_total_amount|floatformat:2 }}
+          {% if order.cancelled_items_count > 0 and order.billable_subtotal > 0 %}
+              <div class="font-mono text-[11px] text-gray-500 truncate">
+                  {{ order.cancelled_items_count }}
+                  {% if order.cancelled_items_count == 1 %}
+                      item cancelled
+                  {% else %}
+                      items cancelled
+                  {% endif %}
+                  <br>
+                  - ₹{{ order.cancelled_subtotal }}
+              </div>
+          {% endif %}
+          {% if order.returned_items_count > 0 %}
+              <div class="font-mono text-[11px] text-green-500/70 truncate">
+                  {{ order.returned_items_count }}
+                  {% if order.returned_items_count == 1 %}
+                      item refunded
+                  {% else %}
+                      items refunded
+                  {% endif %}
+                  <br>
+                  - ₹{{ order.returned_subtotal }}
+              </div>
+          {% endif %}
+        </span>
+      </div>
 
       <!-- Status -->
-      <div>
-        {% if order.order_status == 'PENDING' %}
-          <span class="bg-[#4a3a0a] text-yellow-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit">
-            Pending
-          </span>
+      <div class="flex items-start justify-between lg:block">
+        <span class="mono text-[10px] text-white/30 tracking-widest uppercase lg:hidden">Status</span>
+        <div class="text-right lg:text-left">
+          {% if order.order_status == 'PENDING' %}
+            <span class="bg-[#4a3a0a] text-yellow-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit inline-block">
+              Pending
+            </span>
 
-        {% elif order.order_status == 'SHIPPED' %}
-          <span class="bg-[#102a4a] text-blue-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit">
-            Shipped
-          </span>
+          {% elif order.order_status == 'SHIPPED' %}
+            <span class="bg-[#102a4a] text-blue-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit inline-block">
+              Shipped
+            </span>
 
-        {% elif order.order_status == 'OUT_FOR_DELIVERY' %}
-          <span class="bg-[#1f2f46] text-sky-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit">
-            Out For Delivery
-          </span>
+          {% elif order.order_status == 'OUT_FOR_DELIVERY' %}
+            <span class="bg-[#1f2f46] text-sky-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit inline-block">
+              Out For Delivery
+            </span>
 
-        {% elif order.order_status == 'DELIVERED' %}
-          <span class="bg-[#0f4c2a] text-green-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit">
-            Delivered
-          </span>
+          {% elif order.order_status == 'DELIVERED' %}
+            <span class="bg-[#0f4c2a] text-green-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit inline-block">
+              Delivered
+            </span>
 
-        {% elif order.order_status == 'CANCELLED' %}
-          <span class="bg-[#3b1010] text-red-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit">
-            Cancelled
-          </span>
+          {% elif order.order_status == 'CANCELLED' %}
+            <span class="bg-[#3b1010] text-red-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit inline-block">
+              Cancelled
+            </span>
 
-        {% else %}
-          <span class="bg-[#242424] text-gray-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit">
-            {{ order.get_order_status_display }}
-          </span>
-        {% endif %}
+          {% else %}
+            <span class="bg-[#242424] text-gray-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit inline-block">
+              {{ order.get_order_status_display }}
+            </span>
+          {% endif %}
+
+          {% if order.order_status != 'CANCELLED' %}
+            {% if order.cancelled_items_count > 0 %}
+              <p class="font-mono text-[10px] text-red-400/70 tracking-widest mt-1">
+                {{ order.cancelled_items_count }} item{{ order.cancelled_items_count|pluralize }} cancelled
+              </p>
+            {% endif %}
+            {% if order.returned_items_count > 0 %}
+              <p class="font-mono text-[10px] text-green-400/70 tracking-widest mt-1">
+                {{ order.returned_items_count }} item{{ order.returned_items_count|pluralize }} refunded
+              </p>
+            {% endif %}
+          {% endif %}
+        </div>
       </div>
 
       <!-- Payment -->
-      <div class="flex flex-col gap-1">
-        <span class="font-mono text-sm text-gray-300">
-          {{ order.get_payment_method_display }}
-        </span>
+      <div class="flex items-center justify-between lg:block">
+        <span class="mono text-[10px] text-white/30 tracking-widest uppercase lg:hidden">Payment</span>
+        <div class="flex flex-col gap-1 items-end lg:items-start">
+          <span class="font-mono text-sm text-gray-300">
+            {{ order.get_payment_method_display }}
+          </span>
 
-        {% if order.payment_status == 'PAID' %}
-          <span class="font-mono text-[10px] text-green-400 tracking-widest">
-            PAID
-          </span>
-        {% elif order.payment_status == 'FAILED' %}
-          <span class="font-mono text-[10px] text-red-400 tracking-widest">
-            FAILED
-          </span>
-        {% else %}
-          <span class="font-mono text-[10px] text-yellow-400 tracking-widest">
-            PENDING
-          </span>
-        {% endif %}
+          {% if order.payment_status == 'PAID' %}
+            <span class="font-mono text-[10px] text-green-400 tracking-widest">
+              PAID
+            </span>
+          {% elif order.payment_status == 'FAILED' %}
+            <span class="font-mono text-[10px] text-red-400 tracking-widest">
+              FAILED
+            </span>
+          {% else %}
+            <span class="font-mono text-[10px] text-yellow-400 tracking-widest">
+              PENDING
+            </span>
+          {% endif %}
+        </div>
       </div>
 
-      <!-- Action -->
-      <div class="flex items-center gap-4">
-        <a href="{% url 'admin_order_detail' order.id %}"
+      <!-- Action (desktop only, mobile view button lives in Order ID cell) -->
+      <div class="hidden lg:flex lg:items-center">
+        <a href="{% url 'admin_order_detail' order.order_id %}"
            class="mono text-xs text-white hover:text-white/50 transition-colors tracking-widest">
           View
         </a>
@@ -333,7 +384,7 @@
     {% endfor %}
 
     <!-- Pagination -->
-    <div class="flex items-center justify-end gap-2 px-6 py-4 border-t border-[#1f1f1f]">
+    <div class="flex items-center justify-center lg:justify-end gap-2 px-4 md:px-6 py-4 border-t border-[#1f1f1f] flex-wrap">
 
       {% if orders.has_previous %}
         <a href="?q={{ query }}&status={{ status_filter }}&sort={{ sort_by }}&min_amount={{ min_amount }}&max_amount={{ max_amount }}&page={{ orders.previous_page_number }}"

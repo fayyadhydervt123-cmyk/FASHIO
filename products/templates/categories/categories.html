@@ -8,11 +8,11 @@ Categories
 
   <div class="max-w-5xl">
     <!-- Page Header -->
-    <div class="flex items-center justify-between mb-8">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
       <div class="flex items-center gap-3">
-        <h1 class="mono text-white text-4xl font-bold tracking-tight">Category Management</h1>
+        <h1 class="mono text-white text-2xl sm:text-4xl font-bold tracking-tight">Category Management</h1>
       </div>
-      <button onclick="openAddModal()" class="border border-white/10 text-white px-5 py-2 text-sm tracking-widest">
+      <button onclick="openAddModal()" class="border border-white/10 text-white px-5 py-2 text-sm tracking-widest w-full sm:w-auto">
         + Add New
       </button>
     </div>
@@ -43,8 +43,10 @@ Categories
       </div>
     </form>
 
-    <!-- Table -->
-    <div class="border border-white/10 rounded-sm overflow-hidden max-w-5xl">
+    <!-- ═══════════════════════════════════════════
+         DESKTOP / TABLET — TABLE (sm and up)
+    ════════════════════════════════════════════ -->
+    <div class="hidden sm:block border border-white/10 rounded-sm overflow-hidden max-w-5xl">
       <table class="w-full text-sm table-fixed">
         <colgroup>
           <col style="width:72px"/>
@@ -89,11 +91,11 @@ Categories
             <td class="px-5 py-4 text-gray-300 break-words whitespace-normal">{{ cat.description }}</td>
             <td class="px-5 py-4 {% if cat.is_blocked %}text-red-400{% else %}text-green-400{% endif %}">
               {% if cat.is_blocked %}
-               <span class="bg-[#3b1010] text-red-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit">
+               <span class="bg-[#3b1010] text-red-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit whitespace-nowrap">
                 Inactive
               </span>
               {% else %}
-              <span class="bg-[#0f4c2a] text-green-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit">
+              <span class="bg-[#0f4c2a] text-green-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit whitespace-nowrap">
                 Active
               </span>
               {% endif %}
@@ -102,7 +104,7 @@ Categories
               <div class="flex items-center gap-4">
                 <button onclick="openEditModal(this, '{{ cat.id }}')" class="mono text-xs text-white/50 hover:text-white transition-colors tracking-widest">Edit</button>
                 <button onclick="openBlockConfirm(this, '{{ cat.id }}', {{ cat.is_blocked|yesno:'true,false' }})"
-                        class="mono text-xs tracking-widest transition-colors {% if cat.is_blocked %}text-green-400/60 hover:text-green-400{% else %}text-red-400/60 hover:text-red-400{% endif %}">
+                        class="mono text-xs tracking-widest transition-colors whitespace-nowrap {% if cat.is_blocked %}text-green-400/60 hover:text-green-400{% else %}text-red-400/60 hover:text-red-400{% endif %}">
                   {% if cat.is_blocked %}Unblock{% else %}Block{% endif %}
                 </button>
               </div>
@@ -119,9 +121,67 @@ Categories
       </table>
     </div>
 
+    <!-- ═══════════════════════════════════════════
+         MOBILE — STACKED CARDS (below sm)
+         No side-scrolling, everything fits the viewport.
+    ════════════════════════════════════════════ -->
+    <div class="sm:hidden space-y-3" id="categoryCards">
+      {% for cat in categories %}
+      <div class="border border-white/10 rounded-sm bg-[#0f0f0f] p-4"
+           data-name="{{ cat.name }}"
+           data-desc="{{ cat.description }}"
+           data-image="{% if cat.image %}{{ cat.image.url }}{% endif %}"
+           data-status="{% if cat.is_blocked %}Blocked{% else %}Active{% endif %}">
+
+        <div class="flex items-start gap-3">
+          <!-- Thumbnail -->
+          {% if cat.image %}
+            <img src="{{ cat.image.url }}" alt="{{ cat.name }}"
+                 onclick="openLightbox('{{ cat.image.url }}', '{{ cat.name }}')"
+                 class="w-12 h-12 object-cover rounded-sm border border-white/10 cursor-zoom-in hover:opacity-70 transition-opacity shrink-0"/>
+          {% else %}
+            <div class="w-12 h-12 bg-white/5 border border-white/10 rounded-sm flex items-center justify-center text-white/20 text-[10px] select-none shrink-0">
+              N/A
+            </div>
+          {% endif %}
+
+          <!-- Name + status -->
+          <div class="min-w-0 flex-1">
+            <p class="text-white font-semibold break-words">{{ cat.name }}</p>
+            <div class="mt-1.5">
+              {% if cat.is_blocked %}
+                <span class="bg-[#3b1010] text-red-400 font-mono text-[0.65rem] tracking-widest px-2.5 py-1 rounded">Inactive</span>
+              {% else %}
+                <span class="bg-[#0f4c2a] text-green-400 font-mono text-[0.65rem] tracking-widest px-2.5 py-1 rounded">Active</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        {% if cat.description %}
+          <p class="text-gray-300 text-sm mt-3 break-words">{{ cat.description }}</p>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="flex items-center gap-5 mt-4 pt-3 border-t border-white/5">
+          <button onclick="openEditModal(this, '{{ cat.id }}')" class="mono text-xs text-white/50 hover:text-white transition-colors tracking-widest">Edit</button>
+          <button onclick="openBlockConfirm(this, '{{ cat.id }}', {{ cat.is_blocked|yesno:'true,false' }})"
+                  class="mono text-xs tracking-widest transition-colors {% if cat.is_blocked %}text-green-400/60 hover:text-green-400{% else %}text-red-400/60 hover:text-red-400{% endif %}">
+            {% if cat.is_blocked %}Unblock{% else %}Block{% endif %}
+          </button>
+        </div>
+      </div>
+      {% empty %}
+      <div class="border border-white/10 rounded-sm p-8 text-center text-gray-500 text-sm">
+        No categories found{% if query %} for "<span class="text-white">{{ query }}</span>"{% endif %}.
+      </div>
+      {% endfor %}
+    </div>
+
     <!-- Pagination -->
     {% if categories.paginator.num_pages > 1 %}
-      <div class="flex justify-end items-center gap-4 mt-4 text-sm tracking-widest max-w-5xl">
+      <div class="flex justify-center sm:justify-end items-center gap-4 mt-4 text-sm tracking-widest max-w-5xl">
         {% if categories.has_previous %}
           <a href="?page={{ categories.previous_page_number }}&q={{ query }}"
             class="text-gray-400 hover:text-white transition">Prev</a>
@@ -169,21 +229,21 @@ Categories
 
   <!-- ═══════════════════════════════════════════════════════
        ADD / EDIT MODAL
-       Fixed height (640 px) keeps add and edit identical.
-       Body scrolls internally — outer size never changes.
+       Fixed height on desktop keeps add and edit identical.
+       On mobile, height and side padding shrink and the body
+       still scrolls internally — outer size never changes.
   ════════════════════════════════════════════════════════ -->
   <div id="categoryModal"
-       class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 hidden">
-    <div class="bg-black border border-white/10 w-full max-w-2xl flex flex-col"
-         style="height:640px;">
+       class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-black border border-white/10 w-full max-w-2xl flex flex-col max-h-[90vh] sm:h-[640px]">
 
       <!-- Header — fixed -->
-      <div class="text-center py-6 border-b border-white/10 flex-shrink-0">
-        <h2 id="modalTitle" class="text-2xl tracking-widest font-bold">New Category</h2>
+      <div class="text-center py-4 sm:py-6 border-b border-white/10 flex-shrink-0">
+        <h2 id="modalTitle" class="text-lg sm:text-2xl tracking-widest font-bold">New Category</h2>
       </div>
 
       <!-- Body — scrollable -->
-      <div class="px-16 py-10 space-y-7 overflow-y-auto flex-1">
+      <div class="px-5 sm:px-16 py-6 sm:py-10 space-y-6 sm:space-y-7 overflow-y-auto flex-1">
 
         <!-- Name -->
         <div>
@@ -227,7 +287,7 @@ Categories
       </div>
 
       <!-- Footer — fixed -->
-      <div class="border-t border-white/10 px-16 py-6 flex gap-6 flex-shrink-0">
+      <div class="border-t border-white/10 px-5 sm:px-16 py-4 sm:py-6 flex gap-4 sm:gap-6 flex-shrink-0">
         <button onclick="closeModal()"
           class="flex-1 border border-white/10 text-white py-3 tracking-widest hover:bg-white/10 transition">
           Cancel
@@ -245,12 +305,12 @@ Categories
        BLOCK / UNBLOCK CONFIRM MODAL
   ════════════════════════════════════════════════════════ -->
   <div id="confirmModal"
-       class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 hidden">
-    <div class="bg-black border border-white/10 w-full max-w-lg px-16 py-16 text-center space-y-10">
-      <p id="confirmText" class="text-xl tracking-wide leading-relaxed">
+       class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-black border border-white/10 w-full max-w-lg px-6 py-10 sm:px-16 sm:py-16 text-center space-y-8 sm:space-y-10">
+      <p id="confirmText" class="text-base sm:text-xl tracking-wide leading-relaxed">
         Are you sure you want to make this change?
       </p>
-      <div class="flex justify-center gap-8">
+      <div class="flex justify-center gap-4 sm:gap-8">
         <button onclick="confirmAction()"
           class="flex-1 border border-white/10 text-white py-3 tracking-widest hover:bg-white/10 transition">
           Yes
@@ -275,9 +335,9 @@ Categories
          class="flex flex-col items-center gap-5 max-w-3xl w-full px-6">
 
       <img id="lightboxImg" src="" alt=""
-           class="max-h-[75vh] max-w-full object-contain border border-white/10 rounded-sm"/>
+           class="max-h-[70vh] sm:max-h-[75vh] max-w-full object-contain border border-white/10 rounded-sm"/>
 
-      <p id="lightboxCaption" class="text-white/50 text-sm tracking-widest"></p>
+      <p id="lightboxCaption" class="text-white/50 text-sm tracking-widest text-center"></p>
 
       <button onclick="closeLightbox()"
               class="border border-white/10 text-white/60 hover:text-white px-10 py-2
@@ -399,9 +459,12 @@ Categories
 
   /* ─────────────────────────────────────────────
      Edit modal
+     btn.closest looks for either a <tr> (desktop table)
+     or a <div data-name> (mobile card) — whichever wraps
+     the button that was clicked.
   ───────────────────────────────────────────── */
   function openEditModal(btn, categoryId) {
-    const row = btn.closest('tr');
+    const row = btn.closest('tr[data-name], div[data-name]');
     currentEditId = categoryId;
 
     resetModalFields();

@@ -1,0 +1,359 @@
+{% extends 'admin_base/base.html' %}
+{% block title %}Returns{% endblock %}
+
+{% block content %}
+<div class="p-4 md:p-8 max-w-screen-xl mx-auto">
+
+  <!-- Top Bar -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
+    <div>
+      <h1 class="mono text-white text-2xl md:text-4xl font-bold tracking-tight">
+        Return Management
+      </h1>
+      <p class="mono text-xs text-white/30 tracking-widest mt-2 md:mt-3">
+        Manage product return requests, refund status, and approvals
+      </p>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-6 md:mb-8">
+
+    <div class="bg-[#141414] border border-white/10 px-4 md:px-6 py-4 md:py-6">
+      <p class="mono text-xs text-white/35 tracking-widest mb-3 md:mb-4">
+        Total Returns
+      </p>
+      <h2 class="mono text-white text-2xl md:text-3xl font-bold">
+        {{ total_returns|default:0 }}
+      </h2>
+    </div>
+
+    <div class="bg-[#141414] border border-white/10 px-4 md:px-6 py-4 md:py-6">
+      <p class="mono text-xs text-white/35 tracking-widest mb-3 md:mb-4">
+        Requested
+      </p>
+      <h2 class="mono text-yellow-400 text-2xl md:text-3xl font-bold">
+        {{ requested_returns|default:0 }}
+      </h2>
+    </div>
+
+    <div class="bg-[#141414] border border-white/10 px-4 md:px-6 py-4 md:py-6">
+      <p class="mono text-xs text-white/35 tracking-widest mb-3 md:mb-4">
+        Approved
+      </p>
+      <h2 class="mono text-green-400 text-2xl md:text-3xl font-bold">
+        {{ approved_returns|default:0 }}
+      </h2>
+    </div>
+
+    <div class="bg-[#141414] border border-white/10 px-4 md:px-6 py-4 md:py-6">
+      <p class="mono text-xs text-white/35 tracking-widest mb-3 md:mb-4">
+        Rejected
+      </p>
+      <h2 class="mono text-red-400 text-2xl md:text-3xl font-bold">
+        {{ rejected_returns|default:0 }}
+      </h2>
+    </div>
+
+  </div>
+
+  <!-- Search + Filters -->
+  <form method="GET" action="">
+
+    <!-- Search Row -->
+    <div class="relative mb-4">
+      <input
+        type="text"
+        name="q"
+        value="{{ query }}"
+        placeholder="Search by Return ID, Customer, Order Item ID, Email ..."
+        class="w-full bg-black border border-white/10 px-4 py-3 text-sm text-white placeholder-[#2e2e2e] outline-none focus:border-white/30 transition-colors"
+      >
+
+      {% if query %}
+        <a href="{% url 'admin_return_list' %}"
+           class="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-sm">
+          ✕
+        </a>
+      {% endif %}
+    </div>
+
+    <!-- Filter Row -->
+    <div class="flex flex-col lg:flex-row lg:flex-wrap lg:items-center gap-4 mb-6 bg-[#111] border border-white/10 rounded-sm px-4 md:px-5 py-4 lg:py-3.5">
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap gap-4 lg:gap-4 flex-1">
+
+        <!-- Status -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3">
+          <span class="mono text-xs text-white/50">Status:</span>
+
+          <select name="status"
+                  class="box-border w-full sm:w-auto bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-1.5 outline-none">
+            <option value="">All</option>
+
+            <option value="REQUESTED" {% if status_filter == 'REQUESTED' %}selected{% endif %}>
+              Requested
+            </option>
+
+            <option value="APPROVED" {% if status_filter == 'APPROVED' %}selected{% endif %}>
+              Approved
+            </option>
+
+            <option value="REJECTED" {% if status_filter == 'REJECTED' %}selected{% endif %}>
+              Rejected
+            </option>
+
+          </select>
+        </div>
+
+        <!-- Sort -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3">
+          <span class="mono text-xs text-white/50">Sort:</span>
+
+          <select name="sort"
+                  class="box-border w-full sm:w-auto bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-1.5 outline-none">
+            <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>
+              Newest First
+            </option>
+
+            <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>
+              Oldest First
+            </option>
+
+            <option value="amount_high" {% if sort_by == 'amount_high' %}selected{% endif %}>
+              Refund High
+            </option>
+
+            <option value="amount_low" {% if sort_by == 'amount_low' %}selected{% endif %}>
+              Refund Low
+            </option>
+          </select>
+        </div>
+
+        <!-- Min Refund -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3">
+          <span class="mono text-xs text-white/50">Min:</span>
+
+          <input
+            type="number"
+            name="min_amount"
+            value="{{ min_amount }}"
+            placeholder="0.00"
+            class="box-border w-full sm:w-28 bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-1.5 outline-none placeholder-white/20"
+          >
+        </div>
+
+        <!-- Max Refund -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3">
+          <span class="mono text-xs text-white/50">Max:</span>
+
+          <input
+            type="number"
+            name="max_amount"
+            value="{{ max_amount }}"
+            placeholder="9999"
+            class="box-border w-full sm:w-28 bg-[#1a1a1a] border border-white/15 text-white text-xs px-3 py-1.5 outline-none placeholder-white/20"
+          >
+        </div>
+
+      </div>
+
+      <div class="grid grid-cols-2 lg:flex gap-3 lg:gap-4">
+        <button type="submit"
+                class="mono text-xs px-4 py-2.5 lg:py-1.5 bg-white text-black font-bold hover:bg-white/80 transition-colors">
+          Apply Filter
+        </button>
+
+        <a href="{% url 'admin_return_list' %}"
+           class="mono text-xs px-4 py-2.5 lg:py-1.5 border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors text-center">
+          Reset
+        </a>
+      </div>
+
+    </div>
+  </form>
+
+  <!-- Table Panel -->
+  <div class="border border-white/10 rounded-sm overflow-hidden">
+
+    <!-- Desktop Header -->
+    <div class="hidden lg:grid grid-cols-[130px_200px_150px_180px_140px_100px] px-6 py-3 border-b border-white/10 bg-[#141414]">
+      <span class="text-left mono text-xs text-white font-semibold">
+        Return ID
+      </span>
+
+      <span class="text-left mono text-xs text-white font-semibold">
+        Customer
+      </span>
+
+      <span class="text-left mono text-xs text-white font-semibold">
+        Order ID
+      </span>
+
+      <span class="text-left mono text-xs text-white font-semibold">
+        Status
+      </span>
+
+      <span class="text-left mono text-xs text-white font-semibold">
+        Requested Date
+      </span>
+
+      <span class="text-left mono text-xs text-white font-semibold">
+        Action
+      </span>
+    </div>
+
+    <!-- Rows -->
+    {% for return_request in returns %}
+    <div class="grid grid-cols-1 lg:grid-cols-[130px_200px_150px_180px_140px_100px] gap-3 lg:gap-0 lg:items-center px-5 lg:px-6 py-4 border-b border-[#1a1a1a] last:border-b-0 hover:bg-[#1a1a1a] transition-colors">
+
+      <!-- Return ID + View (mobile top row) -->
+      <div class="flex items-center justify-between lg:contents">
+        <span class="font-mono text-sm text-gray-200 tracking-wide">
+          RTN-{{ return_request.return_id|stringformat:"s"|slice:":6"|upper }}
+        </span>
+
+        <a href="{% url 'admin_return_detail' return_request.return_id %}"
+           class="lg:hidden mono text-xs text-white hover:text-white/50 transition-colors tracking-widest border border-white/15 px-3 py-1.5">
+          View
+        </a>
+      </div>
+
+      <!-- Customer -->
+      <div class="flex items-center justify-between lg:flex-col lg:items-start lg:gap-1 lg:min-w-0">
+        <span class="mono text-[10px] text-white/30 tracking-widest uppercase lg:hidden">Customer</span>
+        <div class="flex flex-col items-end lg:items-start gap-1 min-w-0">
+          <span class="font-mono text-sm text-gray-200 truncate">
+            {{ return_request.user.get_full_name|default:return_request.user.username }}
+          </span>
+
+          <span class="font-mono text-[11px] text-gray-500 truncate">
+            {{ return_request.user.email }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Order Item ID -->
+      <div class="flex items-center justify-between lg:block">
+        <span class="mono text-[10px] text-white/30 tracking-widest uppercase lg:hidden">Order ID</span>
+        <span class="font-mono text-sm text-gray-300">
+          {{ return_request.order.display_id|default:return_request.order_item.order.order_id }}
+        </span>
+      </div>
+
+
+      <!-- Status -->
+      <div class="flex items-center justify-between lg:flex-col lg:items-start lg:justify-normal lg:gap-2">
+        <span class="mono text-[10px] text-white/30 tracking-widest uppercase lg:hidden">Status</span>
+        <div class="flex flex-col items-end lg:items-start gap-2">
+          {% if return_request.status == 'REQUESTED' %}
+            <span class="bg-[#4a3a0a] text-yellow-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit">
+              Requested
+            </span>
+          {% elif return_request.status == 'APPROVED' %}
+            <span class="bg-[#0f4c2a] text-green-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit">
+              Approved
+            </span>
+          {% elif return_request.status == 'REJECTED' %}
+            <span class="bg-[#3b1010] text-red-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit">
+              Rejected
+            </span>
+          {% elif return_request.status == 'REFUNDED' %}
+            <span class="bg-[#0f4c2a] text-green-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit">
+              Refunded
+            </span>
+          {% else %}
+            <span class="bg-[#242424] text-gray-400 font-mono text-[0.7rem] tracking-widest px-3 py-1 rounded w-fit">
+              {{ return_request.get_status_display }}
+            </span>
+          {% endif %}
+
+          <!-- Order-level summary, only when there are mixed statuses -->
+          {% if order_total_returns > 1 %}
+            <div class="flex flex-col items-end lg:items-start gap-1">
+              {% if return_request.order_approved and return_request.order_approved < return_request.order_total_returns %}
+                <span class="font-mono text-[10px] text-green-400/60">
+                  {{ return_request.order_approved }} approved
+                </span>
+              {% endif %}
+              {% if return_request.order_rejected and return_request.order_rejected < return_request.order_total_returns %}
+                <span class="font-mono text-[10px] text-red-400/60">
+                  {{ return_request.order_rejected }} rejected
+                </span>
+              {% endif %}
+              {% if return_request.order_refunded and return_request.order_refunded < return_request.order_total_returns %}
+                <span class="font-mono text-[10px] text-blue-400/60">
+                  {{ return_request.order_refunded }} refunded
+                </span>
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Requested Date -->
+      <div class="flex items-center justify-between lg:flex-col lg:items-start lg:gap-1">
+        <span class="mono text-[10px] text-white/30 tracking-widest uppercase lg:hidden">Requested Date</span>
+        <div class="flex flex-col items-end lg:items-start gap-1">
+          <span class="font-mono text-sm text-gray-300">
+            {{ return_request.requested_at|date:"Y.m.d" }}
+          </span>
+
+          <span class="font-mono text-[11px] text-gray-500">
+            {{ return_request.requested_at|time:"H:i:s" }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Action (desktop only, mobile View lives in the top row) -->
+      <div class="hidden lg:flex lg:items-center lg:gap-4">
+        <a href="{% url 'admin_return_detail' return_request.return_id %}"
+           class="mono text-xs text-white hover:text-white/50 transition-colors tracking-widest">
+          View
+        </a>
+      </div>
+
+    </div>
+
+    {% empty %}
+    <div class="px-6 py-16 text-center text-gray-600 font-mono text-sm tracking-widest">
+      NO RETURN REQUESTS FOUND
+    </div>
+    {% endfor %}
+
+    <!-- Pagination -->
+    <div class="flex flex-wrap items-center justify-center lg:justify-end gap-2 px-4 md:px-6 py-4 border-t border-[#1f1f1f]">
+
+      {% if returns.has_previous %}
+        <a href="?q={{ query }}&status={{ status_filter }}&sort={{ sort_by }}&min_amount={{ min_amount }}&max_amount={{ max_amount }}&page={{ returns.previous_page_number }}"
+           class="font-mono text-xs text-gray-500 border border-[#1f1f1f] px-4 py-2 rounded hover:border-gray-500 hover:text-gray-200 transition-colors">
+          Prev
+        </a>
+      {% else %}
+        <span class="font-mono text-xs text-gray-700 border border-[#1f1f1f] px-4 py-2 rounded cursor-not-allowed">
+          Prev
+        </span>
+      {% endif %}
+
+      <span class="font-mono text-xs text-gray-300 border border-[#1f1f1f] px-5 py-2 rounded">
+        {{ returns.number|stringformat:"02d" }} / {{ returns.paginator.num_pages|stringformat:"02d" }}
+      </span>
+
+      {% if returns.has_next %}
+        <a href="?q={{ query }}&status={{ status_filter }}&sort={{ sort_by }}&min_amount={{ min_amount }}&max_amount={{ max_amount }}&page={{ returns.next_page_number }}"
+           class="font-mono text-xs text-gray-500 border border-[#1f1f1f] px-4 py-2 rounded hover:border-gray-500 hover:text-gray-200 transition-colors">
+          Next
+        </a>
+      {% else %}
+        <span class="font-mono text-xs text-gray-700 border border-[#1f1f1f] px-4 py-2 rounded cursor-not-allowed">
+          Next
+        </span>
+      {% endif %}
+
+    </div>
+
+  </div>
+  <!-- End Table Panel -->
+
+</div>
+{% endblock %}

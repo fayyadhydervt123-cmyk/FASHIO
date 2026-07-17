@@ -2,11 +2,11 @@
 {% block title %}Change Order Status{% endblock %}
 
 {% block content %}
-<div class="p-8 max-w-screen-xl mx-auto">
+<div class="p-4 md:p-8 max-w-screen-xl mx-auto">
 
   <!-- Top Back Button -->
-  <div class="mb-10">
-    <a href="{% url 'admin_order_detail' order.id %}"
+  <div class="mb-6 md:mb-10">
+    <a href="{% url 'admin_order_detail' order.order_id %}"
        class="inline-flex items-center gap-2 text-white hover:text-white/50 transition-colors">
       <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/>
@@ -15,24 +15,24 @@
   </div>
 
   <!-- Current Status -->
-  <div class="mb-10">
+  <div class="mb-8 md:mb-10">
     <p class="mono text-xs text-white/35 tracking-widest mb-4">
       Current Status
     </p>
 
-    <div class="flex items-center gap-5">
+    <div class="flex items-center gap-4 md:gap-5">
 
       {% if order.order_status == 'PENDING' or order.order_status == 'PLACED' %}
-        <div class="w-12 h-12 border border-white/10 bg-[#111] flex items-center justify-center">
-          <svg class="w-7 h-7 text-yellow-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <div class="w-10 h-10 md:w-12 md:h-12 shrink-0 border border-white/10 bg-[#111] flex items-center justify-center">
+          <svg class="w-6 h-6 md:w-7 md:h-7 text-yellow-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="9"/>
             <path d="M12 7v5l3 3"/>
           </svg>
         </div>
 
       {% elif order.order_status == 'SHIPPED' %}
-        <div class="w-12 h-12 border border-white/10 bg-[#111] flex items-center justify-center">
-          <svg class="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <div class="w-10 h-10 md:w-12 md:h-12 shrink-0 border border-white/10 bg-[#111] flex items-center justify-center">
+          <svg class="w-6 h-6 md:w-7 md:h-7 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M3 7h11v10H3z"/>
             <path d="M14 10h4l3 3v4h-7z"/>
             <circle cx="7" cy="18" r="2"/>
@@ -41,8 +41,8 @@
         </div>
 
       {% elif order.order_status == 'OUT_FOR_DELIVERY' %}
-        <div class="w-12 h-12 border border-white/10 bg-[#111] flex items-center justify-center">
-          <svg class="w-7 h-7 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <div class="w-10 h-10 md:w-12 md:h-12 shrink-0 border border-white/10 bg-[#111] flex items-center justify-center">
+          <svg class="w-6 h-6 md:w-7 md:h-7 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M3 7h11v10H3z"/>
             <path d="M14 10h4l3 3v4h-7z"/>
             <circle cx="7" cy="18" r="2"/>
@@ -51,38 +51,38 @@
         </div>
 
       {% elif order.order_status == 'DELIVERED' %}
-        <div class="w-12 h-12 border border-white/10 bg-white text-black flex items-center justify-center">
-          <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <div class="w-10 h-10 md:w-12 md:h-12 shrink-0 border border-white/10 bg-white text-black flex items-center justify-center">
+          <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M5 13l4 4L19 7"/>
           </svg>
         </div>
 
       {% elif order.order_status == 'CANCELLED' %}
-        <div class="w-12 h-12 border border-red-500/30 bg-red-500/10 flex items-center justify-center">
-          <svg class="w-7 h-7 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <div class="w-10 h-10 md:w-12 md:h-12 shrink-0 border border-red-500/30 bg-red-500/10 flex items-center justify-center">
+          <svg class="w-6 h-6 md:w-7 md:h-7 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="9"/>
             <path d="M15 9l-6 6M9 9l6 6"/>
           </svg>
         </div>
       {% endif %}
 
-      <h1 class="mono text-white text-5xl font-bold tracking-tight">
+      <h1 class="mono text-white text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight break-words">
         {{ order.get_order_status_display }}
       </h1>
     </div>
   </div>
 
   <!-- Form -->
-  <form method="POST" action="{% url 'admin_change_order_status' order.id %}">
+  <form method="POST" action="{% url 'admin_change_order_status' order.order_id %}">
     {% csrf_token %}
 
     <!-- Status Options -->
-    <div class="mb-14">
-      <p class="mono text-sm text-white/50 tracking-[.3em] mb-6">
+    <div class="mb-8 md:mb-14">
+      <p class="mono text-xs sm:text-sm text-white/50 tracking-[.2em] sm:tracking-[.3em] mb-4 md:mb-6">
         Update Status To
       </p>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
 
         {% for value,label in status_choices %}
         <label class="relative cursor-pointer group">
@@ -94,18 +94,18 @@
                  {% if order.order_status == value %}checked{% endif %}
                  {% if order.order_status == 'DELIVERED' or order.order_status == 'CANCELLED' %}disabled{% endif %}>
 
-          <div class="h-28 border border-white/10 bg-[#111] flex flex-col items-center justify-center gap-3 transition-colors
+          <div class="h-24 md:h-28 border border-white/10 bg-[#111] flex flex-col items-center justify-center gap-2 md:gap-3 px-2 transition-colors
             peer-checked:border-white peer-checked:bg-[#1a1a1a]
             group-hover:border-white/30">
 
             {% if value == 'PENDING' or value == 'PLACED' %}
-              <svg class="w-7 h-7 text-white/40 peer-checked:text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <svg class="w-6 h-6 md:w-7 md:h-7 text-white/40 peer-checked:text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="9"/>
                 <path d="M12 7v5l3 3"/>
               </svg>
 
             {% elif value == 'SHIPPED' %}
-              <svg class="w-7 h-7 text-white/40 peer-checked:text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <svg class="w-6 h-6 md:w-7 md:h-7 text-white/40 peer-checked:text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M3 7h11v10H3z"/>
                 <path d="M14 10h4l3 3v4h-7z"/>
                 <circle cx="7" cy="18" r="2"/>
@@ -113,30 +113,30 @@
               </svg>
 
             {% elif value == 'OUT_FOR_DELIVERY' %}
-              <svg class="w-7 h-7 text-white/40 peer-checked:text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <svg class="w-6 h-6 md:w-7 md:h-7 text-white/40 peer-checked:text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M12 21s7-4.438 7-11a7 7 0 10-14 0c0 6.562 7 11 7 11z"/>
                 <circle cx="12" cy="10" r="2"/>
               </svg>
 
             {% elif value == 'DELIVERED' %}
-              <svg class="w-7 h-7 text-white/40 peer-checked:text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <svg class="w-6 h-6 md:w-7 md:h-7 text-white/40 peer-checked:text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M5 13l4 4L19 7"/>
                 <circle cx="12" cy="12" r="9"/>
               </svg>
 
             {% elif value == 'CANCELLED' %}
-              <svg class="w-7 h-7 text-white/40 peer-checked:text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <svg class="w-6 h-6 md:w-7 md:h-7 text-white/40 peer-checked:text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="9"/>
                 <path d="M15 9l-6 6M9 9l6 6"/>
               </svg>
 
             {% else %}
-              <svg class="w-7 h-7 text-white/40 peer-checked:text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <svg class="w-6 h-6 md:w-7 md:h-7 text-white/40 peer-checked:text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="9"/>
               </svg>
             {% endif %}
 
-            <span class="mono text-xs tracking-widest text-white/50 peer-checked:text-black">
+            <span class="mono text-[10px] md:text-xs tracking-widest text-white/50 peer-checked:text-black text-center">
               {{ label }}
             </span>
           </div>
@@ -154,30 +154,30 @@
 
 
     <!-- Notes -->
-    <div class="mb-14 max-w-5xl">
-      <label class="mono text-sm text-white/50 tracking-[.3em] block mb-6">
+    <div class="mb-8 md:mb-14 max-w-5xl">
+      <label class="mono text-xs sm:text-sm text-white/50 tracking-[.2em] sm:tracking-[.3em] block mb-4 md:mb-6">
         Order Notes / Comments
       </label>
 
       <textarea name="note"
-                rows="8"
+                rows="6"
                 placeholder="Add a note for the customer or internal records..."
-                class="w-full bg-[#111] border border-white/10 text-white px-6 py-6 outline-none resize-none placeholder-white/25 focus:border-white/30 transition-colors"></textarea>
+                class="w-full bg-[#111] border border-white/10 text-white px-4 md:px-6 py-4 md:py-6 outline-none resize-none placeholder-white/25 focus:border-white/30 transition-colors"></textarea>
     </div>
 
     <!-- Divider -->
-    <div class="border-t border-white/10 pt-10 max-w-5xl">
+    <div class="border-t border-white/10 pt-6 md:pt-10 max-w-5xl">
 
       <div class="flex flex-col md:flex-row justify-end gap-4">
 
-        <a href="{% url 'admin_order_detail' order.id %}"
-           class="w-full md:w-72 border border-white/10 text-white mono text-sm font-bold tracking-widest px-6 py-5 text-center hover:bg-white/10 transition-colors">
+        <a href="{% url 'admin_order_detail' order.order_id %}"
+           class="w-full md:w-72 border border-white/10 text-white mono text-sm font-bold tracking-widest px-6 py-4 md:py-5 text-center hover:bg-white/10 transition-colors">
           Cancel
         </a>
 
         <button type="submit"
                 {% if order.order_status == 'DELIVERED' or order.order_status == 'CANCELLED' %}disabled{% endif %}
-                class="w-full md:w-80 bg-white text-black mono text-sm font-bold tracking-widest px-6 py-5 hover:bg-white/80 transition-colors disabled:bg-white/10 disabled:text-white/20 disabled:cursor-not-allowed">
+                class="w-full md:w-80 bg-white text-black mono text-sm font-bold tracking-widest px-6 py-4 md:py-5 hover:bg-white/80 transition-colors disabled:bg-white/10 disabled:text-white/20 disabled:cursor-not-allowed">
           Update Order
         </button>
 

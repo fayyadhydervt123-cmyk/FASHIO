@@ -4,186 +4,1050 @@
 
 {% block extra_css %}
 <style>
-/* ── PROFILE HEADER ── */
-  .profile-header{padding:10px 70px 24px;border-bottom:1px solid #e5e5e5;background:#fff;display:flex;align-items:center;gap:24px;}
-  .avatar-wrapper{display:flex;align-items:stretch;gap:0;}
-  .avatar-bar{width:3px;background:#000;margin-right:14px;}
-  .avatar-img{width:100px;height:100px;background:#f5f5f5;overflow:hidden;display:flex;align-items:center;justify-content:center;}
-  .avatar-img svg{opacity:.55;}
-  .profile-info{display:flex;flex-direction:column;gap:16px;}
-  .profile-name{font-size:26px;font-weight:700;letter-spacing:.05em;}
-  .profile-btns{display:flex;gap:10px;flex-wrap:wrap;}
-  .btn-outline{border:1px solid #d4d4d4;background:#fff;color:#111;padding:9px 18px;font-size:11px;letter-spacing:.09em;cursor:pointer;font-family:'Space Mono',monospace;display:flex;align-items:center;gap:7px;}
-  .btn-outline:hover{background:#fff;background:#f5f5f5}
-  .btn-logout{border:1px solid #d4d4d4;;background:transparent;color:#111;padding:9px 18px;font-size:11px;letter-spacing:.06em;font-weight:700;cursor:pointer;font-family:'Space Mono',monospace;display:flex;align-items:center;gap:7px;}
-  .btn-logout:hover{background:rgba(250, 170, 141, 0.12);color:#111;border-color:rgba(250, 170, 141, 0.12);}
 
-  /* ── MAIN LAYOUT ── */
-  .main {display: grid;grid-template-columns: 500px minmax(600px, 900px);gap: 32px;justify-content: center;}
-  
+  * { box-sizing: border-box; }
 
-  /* ── LEFT SIDEBAR ── */
-  .sidebar-section{margin-bottom:24px;}
-  .sidebar-divider{border:none;border-top:1px solid #ececec;margin:20px 0;}
-  .section-title{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;letter-spacing:.07em;margin-bottom:18px;}
-  .label-tiny{font-size:9px;letter-spacing:.15em;color:#555;margin-bottom:4px;}
-  .value-text{font-size:12px;color:#000;margin-bottom:14px;}
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #fff;
+    color: #000;
+  }
 
-  .referral-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-  .referral-text{font-size:12px;color:#666;}
-  .referral-text strong{color:#111;}
-  .btn-copy{background:transparent;color:#666;font-size:9px;letter-spacing:.12em;padding:3px 8px;cursor:pointer;font-family:'Space Mono',monospace;}
-  .btn-copy:hover{color:#111;}
-  .rewards-title{font-size:12px;font-weight:700;letter-spacing:.06em;margin-bottom:10px;}
-  .rewards-list{list-style:none;display:flex;flex-direction:column;gap:8px;}
-  .rewards-list li{font-size:10.5px;color:#555;line-height:1.6;}
-  .rewards-list li strong{color:#aaa;}
+  .mono { font-family: 'Share Tech Mono', monospace; }
+  .bebas { font-family: 'Bebas Neue', sans-serif; }
 
-  .address-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-  .address-title{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;letter-spacing:.07em;}
-  .btn-see-all{background:none;border:none;color:#666;font-size:10px;letter-spacing:.12em;cursor:pointer;font-family:'Space Mono',monospace;}
-  .btn-see-all:hover{color:#111;}
-  .address-card{border:1px solid #222;padding:14px 16px;font-size:11px;color:#666;line-height:1.75;}
-  .address-card .name{color:#111;font-weight:700;margin-bottom:2px;}
-  .address-card .phone{margin-bottom:10px;}
-
-  .sidebar-links{display:flex;flex-direction:column;gap:16px;}
-  .sidebar-links a{font-size:12px;color:#555;display:flex;align-items:center;gap:7px;}
-  .sidebar-links a:hover{color:#111;}
-
-  /* ── RIGHT CONTENT ── */
-  .content{padding:28px 28px 48px 32px;}
-
-  /* orders */
-  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-  .section-header-title{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;letter-spacing:.07em;}
-
-  .orders-table{width:100%;border-collapse:collapse;border:1px solid #e5e5e5;background:#fff;margin-bottom:44px;}
-  .orders-table thead tr{border-bottom:1px solid #1e1e1e;}
-  .orders-table th{text-align:left;padding:11px 14px;font-size:9px;letter-spacing:.14em;color:#777;font-weight:400;}
-  .orders-table td{padding:14px 14px;font-size:11px;border-bottom:1px solid #111;}
-  .orders-table tbody tr:last-child td{border-bottom:none;}
-  .orders-table td.prod{font-weight:700;font-size:10.5px;letter-spacing:.03em;line-height:1.5;}
-  .orders-table td.date{color:#666;}
-  .badge{display:inline-block;font-size:9.5px;letter-spacing:.07em;padding:2px 9px;}
-  .badge-d{background:rgba(34,197,94,.12);color:#22c55e;border:1px solid rgba(34,197,94,.35);}
-  .badge-p{background:rgba(234,179,8,.12);color:#eab308;border:1px solid rgba(234,179,8,.35);}
-  .badge-c{background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.35);}
-  .btn-view{background:none;border:none;color:#111;font-size:11px;font-weight:700;letter-spacing:.09em;cursor:pointer;font-family:'Space Mono',monospace;}
-
-  /* wishlist */
-  .wishlist-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-  .wish-card{ border:1px solid #e5e5e5;background:#fff;}
-  .wish-img{position:relative;background:#f8f8f8;height:260px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
-  .wish-close{position:absolute;top:8px;right:8px;width:22px;height:22px;background:rgba(0,0,0,.7);border:1px solid #444;color:#111;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;}
-  .wish-footer{padding:11px 14px;display:flex;align-items:center;justify-content:space-between;}
-  .wish-name{font-size:12px;font-weight:700;}
-  .wish-price{font-size:12px;color:#888;}
-  .btn-cart{width:100%;border:none;border-top:1px solid #1e1e1e;background:transparent;color:#111;padding:13px;font-size:10px;letter-spacing:.1em;cursor:pointer;font-family:'Space Mono',monospace;display:flex;align-items:center;justify-content:center;gap:8px;}
-  .btn-cart:hover{background:rgba(255,255,255,0.08);}
-
-  /* ── MODALS ── */
-  .modal{display:none;position:fixed;inset:0;z-index:200;background:#000;align-items:center;justify-content:center;}
-  .modal.open{display:flex;}
-  .modal-box{width: 100%;max-width: 720px;   /* control width here */background:#fff;border:1px solid #e5e5e5;box-shadow:0 10px 40px rgba(0,0,0,0.08);}
-  .modal-header{padding:20px 24px;}
-
-  .modal-body{padding:20px 24px 28px;}
-
-  /* logout */
-  #m-logout{display:none;}
-  #m-logout.open{display:flex;flex-direction:column;align-items:center;justify-content:center;}
-  .logout-q{font-size:20px;letter-spacing:.06em;color:#e5e5e5;margin-bottom:72px;text-align:center;}
-  .logout-btns{width:100%;max-width:500px;display:flex;flex-direction:column;gap:14px;padding:0 20px;}
-  .btn-logout-confirm{width:100%;background:#fff;color:#000;border:none;padding:22px;font-size:14px;font-weight:700;letter-spacing:.09em;cursor:pointer;font-family:'Space Mono',monospace;}
-  .btn-cancel-outline{width:100%;background:transparent;color:#e5e5e5;border:1px solid #444;padding:22px;font-size:14px;font-weight:700;letter-spacing:.09em;cursor:pointer;font-family:'Space Mono',monospace;}
-
-  /* shared modal header */
-  .modal-header{display:flex;align-items:center;justify-content:space-between;padding:28px 32px 22px;border-bottom:1px solid #222;}
-  .modal-title{font-size:20px;font-weight:700;letter-spacing:.06em;}
-  .modal-title.bold-title{font-weight:700;}
-  .btn-close-modal{width:30px;height:30px;border:1px solid #444;background:transparent;color:#111;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;}
-  .modal-body{padding:24px 32px 40px;}
-
-  /* addresses list */
-  .addr-addnew{display:flex;justify-content:flex-end;padding:16px 0 6px;}
-  .btn-addnew{background:none;border:none;color:#111;font-size:10.5px;font-weight:700;letter-spacing:.15em;cursor:pointer;font-family:'Space Mono',monospace;}
-  .addr-row{display:flex;align-items:center;justify-content:space-between;padding:32px 0;border-bottom:1px solid #111;}
-  .addr-row:last-child{border-bottom:none;}
-  .addr-block{border-left:2px solid #555;padding-left:18px;}
-  .addr-block p{font-size:12.5px;color:#ccc;line-height:1.9;margin:0;}
-  .addr-actions{display:flex;gap:22px;flex-shrink:0;padding-left:24px;}
-  .btn-addr-act{background:none;border:none;color:#111;font-size:11px;font-weight:700;letter-spacing:.13em;cursor:pointer;font-family:'Space Mono',monospace;}
-  .btn-addr-act:hover{text-decoration:underline;}
-
-  /* new address form */
-  .form-wrap{display:flex;flex-direction:column;gap:26px;max-width:100%;}
-  .form-field label{display:block;font-size:11px;letter-spacing:.1em;color:#555;margin-bottom:9px;}
-  .form-field input{width:100%;background:#fff;border:1px solid #d4d4d4;color:#111;padding:13px 14px;font-size:12px;font-family:'Space Mono',monospace;outline:none;}
-  .form-field input:focus{border-color:#111;}
-  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
-  .form-save{display:flex;justify-content:flex-end;border-top:1px solid #222;padding-top:24px;margin-top:4px;}
-  .btn-save{background:#111;color:#fff;border:none;padding:15px 32px;font-size:11px;font-weight:700;letter-spacing:.14em;cursor:pointer;font-family:'Space Mono',monospace;display:flex;align-items:center;gap:8px;}
-  
-
-  /* delete address */
-  .delete-addr-preview{border-left:2px solid #555;padding-left:18px;margin:40px 0 48px;}
-  .delete-addr-preview p{font-size:12.5px;color:#ccc;line-height:1.9;margin:0;}
-  .delete-warning{font-size:12px;color:#666;line-height:1.85;margin-bottom:36px;}
-  .delete-btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-  .btn-cancel-del{border:1px solid #333;background:transparent;color:#111;padding:19px 16px;font-size:11px;font-weight:700;letter-spacing:.13em;cursor:pointer;font-family:'Space Mono',monospace;display:flex;align-items:center;justify-content:center;gap:12px;}
-  .btn-cancel-del:hover{border-color:#111;}
-  .btn-del-confirm{border:none;background:#fff;color:#000;padding:19px 16px;font-size:11px;font-weight:700;letter-spacing:.13em;cursor:pointer;font-family:'Space Mono',monospace;display:flex;align-items:center;justify-content:center;gap:12px;}
-  .btn-del-confirm:hover{background:#e5e5e5;}
-
-  /* Fix for fixed navbar in base.html */
   .profile-page-wrapper {
-    padding-top: 56px; /* Matches h-14 navbar height */
+    padding-top: 5px;
     background: #fff;
   }
 
-  {% comment %} /* ── PROFILE HEADER ── */
-  .profile-header{padding:20px 70px 32px;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;gap:24px;}
-  .avatar-bar{width:3px;background:#c0392b;margin-right:14px;}
-  .avatar-img{width:100px;height:100px;background:#1a1a1a;display:flex;align-items:center;justify-content:center;} {% endcomment %}
-  
-  @media (max-width: 1024px) {
-    .main { grid-template-columns: 1fr; }
-    .sidebar { border-right: none; border-bottom: 1px solid #e5e5e5; }
+  /* ─────────────────────────────
+     HERO / PROFILE HEADER
+  ───────────────────────────── */
+.profile-header {
+    padding: 40px 32px;
+    border-bottom: 1px solid rgba(0,0,0,.10);
+    background:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    gap:28px;
+    flex-wrap:wrap;
+}
+
+  .avatar-wrapper {
+    display: flex;
+    align-items: stretch;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+
+  .avatar-bar {
+    width: 4px;
+    background: #000;
+  }
+
+  .avatar-img {
+    width: 118px;
+    height: 118px;
+    background: #f5f5f5;
+    border: 1px solid rgba(0,0,0,.10);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .avatar-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .avatar-img svg { opacity: .55; }
+
+.profile-info{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:18px;
+    flex:1;
+    min-width:0;
+}
+
+  .profile-info::before {
+    content: 'Profile';
+    display: block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .3em;
+    color: rgba(0,0,0,.45);
+    text-transform: uppercase;
+  }
+
+.profile-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 4vw, 64px);
+    line-height: .85;
+    letter-spacing: .04em;
+    color: #000;
+    text-transform: uppercase;
+  }
+
+.profile-btns{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+}
+
+  .profile-btns button,
+  .btn-outline,
+  .btn-logout {
+    border: 1px solid rgba(0,0,0,.15) !important;
+    background: #fff !important;
+    color: rgba(0,0,0,.65) !important;
+    padding: 12px 22px !important;
+    font-family: 'Share Tech Mono', monospace !important;
+    font-size: 8px !important;
+    letter-spacing: .16em !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: border-color .2s ease, color .2s ease, background .2s ease, transform .2s ease;
+  }
+
+  .profile-btns button:hover,
+  .btn-outline:hover {
+    border-color: #000 !important;
+    color: #000 !important;
+    background: rgba(0,0,0,.04) !important;
+  }
+
+  .profile-btns button:active,
+  .btn-outline:active,
+  .btn-save:active,
+  .btn-cart:active {
+    transform: scale(.98);
+  }
+
+  /* ─────────────────────────────
+     MAIN LAYOUT
+  ───────────────────────────── */
+  .container {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+
+  .main {
+    display: grid;
+    grid-template-columns:330px 1fr;
+    gap: 0;
+    justify-content: stretch;
+    background: #fff;
+    align-items: start;
+  }
+
+.sidebar{
+    border-right:1px solid rgba(0,0,0,.10);
+    padding:36px 30px;
+    background:#fff;
+}
+
+.content{
+    padding:36px 200px 36px 36px;
+    min-width:0;
+}
+
+  .sidebar-section {
+    margin-bottom: 28px;
+  }
+
+  .sidebar-divider {
+    border: none;
+    border-top: 1px solid rgba(0,0,0,.10);
+    margin: 28px 0;
+  }
+
+  .section-title,
+  .address-title,
+  .section-header-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .22em;
+    color: rgba(0,0,0,.60);
+    text-transform: uppercase;
+  }
+
+  .section-title,
+  .address-title {
+    margin-bottom: 18px;
+  }
+
+  .label-tiny {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .18em;
+    color: rgba(0,0,0,.35);
+    margin-bottom: 7px;
+    text-transform: uppercase;
+  }
+
+  .value-text {
+    font-size: 13px;
+    color: rgba(0,0,0,.78);
+    margin-bottom: 18px;
+    overflow-wrap: anywhere;
+  }
+
+  /* Referral */
+  .referral-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    background: #fafafa;
+    padding: 14px;
+    margin-bottom: 18px;
+  }
+
+  .referral-text {
+    font-size: 12px;
+    color: rgba(0,0,0,.55);
+    line-height: 1.6;
+  }
+
+  .referral-text strong { color: #000; }
+
+  .btn-copy,
+  .btn-see-all,
+  .btn-addnew,
+  .btn-addr-act,
+  .btn-view {
+    background: transparent;
+    border: none;
+    color: rgba(0,0,0,.45);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .16em;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color .2s ease;
+  }
+
+  .btn-copy:hover,
+  .btn-see-all:hover,
+  .btn-addnew:hover,
+  .btn-addr-act:hover,
+  .btn-view:hover {
+    color: #000;
+  }
+
+  .rewards-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .18em;
+    color: rgba(0,0,0,.60);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+
+  .rewards-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0;
+    margin: 0;
+  }
+
+  .rewards-list li {
+    font-size: 12px;
+    color: rgba(0,0,0,.55);
+    line-height: 1.75;
+  }
+
+  .rewards-list li strong { color: rgba(0,0,0,.80); }
+
+  /* Address */
+  .address-header,
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .address-card {
+    border: 1px solid rgba(0,0,0,.15);
+    background: #fff;
+    padding: 18px;
+    font-size: 12px;
+    color: rgba(0,0,0,.55);
+    line-height: 1.8;
+  }
+
+  .address-card .name {
+    color: #000;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .address-card .phone {
+    font-family: 'Share Tech Mono', monospace;
+    color: rgba(0,0,0,.45);
+    margin-bottom: 10px;
+  }
+
+  .sidebar-section > p,
+  .modal-body > p {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .14em;
+    color: rgba(0,0,0,.35);
+    text-transform: uppercase;
+  }
+
+  .sidebar-links {
+    display: grid;
+    gap: 10px;
+  }
+
+  .sidebar-links a {
+    {% comment %} border: 1px solid rgba(0,0,0,.10); {% endcomment %}
+    padding: 13px 14px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .16em;
+    color: rgba(0,0,0,.55);
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    text-transform: uppercase;
+    transition: border-color .2s ease, color .2s ease, background .2s ease;
+  }
+
+  .sidebar-links a:hover {
+    color: #000;
+    border-color: #000;
+    background: rgba(0,0,0,.03);
+  }
+
+  /* ─────────────────────────────
+     ORDERS TABLE
+  ───────────────────────────── */
+  .orders-table td.order-id {
+    font-weight: 700;
+    font-size: 12px;
+    color: #000;
+    vertical-align: middle;
+  }
+
+  .orders-table td.date {
+    vertical-align: middle;
   }
   
-  .btn-outline{border:1px solid #d4d4d4;background:transparent;color:#111;padding:9px 18px;letter-spacing:.06em;font-weight:700;cursor:pointer;font-family:'Space Mono',monospace;display:flex;align-items:center;gap:7px;}
-  .sidebar{border-right:1px solid #e5e5e5;padding:40px 24px;}
+  .orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid rgba(0,0,0,.10);
+    background: #fff;
+    margin-bottom: 48px;
+  }
 
+  .orders-table thead tr {
+    border-bottom: 1px solid rgba(0,0,0,.10);
+    background: #fafafa;
+  }
 
-.item-status-badge{
-  display:inline-block;
-  margin-left:6px;
-  font-size:8px;
-  letter-spacing:.08em;
-  padding:1px 6px;
-  font-weight:700;
-  vertical-align:middle;
+  .orders-table th {
+    text-align: left;
+    padding: 14px 16px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .18em;
+    color: rgba(0,0,0,.45);
+    font-weight: 400;
+    text-transform: uppercase;
+  }
+
+  .orders-table td {
+    padding: 18px 16px;
+    font-size: 12px;
+    color: rgba(0,0,0,.65);
+    border-bottom: 1px solid rgba(0,0,0,.10);
+    vertical-align: top;
+  }
+
+  .orders-table tbody tr:hover {
+    background: rgba(0,0,0,.025);
+  }
+
+  .orders-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .orders-table td.prod {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 12px;
+    color: #000;
+    line-height: 1.6;
+  }
+
+  .prod-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    width: 100%;
+  }
+
+  .prod-name {
+    font-weight: 700;
+    font-size: 12px;
+    color: #000;
+  }
+
+  .prod-variant,
+  .prod-more {
+    color: #777;
+    font-size: 9px;
+    font-weight: 400;
+  }
+
+  .orders-table td.date {
+    font-family: 'Share Tech Mono', monospace;
+    color: rgba(0,0,0,.45);
+  }
+
+  .badge,
+  .item-status-badge {
+    display: inline-block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 8.5px;
+    letter-spacing: .12em;
+    padding: 3px 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    vertical-align: middle;
+  }
+
+  .item-status-badge { margin-left: 6px; }
+
+  .badge-d {
+    background: rgba(22,163,74,.08);
+    color: #15803d;
+    border: 1px solid rgba(22,163,74,.25);
+  }
+
+  .item-status-return-approved,
+  .item-status-returned{
+    color: #15803d;
+  }
+
+  .badge-p {
+    background: rgba(234,179,8,.10);
+    color: #a16207;
+    border: 1px solid rgba(234,179,8,.30);
+  }
+
+  .badge-c{
+    background: rgba(220,38,38,.08);
+    color: #dc2626;
+    border: 1px solid rgba(220,38,38,.25);
+  }
+
+  .item-status-cancelled,
+  .item-status-return-rejected {
+    color: #dc2626;
+  }
+
+  .item-status-return-requested {
+    color: #2563eb;
+  }
+
+  /* ─────────────────────────────
+     FAVOURITES / PRODUCT CARDS
+  ───────────────────────────── */
+  .product-card {
+    transition: transform .3s, box-shadow .3s, border-color .3s;
+  }
+
+  .product-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0,0,0,.28);
+    box-shadow: 0 20px 40px rgba(0,0,0,.08);
+  }
+
+  .product-img {
+    transition: transform .3s ease;
+  }
+
+  .product-card:hover .product-img {
+    transform: scale(1.04);
+  }
+
+  .btn-cart,
+  .product-card button[type="submit"] {
+    transition: background .2s ease, color .2s ease, border-color .2s ease, transform .2s ease;
+  }
+
+  .product-card button[type="submit"]:hover {
+    border-color: #000 !important;
+    background: rgba(0,0,0,.04) !important;
+  }
+
+  /* ─────────────────────────────
+     MODALS
+  ───────────────────────────── */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,.35);
+    backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 999;
 }
 
-.item-status-cancelled{
-  background:rgba(239,68,68,.10);
-  color:#dc2626;
-  border:1px solid rgba(239,68,68,.30);
+.modal.open { display: flex; }
+
+  .modal-box {
+    width: 100%;
+    max-width: 720px;
+    max-height: calc(100vh - 48px);
+    overflow: auto;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,.10);
+    box-shadow: 0 24px 70px rgba(0,0,0,.18);
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px;
+    border-bottom: 1px solid rgba(0,0,0,.10);
+  }
+
+  .modal-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 25px;
+    line-height: 1;
+    letter-spacing: .06em;
+    color: #000;
+    text-transform: uppercase;
+  }
+
+  .btn-close-modal {
+    width: 30px;
+    height: 30px;
+    border: 1px solid rgba(0,0,0,.15);
+    background: #fff;
+    color: rgba(0,0,0,.60);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color .2s ease, color .2s ease, background .2s ease;
+  }
+
+  .btn-close-modal:hover {
+    border-color: #000;
+    color: #000;
+    background: rgba(0,0,0,.04);
+  }
+
+  .modal-body {
+    padding: 24px;
+  }
+
+.logout-q {
+  font-size: 13px;
+  color: rgba(0,0,0,.58);
+  line-height: 1.85;
+  margin-bottom: 30px;
+  text-align: left;
 }
 
-.item-status-return-requested{
-  background:rgba(37,99,235,.10);
-  color:#2563eb;
-  border:1px solid rgba(37,99,235,.30);
+.logout-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
-.item-status-returned{
-  background:rgba(22,163,74,.10);
-  color:#16a34a;
-  border:1px solid rgba(22,163,74,.30);
+.btn-logout-confirm,
+.btn-cancel-outline {
+  border: 1px solid rgba(0,0,0,.15);
+  background: #fff;
+  color: rgba(0,0,0,.65);
+  padding: 17px 14px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: border-color .2s ease, color .2s ease, background .2s ease;
 }
 
+.btn-cancel-outline:hover {
+  border-color: #000;
+  color: #000;
+}
+
+.btn-logout-confirm {
+  background: #000;
+  color: #fff;
+  border-color: #000;
+}
+
+.btn-logout-confirm:hover { background: rgba(0,0,0,.82); }
+
+  /* Address modal list */
+  .addr-addnew {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 0 14px;
+  }
+
+  .addr-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 24px 0;
+    border-bottom: 1px solid rgba(0,0,0,.10);
+  }
+
+  .addr-row:last-child { border-bottom: none; }
+
+  .addr-block {
+    border-left: 2px solid #000000;
+    padding-left: 16px;
+  }
+
+  .addr-block p {
+    font-size: 12px;
+    color: rgba(0,0,0,.58) !important;
+    line-height: 1.8;
+    margin: 0;
+  }
+
+  .addr-actions {
+    display: flex;
+    gap: 18px;
+    flex-shrink: 0;
+  }
+
+  /* Forms */
+  .form-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  .form-field label {
+    display: block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .16em;
+    color: rgba(0,0,0,.45);
+    margin-bottom: 9px;
+    text-transform: uppercase;
+  }
+
+  .form-field input,
+  .form-field select,
+  select[name="state"],
+  #edit_state {
+    width: 100% !important;
+    background: #fff !important;
+    border: 1px solid rgba(0,0,0,.15) !important;
+    color: #000 !important;
+    padding: 13px 14px !important;
+    font-size: 12px !important;
+    font-family: 'Share Tech Mono', monospace !important;
+    outline: none !important;
+    transition: border-color .2s ease, background .2s ease;
+  }
+
+  .form-field input:focus,
+  .form-field select:focus,
+  select[name="state"]:focus,
+  #edit_state:focus {
+    border-color: #000 !important;
+    background: #fafafa !important;
+  }
+
+  .form-save {
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid rgba(0,0,0,.10);
+    padding-top: 22px;
+  }
+
+  .btn-save {
+    background: #000;
+    color: #fff;
+    border: 1px solid #000;
+    padding: 15px 28px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background .2s ease, transform .2s ease;
+  }
+
+  .btn-save:hover { background: rgba(0,0,0,.82); }
+
+  /* Delete modal */
+  .delete-warning {
+    font-size: 13px;
+    color: rgba(0,0,0,.58);
+    line-height: 1.85;
+    margin-bottom: 30px;
+  }
+
+  .delete-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .btn-cancel-del,
+  .btn-del-confirm {
+    border: 1px solid rgba(0,0,0,.15);
+    background: #fff;
+    color: rgba(0,0,0,.65);
+    padding: 17px 14px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: border-color .2s ease, color .2s ease, background .2s ease;
+  }
+
+  .btn-cancel-del:hover {
+    border-color: #000;
+    color: #000;
+  }
+
+  .btn-del-confirm {
+    background: #000;
+    color: #fff;
+    border-color: #000;
+  }
+
+  .btn-del-confirm:hover { background: rgba(0,0,0,.82); }
+
+  .btn-cancel-del svg { stroke: #000; }
+
+  .border-t.border-\[\#111\] {
+    border-top: 1px solid rgba(0,0,0,.10) !important;
+    color: rgba(0,0,0,.35) !important;
+  }
+
+@media (max-width:1024px){
+
+.main{
+    grid-template-columns:1fr;
+}
+
+.sidebar{
+    border-right:none;
+    border-bottom:1px solid rgba(0,0,0,.1);
+}
+
+.profile-header{
+    flex-direction:column;
+    align-items:flex-start;
+}
+
+.profile-info{
+    width:100%;
+}
+
+.profile-btns{
+    width:100%;
+}
+
+.content{
+    overflow-x:auto;
+}
+
+.sidebar,
+.content {
+  display: contents;
+}
+
+.sidebar-divider {
+  display: none;
+}
+
+.account-section,
+.address-section,
+.orders-section,
+.wishlist-section,
+.referral-section,
+.links-section {
+  padding: 24px 18px;
+  border-bottom: 1px solid rgba(0,0,0,.10);
+}
+
+.account-section  { order: 1; border-top: 1px solid rgba(0,0,0,.10); }
+.address-section  { order: 2; }
+.orders-section    { order: 3; }
+.wishlist-section  { order: 4; padding-bottom: 40px; }
+.referral-section  { order: 5; }
+.links-section     { order: 6; border-bottom: none; }
+
+.orders-table{
+    min-width:760px;
+}
+
+}
+
+@media (max-width:768px){
+
+.orders-table {
+    border: none;
+    background: transparent;
+}
+
+.profile-header{
+    padding:24px 18px;
+    gap:20px;
+}
+
+.avatar-img{
+    width:90px;
+    height:90px;
+}
+
+.profile-name{
+    font-size:46px;
+    line-height:.9;
+}
+
+.profile-btns{
+    display:grid;
+    {% comment %} grid-template-columns:1fr; {% endcomment %}
+    align-items:center;
+    grid-auto-flow:column;
+}
+
+.profile-btns a,
+.profile-btns button{
+    width:100px;
+}
+
+.sidebar,
+.content{
+    padding:22px 18px;
+}
+
+.section-header-title,
+.address-title {
+  min-width: 0;
+}
+
+.section-header-title span,
+.address-title span {
+  flex-shrink: 0;
+}
+
+.btn-see-all {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.referral-row {
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.referral-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.btn-copy {
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.addr-row{
+    flex-direction:column;
+    align-items:flex-start;
+}
+
+.addr-actions{
+    padding-left:18px;
+}
+
+.form-row{
+    grid-template-columns:1fr;
+}
+
+.logout-btns,
+.delete-btns{
+    grid-template-columns:1fr;
+}
+
+.modal{
+    padding:14px;
+}
+
+.modal-box{
+    width:100%;
+    max-height:95vh;
+}
+
+.btn-close-modal {
+    width: 36px;
+    height: 36px;
+    font-size: 15px;
+}
+
+.orders-table { min-width: 0; }
+
+.orders-table thead { display: none; }
+
+.orders-table,
+.orders-table tbody,
+.orders-table tr {
+  display: block;
+  width: 100%;
+}
+
+.orders-table tr {
+  border: 1px solid rgba(0,0,0,.10);
+  margin-bottom: 14px;
+  padding: 14px;
+}
+
+.orders-table td {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0px;
+  padding: 4px 0;
+  border-bottom: none;
+}
+
+
+.orders-table td::before {
+  content: attr(data-label);
+  flex-shrink: 0;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .14em;
+  color: rgba(0,0,0,.35);
+  text-transform: uppercase;
+}
+
+}
+
+@media (max-width:480px){
+
+.profile-header{
+    padding:18px 16px;
+}
+
+.avatar-img{
+    width:76px;
+    height:76px;
+}
+
+.profile-name{
+    font-size:34px;
+}
+
+.sidebar,
+.content{
+    padding:18px 16px;
+}
+
+.orders-table{
+    min-width:0;
+}
+
+.modal-title{
+    font-size:22px;
+}
+
+}
+
+.avatar-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.avatar-initial {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    line-height: 1;
+    color: #000;
+    background: #f0f0f0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: .02em;
+}
 
 </style>
 {% endblock %}
@@ -194,22 +1058,18 @@
     <div class="avatar-wrapper">
         <div class="avatar-bar"></div>
         <div class="avatar-img">
-        <!-- person silhouette matching original -->
         {% if user.image %}
-            <img src="{{ user.image.url }}" class="avatar-img">
+            <img src="{{ user.image.url }}" class="avatar-photo">
         {% else %}
-            <svg width="70" height="85" viewBox="0 0 70 85" fill="none">
-                <circle cx="35" cy="26" r="18" fill="#bbb"/>
-                <ellipse cx="35" cy="72" rx="28" ry="18" fill="#bbb"/>
-            </svg>
+            <span class="avatar-initial">{{ user.fullname|default:user.email|first|upper }}</span>
         {% endif %}
         </div>
     </div>
     <div class="profile-info">
         <div class="profile-name">{{ user.fullname }}</div>
         <div class="profile-btns">
-        <a href="{% url 'user_edit_profile' %}" ><button class="inline-flex items-center justify-center gap-2 border border-black/15 px-8 py-3 mono text-[10px] tracking-widest font-bold text-black hover:bg-neutral-100 transition-colors">✎ &nbsp;Edit Profile</button></a>
-        <button class="inline-flex items-center justify-center gap-2 border border-black/15 px-8 py-3 mono text-[10px] tracking-widest font-bold text-black hover:bg-neutral-100 transition-colors">▣ &nbsp;Wallet</button>
+        <a href="{% url 'user_edit_profile' %}" ><button class="inline-flex items-center justify-center gap-2 border border-black/15 px-8 py-3 mono text-[10px] tracking-widest font-bold text-black hover:bg-neutral-100 transition-colors">✎ &nbsp;Edit</button></a>
+        <a href="{% url 'user_wallet' %}" ><button class="inline-flex items-center justify-center gap-2 border border-black/15 px-8 py-3 mono text-[10px] tracking-widest font-bold text-black hover:bg-neutral-100 transition-colors">▣ &nbsp;Wallet</button></a>
         <button class="inline-flex items-center justify-center gap-2 border border-black/15 px-8 py-3 mono text-[10px] tracking-widest font-bold text-red-600 hover:bg-red-50 transition-colors" onclick="openModal('logout')">↪ &nbsp;Logout</button>
         </div>
     </div>
@@ -224,7 +1084,7 @@
     <aside class="sidebar">
 
         <!-- Account details -->
-        <div class="sidebar-section">
+        <div class="sidebar-section account-section">
         <div class="section-title"><span>≡</span> Account details</div>
         <div class="label-tiny">EMAIL ADDRESS</div>
         <div class="value-text">{{ user.email }}</div>
@@ -235,24 +1095,24 @@
         <hr class="sidebar-divider"/>
 
         <!-- Referral -->
-        <div class="sidebar-section">
+        <div class="sidebar-section referral-section">
         <div class="referral-row">
-            <span class="referral-text">Referral Code – <strong>FRIENDLY10</strong></span>
-            <button class="btn-copy">COPY</button>
+            <span class="referral-text">Referral Code – <strong id="referral-code-text">{% if user.referral_code %}{{ user.referral_code }}{% else %}Not available{% endif %}</strong></span>
+            <button class="btn-copy" onclick="copyReferralCode()">COPY</button>
         </div>
         <div class="rewards-title">How to Earn Rewards</div>
         <ol class="rewards-list">
             <li>1. <strong>Copy Your Code:</strong> Click the "Copy" button next to your unique referral code below.</li>
             <li>2. <strong>Share with Friends:</strong> Send your code to friends via WhatsApp, Instagram, or SMS.</li>
-            <li>3. <strong>Friend Shops:</strong> Your friend enters your code at checkout on their first order to get 20% Off.</li>
-            <li>4. <strong>Get Rewarded:</strong> Once their order is delivered, a ₹500 coupon will be added automatically to your profile!</li>
+            <li>3. <strong>Friend Shops:</strong> Your friend enters your code at checkout on their first order, ₹100 will be added automatically to your friends wallet</li>
+            <li>4. <strong>Get Rewarded:</strong> Once their order is placed,₹200 will be added automatically to your wallet!</li>
         </ol>
         </div>
 
         <hr class="sidebar-divider"/>
 
         <!-- Address -->
-        <div class="sidebar-section">
+        <div class="sidebar-section address-section">
         <div class="address-header">
             <div class="address-title"><span style="font-size:11px;">⊙</span> Address</div>
             <button class="btn-see-all" onclick="openModal('addresses')">SEE ALL</button>
@@ -274,8 +1134,8 @@
         <hr class="sidebar-divider"/>
 
         <!-- Links -->
-        <div class="sidebar-links">
-        <a href="#"><span style="font-size:11px;">ℹ</span> About us</a>
+        <div class="sidebar-links links-section">
+        <a href="{% url 'about' %}"><span style="font-size:11px;">ℹ</span> About us</a>
         <a href="#"><span style="font-size:11px;">✆</span> Contact us</a>
         </div>
 
@@ -285,17 +1145,17 @@
     <div class="content">
 
         <!-- My Orders -->
+      <div class="orders-section">
         <div class="section-header">
-        <div class="section-header-title"><span>≡</span> My orders</div>
+        <div class="section-header-title"><span>≡</span>Recent orders</div>
         <a href="{% url 'user_orders' %}" ><button class="btn-see-all">SEE ALL</button></a>
         </div>
+        <div class="table-scroll">
         <table class="orders-table">
         <thead>
           <tr>
             <th>ORDER ID</th>
             <th>PRODUCT DETAILS</th>
-            <th>AMOUNT</th>
-            <th>STATUS</th>
             <th>ORDER DATE</th>
           </tr>
         </thead>
@@ -305,94 +1165,33 @@
             <tr>
 
               <!-- Order ID -->
-              <td class="prod">
-                {{ order.order_id }}
+              <td class="order-id" data-label="Order ID">
+                {{ order.display_id }}
               </td>
 
               <!-- Product Details -->
-              <td class="prod">
+              <td class="prod" data-label="Product Details">
                 {% for item in order.items.all|slice:":2" %}
-                <span>
-                  {{ item.product_name }}
+                <div class="prod-item">
+                  <span class="prod-name">{{ item.product_name }}</span>
 
-                  {% if item.item_status == "CANCELLED" and order.has_active_items %}
-                    <span class="item-status-badge item-status-cancelled">
-                      CANCELLED
-                    </span>
-
-                  {% elif item.item_status == "RETURN_REQUESTED"%}
-                    <span class="item-status-badge item-status-return-requested">
-                      RETURN REQUESTED
-                    </span>
-
-                  {% elif item.item_status == "RETURNED"%}
-                    <span class="item-status-badge item-status-returned">
-                      RETURNED
+                  {% if item.size or item.color %}
+                    <span class="prod-variant">
+                      {% if item.size %}{{ item.size }}{% endif %}
+                      {% if item.size and item.color %} / {% endif %}
+                      {% if item.color %}{{ item.color }}{% endif %}
                     </span>
                   {% endif %}
-                </span>
-
-                {% if item.size or item.color %}
-                  <br>
-                  <span style="color:#777;font-size:9px;font-weight:400;">
-                    {% if item.size %}{{ item.size }}{% endif %}
-                    {% if item.size and item.color %} / {% endif %}
-                    {% if item.color %}{{ item.color }}{% endif %}
-                  </span>
-                {% endif %}
-
-                {% if not forloop.last %}
-                  <br><br>
-                {% endif %}
-              {% endfor %}
+                </div>
+                {% endfor %}
 
                 {% if order.items.count > 2 %}
-                  <br>
-                  <span style="color:#777;font-size:9px;font-weight:400;">
-                    + {{ order.items.count|add:"-2" }} more
-                  </span>
-                {% endif %}
-              </td>
-
-              <!-- Amount -->
-              <td>
-                ₹{{ order.display_total_amount|floatformat:2 }}
-
-                {% comment %} {% if order.cancelled_subtotal > 0 %}
-                  <br>
-                  <span style="color:#dc2626;font-size:9px;text-decoration:line-through;">
-                    ₹{{ order.cancelled_subtotal|floatformat:0 }} cancelled
-                  </span>
-                {% endif %} {% endcomment %}
-              </td>
-
-              <!-- Status -->
-              <td>
-                {% if order.order_status == "CANCELLED" %}
-                  <span class="badge badge-c">CANCELLED</span>
-
-                {% elif order.order_status == "DELIVERED" %}
-                  <span class="badge badge-d">DELIVERED</span>
-
-                {% elif order.order_status == "SHIPPED" %}
-                  <span style="display:inline-block;font-size:9.5px;letter-spacing:.07em;padding:2px 9px;background:rgba(37,99,235,.10);color:#2563eb;border:1px solid rgba(37,99,235,.35);">
-                    SHIPPED
-                  </span>
-
-                {% elif order.order_status == "OUT_FOR_DELIVERY" %}
-                  <span style="display:inline-block;font-size:9.5px;letter-spacing:.07em;padding:2px 9px;background:rgba(14,165,233,.10);color:#0284c7;border:1px solid rgba(14,165,233,.35);">
-                    OUT FOR DELIVERY
-                  </span>
-
-                {% else %}
-                  <span class="badge badge-p">
-                    {{ order.get_order_status_display|upper }}
-                  </span>
+                  <span class="prod-more">+ {{ order.items.count|add:"-2" }} more</span>
                 {% endif %}
               </td>
 
               <!-- Order Date -->
-              <td class="date">
+              <td class="date" data-label="Order Date">
                 {{ order.created_at|date:"Y.m.d" }}
               </td>
 
@@ -407,13 +1206,16 @@
           {% endfor %}
         </tbody>
       </table>
+      </div>
+    </div>
 
         <!-- Wishlist -->
+    <div class="wishlist-section">
         <div class="section-header">
         <div class="section-header-title"><span>♡</span>Favourites</div>
         <a href="{% url 'wishlist_page' %}" ><button class="btn-see-all">SEE ALL</button></a>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-5 md:gap-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
 
         {% for item in wishlist_items %}
 
@@ -536,17 +1338,27 @@
       </div>
     </div>
     </div>
+    </div>
+
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════
      MODAL 1 – LOGOUT
-     Full black screen · question centred · Logout (white fill) + Cancel (outline)
+     Centered box · matches Addresses modal style
 ════════════════════════════════════════════════════════════════ -->
-<div id="m-logout" class="modal" style="min-height:100vh;">
-  <p class="logout-q">Are you sure you want to Logout?</p>
-  <div class="logout-btns">
-    <a href={% url 'user_logout' %} ><button class="btn-logout-confirm" onclick="closeModal('logout')">Logout</button></a>
-    <button class="btn-cancel-outline" onclick="closeModal('logout')">Cancel</button>
+<div id="m-logout" class="modal">
+  <div class="modal-box" style="max-width:500px;">
+    <div class="modal-header">
+      <span class="modal-title">Logout ?</span>
+      <button class="btn-close-modal" onclick="closeModal('logout')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="logout-q">Are you sure you want to logout of your account?</p>
+      <div class="logout-btns">
+        <button class="btn-cancel-outline" onclick="closeModal('logout')">Cancel</button>
+        <a href="{% url 'user_logout' %}"><button class="btn-logout-confirm" style="width:100%;">Logout</button></a>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -568,7 +1380,9 @@
         {% for address in addresses %}
         <div class="addr-row">
             <div class="addr-block">
-                <p>
+                <p style="color:black" >
+                    {{ address.name }}<br>
+                    {{ address.phone }}<br>
                     {{ address.line1 }}<br>
                     {{ address.city }}<br>
                     {{ address.postal_code }}<br>
@@ -841,6 +1655,16 @@
 
 {% block scripts %}
 <script>
+
+  function copyReferralCode() {
+    const code = document.getElementById('referral-code-text').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+      const btn = document.querySelector('.btn-copy');
+      const original = btn.textContent;
+      btn.textContent = 'COPIED';
+      setTimeout(() => { btn.textContent = original; }, 1500);
+    });
+  }
 
   // ── 1. MODAL CORE (defined first, before any overrides) ──
   function _baseOpenModal(id) {

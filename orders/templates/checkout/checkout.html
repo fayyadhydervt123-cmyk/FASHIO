@@ -10,6 +10,7 @@ Checkout | FASHIO
     font-family: 'DM Sans', sans-serif;
     background: #fff;
     color: #000;
+    overflow-x: hidden;
   }
 
   .mono {
@@ -59,23 +60,45 @@ Checkout | FASHIO
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding: 20px;
   border-bottom: 1px solid rgba(0,0,0,.1);
 }
 
 .modal-title {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 40px;
+  font-size: 28px;
   color: #000;
+  min-width: 0;
+  word-break: break-word;
+}
+
+@media (min-width: 480px) {
+  .modal-title {
+    font-size: 40px;
+  }
 }
 
 .btn-close-modal {
-  font-size: 22px;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  line-height: 1;
   color: rgba(0,0,0,.45);
 }
 
 .modal-body {
-  padding: 20px;
+  padding: 16px;
+}
+
+@media (min-width: 480px) {
+  .modal-body {
+    padding: 20px;
+  }
 }
 
 .form-wrap {
@@ -87,6 +110,12 @@ Checkout | FASHIO
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+}
+
+@media (max-width: 420px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .form-field label {
@@ -104,7 +133,8 @@ Checkout | FASHIO
   width: 100%;
   border: 1px solid rgba(0,0,0,.12);
   padding: 13px 14px;
-  font-size: 14px;
+  /* 16px min prevents iOS Safari auto-zoom on focus */
+  font-size: 16px;
   outline: none;
 }
 
@@ -131,50 +161,52 @@ Checkout | FASHIO
 
 {% block content %}
 
-<section class="bg-white pt-10 md:pt-12 px-6 md:px-12 pb-20">
+<section class="bg-white pt-8 md:pt-12 px-4 sm:px-6 md:px-12 pb-16 md:pb-20">
 
   <!-- Back + Header -->
-  <div class="mb-12">
+  <div class="mb-8 md:mb-12">
 
     {% if checkout_source == 'buy_now' %}
     <a href="{% url 'product_list' %}"
-        class="inline-flex items-center gap-2 mono text-[10px] tracking-widest text-black/40 hover:text-black transition-colors uppercase mb-8">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        class="inline-flex items-center gap-2 mono text-[10px] tracking-widest text-black/40 hover:text-black transition-colors uppercase mb-6 md:mb-8">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/>
         </svg>
         Back to Shopping
     </a>
     {% else %}
     <a href="{% url 'cart_page' %}"
-        class="inline-flex items-center gap-2 mono text-[10px] tracking-widest text-black/40 hover:text-black transition-colors uppercase mb-8">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        class="inline-flex items-center gap-2 mono text-[10px] tracking-widest text-black/40 hover:text-black transition-colors uppercase mb-6 md:mb-8">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/>
         </svg>
         Back to Cart
     </a>
     {% endif %}
 
-    <div class="flex items-center gap-4">
-      <div class="w-1 h-14 bg-black"></div>
+    <div class="flex items-center gap-3 md:gap-4">
+      <div class="w-1 h-10 sm:h-12 md:h-14 bg-black shrink-0"></div>
 
       <div>
-
-        <h1 class="bebas text-black text-6xl md:text-8xl leading-none tracking-wide">
+        <p class="mono text-[9px] tracking-[.3em] text-black/35 uppercase mb-1">
+              Step 1 of 2
+          </p>
+        <h1 class="bebas text-black text-5xl sm:text-6xl md:text-8xl leading-none tracking-wide break-words">
           CHECKOUT
         </h1>
       </div>
     </div>
 
-    <p class="mono text-[10px] tracking-widest text-black/40 uppercase mt-5">
+    <p class="mono text-[10px] tracking-widest text-black/40 uppercase mt-4 md:mt-5">
       {{ total_items }} ITEM{% if total_items != 1 %}S{% endif %} READY TO ORDER
     </p>
 
   </div>
 
-  <div class="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-10">
+  <div class="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-8 md:gap-10">
 
     <!-- LEFT CONTENT -->
-    <div class="space-y-10">
+    <div class="space-y-8 md:space-y-10">
 
       <!-- Product Table -->
       <div class="border border-black/10">
@@ -199,14 +231,14 @@ Checkout | FASHIO
         </div>
 
         {% for item in cart_items %}
-        <div class="checkout-row border-b border-black/10 last:border-b-0 px-5 py-5">
+        <div class="checkout-row border-b border-black/10 last:border-b-0 px-4 sm:px-5 py-5">
 
-          <div class="grid grid-cols-1 md:grid-cols-[1fr_120px_140px_140px] gap-6 items-center">
+          <div class="grid grid-cols-1 md:grid-cols-[1fr_120px_140px_140px] gap-4 md:gap-6 items-center">
 
             <!-- Product -->
-            <div class="flex gap-4">
-              <a href="{% url 'product_detail' item.product.id %}" >
-              <div class="w-24 h-24 bg-neutral-100 border border-black/10 overflow-hidden shrink-0">
+            <div class="flex gap-3 sm:gap-4">
+              <a href="{% url 'product_detail' item.product.id %}" class="shrink-0">
+              <div class="w-20 h-20 sm:w-24 sm:h-24 bg-neutral-100 border border-black/10 overflow-hidden shrink-0">
                 {% if item.thumbnail %}
                   <img src="{{ item.thumbnail }}"
                        alt="{{ item.product.name }}"
@@ -223,20 +255,10 @@ Checkout | FASHIO
 
               <div class="min-w-0">
                 <a href="{% url 'product_detail' item.product.id %}" >
-                <p class="text-black text-sm md:text-base font-semibold leading-snug">
+                <p class="text-black text-sm md:text-base font-semibold leading-snug break-words">
                   {{ item.product.name }}
                 </p>
               </a>
-
-                {% if item.variant.sku %}
-                  <p class="mono text-[9px] tracking-widest text-black/35 uppercase mt-1">
-                    SKU: {{ item.variant.sku }}
-                  </p>
-                {% else %}
-                  <p class="mono text-[9px] tracking-widest text-black/35 uppercase mt-1">
-                    ID: {{ item.variant.id|stringformat:"s"|slice:":8" }}
-                  </p>
-                {% endif %}
 
                 <div class="flex flex-wrap gap-2 mt-3">
                   <span class="mono text-[9px] tracking-widest border border-black/10 px-2 py-1 text-black/45 uppercase">
@@ -250,9 +272,9 @@ Checkout | FASHIO
               </div>
             </div>
 
-            <!-- Quantity -->
-            <div class="md:text-center">
-              <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden mb-1">
+            <!-- Quantity / Price / Total: receipt-style rows on mobile, columns on desktop -->
+            <div class="flex items-center justify-between md:block md:text-center border-t border-black/5 pt-3 md:border-0 md:pt-0">
+              <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden">
                 Quantity
               </p>
 
@@ -261,20 +283,25 @@ Checkout | FASHIO
               </p>
             </div>
 
-            <!-- Price -->
-            <div class="md:text-right">
-              <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden mb-1">
+            <div class="flex items-center justify-between md:block md:text-right">
+              <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden">
                 Price
               </p>
 
-              <p class="mono text-sm font-bold text-black">
-                ₹{{ item.unit_price_amount|floatformat:2 }}
-              </p>
+              <div class="text-right">
+                <p class="mono text-sm font-bold text-black">
+                  ₹{{ item.unit_price_amount|floatformat:2 }}
+                </p>
+                {% if item.savings_amount > 0 %}
+                  <p class="mono text-[10px] text-black/35 line-through mt-1">
+                    ₹{{ item.original_unit_price|floatformat:2 }}
+                  </p>
+                {% endif %}
+              </div>
             </div>
 
-            <!-- Total -->
-            <div class="md:text-right">
-              <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden mb-1">
+            <div class="flex items-center justify-between md:block md:text-right">
+              <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden">
                 Total
               </p>
 
@@ -293,18 +320,18 @@ Checkout | FASHIO
       <!-- Delivery Address -->
     <div>
     <div class="flex items-center gap-3 mb-5">
-        <div class="w-1 h-8 bg-black"></div>
-        <h2 class="bebas text-3xl md:text-4xl text-black leading-none">
+        <div class="w-1 h-8 bg-black shrink-0"></div>
+        <h2 class="bebas text-2xl sm:text-3xl md:text-4xl text-black leading-none">
         DELIVERY ADDRESS
         </h2>
     </div>
 
     {% if selected_address %}
         <div id="selected-address-box"
-            class="border border-black/10 p-5 max-w-md">
+            class="border border-black/10 p-4 sm:p-5 max-w-md">
 
         <p id="selected-address-name"
-            class="text-sm font-semibold text-black mb-1">
+            class="text-sm font-semibold text-black mb-1 break-words">
             {{ selected_address.name }}
         </p>
 
@@ -314,7 +341,7 @@ Checkout | FASHIO
         </p>
 
         <p id="selected-address-full"
-            class="text-sm text-black/60 leading-relaxed">
+            class="text-sm text-black/60 leading-relaxed break-words">
             {{ selected_address.line1 }}<br>
             {{ selected_address.city }}<br>
             {{ selected_address.get_state_display }} - {{ selected_address.postal_code }}<br>
@@ -330,26 +357,13 @@ Checkout | FASHIO
                 name="source"
                 value="{{ checkout_source }}">
 
-        <div class="border-t border-black/10 mt-5 pt-4 flex items-center gap-5">
+        <div class="border-t border-black/10 mt-5 pt-4 flex flex-wrap items-center gap-4 sm:gap-5">
 
         <button type="button"
                 id="open-address-modal"
                 class="mono text-[10px] tracking-widest text-black/50 hover:text-black transition-colors uppercase">
             Change
         </button>
-
-        {% comment %} <button type="button"
-                id="open-edit-address-modal"
-                class="mono text-[10px] tracking-widest text-black/50 hover:text-black transition-colors uppercase"
-                data-id="{{ selected_address.id }}"
-                data-name="{{ selected_address.name|escapejs }}"
-                data-phone="{{ selected_address.phone|escapejs }}"
-                data-line1="{{ selected_address.line1|escapejs }}"
-                data-city="{{ selected_address.city|escapejs }}"
-                data-postal="{{ selected_address.postal_code|escapejs }}"
-                data-state="{{ selected_address.state|escapejs }}">
-            Edit
-        </button> {% endcomment %}
 
         <button type="button"
                 onclick="openModal('new-address')"
@@ -361,7 +375,7 @@ Checkout | FASHIO
 
         </div>
     {% else %}
-        <div class="border border-black/10 p-6 max-w-md">
+        <div class="border border-black/10 p-5 sm:p-6 max-w-md">
         <p class="mono text-[10px] tracking-widest text-black/40 uppercase mb-5">
             No delivery address found
         </p>
@@ -379,28 +393,38 @@ Checkout | FASHIO
     <!-- RIGHT SUMMARY -->
     <aside class="xl:sticky xl:top-24 h-fit">
 
-      <div class="border border-black/10 bg-neutral-50 p-6">
+      <div class="border border-black/10 bg-neutral-50 p-5 sm:p-6">
 
         <div class="flex items-center gap-3 mb-6">
-          <div class="w-1 h-7 bg-black"></div>
-          <h2 class="bebas text-3xl text-black leading-none">
+          <div class="w-1 h-7 bg-black shrink-0"></div>
+          <h2 class="bebas text-2xl sm:text-3xl text-black leading-none">
             PRICE SUMMARY
           </h2>
         </div>
 
         <div class="space-y-4">
 
-          <div class="flex justify-between gap-6">
+          <div class="flex justify-between gap-4">
             <p class="text-sm text-black/55">
-              Subtotal
+              Subtotal <span class="text-black/35 text-xs">(GST incl.)</span>
             </p>
-
-            <p class="mono text-sm font-bold text-black">
+            <p class="mono text-sm font-bold text-black text-right">
               ₹{{ subtotal|floatformat:2 }}
             </p>
           </div>
 
-          <div class="flex justify-between gap-6">
+          {% if total_savings > 0 %}
+          <div class="flex justify-between gap-4">
+            <p class="text-sm text-green-700">
+              Discount
+            </p>
+            <p class="mono text-sm font-bold text-green-700">
+             -₹{{ total_savings|floatformat:2 }}
+            </p>
+          </div>
+          {% endif %}
+
+          <div class="flex justify-between gap-4">
             <p class="text-sm text-black/55">
               Delivery Fee
             </p>
@@ -414,36 +438,133 @@ Checkout | FASHIO
             </p>
           </div>
 
-          <div class="flex justify-between gap-6">
+          <div class="flex justify-between gap-4 border-b border-black/10 pb-5">
             <p class="text-sm text-black/55">
-              Discount ({{ discount_percentage|floatformat:0 }}%)
+              GST ({{ gst_rate|floatformat:0 }}% incl.)
             </p>
-
             <p class="mono text-sm font-bold text-black">
-              -₹{{ discount_amount|floatformat:2 }}
+              ₹{{ gst_amount|floatformat:2 }}
             </p>
           </div>
 
-          <div class="flex justify-between gap-6 border-b border-black/10 pb-5">
-            <p class="text-sm text-black/55">
-              Tax ({{ tax_percentage|floatformat:0 }}%)
+          {% if coupon_discount > 0 %}
+          <div class="flex justify-between gap-4">
+            <p class="text-sm text-green-700">
+              Coupon ({{ applied_coupon.code }})
             </p>
-
-            <p class="mono text-sm font-bold text-black">
-              ₹{{ tax_amount|floatformat:2 }}
+            <p class="mono text-sm font-bold text-green-700">
+              -₹{{ coupon_discount|floatformat:2 }}
             </p>
           </div>
+          {% endif %}
 
           <div class="pt-2">
             <p class="mono text-[10px] tracking-widest text-black/45 uppercase mb-2">
               Total Payable
             </p>
 
-            <p class="mono text-4xl font-bold text-black">
+            <p class="mono text-3xl sm:text-4xl font-bold text-black break-words">
               ₹{{ total_payable|floatformat:2 }}
             </p>
           </div>
 
+        </div>
+
+        <!-- Coupon -->
+        <div class="mt-8">
+          <label class="block mono text-[10px] tracking-widest text-black/45 uppercase mb-3">
+            Coupon Code
+          </label>
+
+          {% if applied_coupon %}
+            <div class="flex items-center justify-between gap-3 border border-black/15 px-4 py-3 mb-4">
+              <div class="min-w-0">
+                <p class="mono text-xs font-bold text-black">{{ applied_coupon.code }}</p>
+                <p class="mono text-[10px] text-green-700">-₹{{ coupon_discount|floatformat:2 }} applied</p>
+              </div>
+              <form method="POST" action="{% url 'remove_coupon' %}" class="shrink-0">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit" class="mono text-[10px] text-black/40 hover:text-red-600 uppercase">
+                  Remove
+                </button>
+              </form>
+            </div>
+          {% endif %}
+
+          {% if available_coupons %}
+            <form method="POST" action="{% url 'apply_coupon' %}">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <input type="hidden" name="source" value="{{ checkout_source }}">
+
+              <div class="space-y-2 mb-3">
+                {% for entry in available_coupons %}
+                  <label class="relative flex items-center gap-3 border px-4 py-3 transition-colors
+                        {% if not entry.is_applicable %}
+                          overflow-hidden cursor-not-allowed border-black/10
+                        {% elif applied_coupon and applied_coupon.code == entry.coupon.code %}
+                          border-black bg-neutral-50 cursor-pointer
+                        {% else %}
+                          border-black/10 hover:border-black/30 cursor-pointer
+                        {% endif %}">
+
+                    <input type="radio" name="code" value="{{ entry.coupon.code }}"
+                          {% if not entry.is_applicable %}disabled{% endif %}
+                          {% if applied_coupon and applied_coupon.code == entry.coupon.code %}checked{% endif %}
+                          class="accent-black shrink-0 {% if not entry.is_applicable %}invisible{% endif %}">
+
+                    <div class="min-w-0 flex-1 {% if not entry.is_applicable %}blur-[3px] select-none{% endif %}">
+                      <p class="mono text-xs font-bold text-black break-words">{{ entry.coupon.code }}</p>
+                      <p class="mono text-[9px] text-black/40 uppercase mt-0.5">
+                        {{ entry.coupon.display_discount }} off · Min ₹{{ entry.coupon.min_order_value|floatformat:0 }}
+                      </p>
+                    </div>
+
+                    {% if not entry.is_applicable %}
+                      <div class="absolute inset-0 flex items-center justify-center bg-white/40 px-2">
+                        <p class="mono text-[9px] tracking-widest text-black/60 uppercase font-bold text-center">
+                          {{ entry.reason }}
+                        </p>
+                      </div>
+                    {% endif %}
+
+                  </label>
+                {% endfor %}
+              </div>
+
+              {% if not applied_coupon or applicable_coupon_count > 1 %}
+                <button type="submit"
+                        {% if not have_applicable_coupon %}disabled{% endif %}
+                        class="w-full mono text-[10px] tracking-widest py-3 font-bold uppercase transition-colors
+                        {% if have_applicable_coupon %}
+                          bg-black text-white hover:bg-black/80
+                        {% else %}
+                          bg-black/20 text-black/40 cursor-not-allowed
+                        {% endif %}">
+                    {% if applied_coupon %}Switch Coupon{% else %}Apply Coupon{% endif %}
+                </button>
+              {% endif %}
+            </form>
+          {% endif %}
+
+          <details class="mt-4">
+            <summary class="mono text-[10px] tracking-widest text-black/40 uppercase cursor-pointer hover:text-black transition-colors">
+              {% if available_coupons %}Have a different code?{% else %}Have a coupon code?{% endif %}
+            </summary>
+            <form method="POST" action="{% url 'apply_coupon' %}" class="flex flex-col sm:flex-row border border-black/15 mt-3">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <input type="hidden" name="source" value="{{ checkout_source }}">
+              <input type="text" name="code" placeholder="ENTER CODE" required
+                    style="font-size:16px;"
+                    class="mono text-[10px] tracking-widest flex-1 px-3 py-3 outline-none placeholder-black/25 uppercase min-w-0">
+              <button type="submit"
+                      class="mono text-[10px] tracking-widest bg-black text-white px-5 py-3 sm:py-0 font-bold hover:bg-black/80 transition-colors">
+                APPLY
+              </button>
+            </form>
+          </details>
         </div>
 
         <form method="GET" action="{% url 'payment_method' %}" class="mt-8">
@@ -487,31 +608,31 @@ Checkout | FASHIO
        class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
 
   <!-- Modal Content -->
-  <div class="relative z-10 min-h-screen flex items-center justify-center px-4">
+  <div class="relative z-10 min-h-screen flex items-center justify-center px-4 py-8">
 
-    <div class="bg-white border border-black/10 w-full max-w-2xl shadow-2xl">
+    <div class="bg-white border border-black/10 w-full max-w-2xl shadow-2xl max-h-[90vh] flex flex-col">
 
       <!-- Header -->
-      <div class="flex items-center justify-between px-5 py-4 border-b border-black/10">
-        <div>
+      <div class="flex items-center justify-between gap-3 px-4 sm:px-5 py-4 border-b border-black/10 shrink-0">
+        <div class="min-w-0">
           <p class="mono text-[9px] tracking-[.25em] text-black/35 uppercase">
             Delivery
           </p>
 
-          <h2 class="bebas text-4xl text-black leading-none mt-1">
+          <h2 class="bebas text-3xl sm:text-4xl text-black leading-none mt-1 break-words">
             SELECT ADDRESS
           </h2>
         </div>
 
         <button type="button"
                 id="close-address-modal"
-                class="mono text-xl text-black/40 hover:text-black transition-colors">
+                class="mono text-xl text-black/40 hover:text-black transition-colors shrink-0 w-8 h-8 flex items-center justify-center">
           ×
         </button>
       </div>
 
       <!-- Address List -->
-      <div class="p-5 max-h-[70vh] overflow-y-auto space-y-3">
+      <div class="p-4 sm:p-5 overflow-y-auto space-y-3">
 
         {% for address in addresses %}
           <button type="button"
@@ -530,9 +651,9 @@ Checkout | FASHIO
                   data-state-value="{{ address.state }}"
                   data-postal="{{ address.postal_code }}">
 
-            <div class="flex items-start justify-between gap-4">
-              <div>
-                <p class="text-sm font-semibold text-black">
+            <div class="flex items-start justify-between gap-3 sm:gap-4">
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-black break-words">
                   {{ address.name }}
                 </p>
 
@@ -540,7 +661,7 @@ Checkout | FASHIO
                   +91 {{ address.phone }}
                 </p>
 
-                <p class="text-sm text-black/60 leading-relaxed mt-4">
+                <p class="text-sm text-black/60 leading-relaxed mt-4 break-words">
                   {{ address.line1 }}<br>
                   {{ address.city }},
                   {{ address.get_state_display }} -
@@ -549,7 +670,7 @@ Checkout | FASHIO
                 </p>
               </div>
 
-              <span class="address-check mono text-[10px] tracking-widest
+              <span class="address-check mono text-[10px] tracking-widest shrink-0
                 {% if selected_address and selected_address.id == address.id %}
                   text-black
                 {% else %}
@@ -652,7 +773,7 @@ Checkout | FASHIO
               <label>State :</label>
               <select name="state"
                       id="edit_state"
-                      style="width:100%;background:#fff;border:1px solid #333;color:#111;padding:13px 14px;font-size:12px;font-family:'Space Mono',monospace;outline:none;">
+                      style="width:100%;background:#fff;border:1px solid #333;color:#111;padding:13px 14px;font-size:16px;font-family:'Space Mono',monospace;outline:none;">
                 <option value="">-- Select State --</option>
                 <option value="AP">Andhra Pradesh</option>
                 <option value="AR">Arunachal Pradesh</option>
@@ -767,7 +888,7 @@ Checkout | FASHIO
             <div class="form-field">
               <label>State :</label>
               <select name="state"
-                      style="width:100%;background:#fff;border:1px solid #333;color:#111;padding:13px 14px;font-size:12px;font-family:'Space Mono',monospace;outline:none;"
+                      style="width:100%;background:#fff;border:1px solid #333;color:#111;padding:13px 14px;font-size:16px;font-family:'Space Mono',monospace;outline:none;"
                       required>
                 <option value="">-- Select State --</option>
                 <option value="AP">Andhra Pradesh</option>

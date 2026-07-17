@@ -32,12 +32,6 @@
 
   <div class="flex items-center gap-2.5 shrink-0">
 
-    {% comment %} <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="6" y="6" width="9" height="2.5" fill="black"/>
-      <rect x="6" y="6" width="2.5" height="15" fill="black"/>
-      <rect x="6" y="13" width="7" height="2.5" fill="black"/>
-    </svg> {% endcomment %}
-
     <a href="{% url 'user_loggedin_dashboard' %}" 
       class="mono text-black text-base font-bold tracking-widest">
       FASHIO
@@ -66,7 +60,13 @@
     SHOP
   </a>
 
-  <a href="#"
+  <a href="{% url 'about' %}"
+     class="mono text-xs tracking-widest transition-colors
+     {% if request.resolver_match.url_name == 'about' or request.resolver_match.url_name == 'about' %}
+       text-black border-b border-black pb-0.5
+     {% else %}
+       text-black/50 hover:text-black
+     {% endif %}"
      class="mono text-xs tracking-widest text-black/50 hover:text-black transition-colors">
     ABOUT
   </a>
@@ -152,6 +152,25 @@
 </nav>
 
 <main class="pt-14">
+
+  {% if messages %}
+    <div id="django-toast-container" class="fixed top-20 left-1/2 -translate-x-1/2 z-[2000] flex flex-col gap-2 items-center pointer-events-none">
+      {% for message in messages %}
+        <div class="django-toast mono text-[10px] tracking-widest px-5 py-4 border shadow-xl bg-white pointer-events-auto
+          {% if message.tags == 'success' %}
+            text-black
+          {% elif message.tags == 'error' %}
+            border-red-200 text-red-600
+          {% else %}
+            border-black/10 text-black/70
+          {% endif %}
+        ">
+          {{ message|upper }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
     {% block content %}
     {% endblock %}
 </main>
@@ -167,6 +186,15 @@
       nav.style.background = 'rgba(255,255,255,0.9)';
       nav.style.borderBottomColor = 'rgba(0,0,0,0.1)';
     }
+  });
+
+  document.querySelectorAll('.django-toast').forEach((toast, index) => {
+    setTimeout(() => {
+      toast.style.transition = 'opacity .4s ease, transform .4s ease';
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-10px)';
+      setTimeout(() => toast.remove(), 400);
+    }, 5000 + (index * 300)); // 5s, staggered slightly if multiple messages
   });
 </script>
 

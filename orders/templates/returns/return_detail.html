@@ -1,0 +1,812 @@
+{% extends 'admin_base/base.html' %}
+{% block title %}Return Detail{% endblock %}
+
+{% block content %}
+<div class="p-4 md:p-8 max-w-screen-xl mx-auto">
+
+  <!-- Top Bar -->
+  <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 md:mb-8">
+    <div>
+      <div class="flex items-center gap-3 sm:gap-4 mb-3">
+        <a href="{% url 'admin_return_list' %}"
+           class="text-white/40 hover:text-white transition-colors shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+          </svg>
+        </a>
+
+        <h1 class="mono text-white text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
+          Return Detail
+        </h1>
+      </div>
+
+      <p class="mono text-xs text-white/30 tracking-widest">
+        Review customer return request, item details, and refund information
+      </p>
+    </div>
+
+    <!-- Status Badge -->
+    <div>
+      {% if return_request.status == 'REQUESTED' %}
+        <span class="bg-[#4a3a0a] text-yellow-400 font-mono text-[0.7rem] tracking-widest px-4 py-2 rounded inline-block">
+          REQUESTED
+        </span>
+
+      {% elif return_request.status == 'APPROVED' %}
+        <span class="bg-[#0f4c2a] text-green-400 font-mono text-[0.7rem] tracking-widest px-4 py-2 rounded inline-block">
+          APPROVED
+        </span>
+
+      {% elif return_request.status == 'REJECTED' %}
+        <span class="bg-[#3b1010] text-red-400 font-mono text-[0.7rem] tracking-widest px-4 py-2 rounded inline-block">
+          REJECTED
+        </span>
+
+      {% elif return_request.status == 'REFUNDED' %}
+        <span class="bg-[#0f4c2a] text-green-400 font-mono text-[0.7rem] tracking-widest px-4 py-2 rounded inline-block">
+          REFUNDED
+        </span>
+
+      {% else %}
+        <span class="bg-[#242424] text-gray-400 font-mono text-[0.7rem] tracking-widest px-4 py-2 rounded inline-block">
+          {{ return_request.get_status_display|upper }}
+        </span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Main Grid -->
+  <div class="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-4 md:gap-6">
+
+    <!-- Left Side -->
+    <div class="space-y-4 md:space-y-6">
+
+      <!-- Return Information -->
+      <div class="bg-[#141414] border border-white/10 rounded-sm overflow-hidden">
+        <div class="px-4 sm:px-6 py-4 border-b border-white/10">
+          <h2 class="mono text-white text-sm font-bold tracking-widest">
+            RETURN INFORMATION
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 p-4 sm:p-6">
+
+          <div>
+            <p class="mono text-xs text-white/35 tracking-widest mb-2">
+              Return ID
+            </p>
+            <p class="font-mono text-sm text-gray-200 break-all">
+              RTN-{{ return_request.return_id|stringformat:"s"|slice:":6"|upper }}
+            </p>
+          </div>
+
+          <div>
+            <p class="mono text-xs text-white/35 tracking-widest mb-2">
+              Requested Date
+            </p>
+            <p class="font-mono text-sm text-gray-200">
+              {{ return_request.requested_at|date:"Y.m.d" }}
+            </p>
+            <p class="font-mono text-[11px] text-gray-500 mt-1">
+              {{ return_request.requested_at|time:"H:i:s" }}
+            </p>
+          </div>
+
+          <div>
+            <p class="mono text-xs text-white/35 tracking-widest mb-2">
+              Order ID
+            </p>
+            <p class="font-mono text-sm text-gray-200">
+              {{ return_request.order.display_id|default:return_request.order.order_id }}
+            </p>
+          </div>
+
+          <div>
+            <p class="mono text-xs text-white/35 tracking-widest mb-2">
+              Order Date
+            </p>
+            <p class="font-mono text-sm text-gray-200">
+              {{ return_request.order.created_at|date:"Y.m.d" }}
+            </p>
+            <p class="font-mono text-[11px] text-gray-500 mt-1">
+              {{ return_request.order.created_at|time:"H:i:s" }}
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Product Information -->
+      <!-- Returned Items -->
+    <div class="bg-[#141414] border border-white/10 rounded-sm overflow-hidden">
+      <div class="px-4 sm:px-6 py-4 border-b border-white/10">
+        <h2 class="mono text-white text-sm font-bold tracking-widest">
+          RETURNED ITEMS
+        </h2>
+      </div>
+
+      <div class="divide-y divide-white/5">
+        {% for ret in batch_returns %}
+        <div class="p-4 sm:p-6">
+          <div class="flex flex-col sm:flex-row items-start gap-4 sm:gap-5">
+
+            <!-- Product Image -->
+            <div class="w-20 h-24 sm:w-24 sm:h-28 bg-black border border-white/10 flex-shrink-0 overflow-hidden">
+              {% with first_image=ret.order_item.variant.images.first %}
+                {% if first_image %}
+                  <img src="{{ first_image.image.url }}"
+                      alt="{{ ret.order_item.product_name }}"
+                      class="w-full h-full object-cover">
+                {% else %}
+                  <div class="w-full h-full flex items-center justify-center">
+                    <span class="mono text-[10px] text-white/25 tracking-widest">NO IMAGE</span>
+                  </div>
+                {% endif %}
+              {% endwith %}
+            </div>
+
+            <!-- Details -->
+            <div class="flex-1 min-w-0 w-full">
+              <h3 class="font-mono text-white text-base font-semibold mb-3 truncate">
+                {{ ret.order_item.product_name }}
+              </h3>
+
+              <div class="grid grid-cols-2 sm:grid-cols-2 gap-4">
+                <div>
+                  <p class="mono text-xs text-white/35 tracking-widest mb-1">Size</p>
+                  <p class="font-mono text-sm text-gray-300">{{ ret.order_item.size|default:"-" }}</p>
+                </div>
+                <div>
+                  <p class="mono text-xs text-white/35 tracking-widest mb-1">Color</p>
+                  <p class="font-mono text-sm text-gray-300">{{ ret.order_item.color|default:"-" }}</p>
+                </div>
+                <div>
+                  <p class="mono text-xs text-white/35 tracking-widest mb-1">Quantity</p>
+                  <p class="font-mono text-sm text-gray-300">{{ ret.order_item.quantity }}</p>
+                </div>
+                <div>
+                  <p class="mono text-xs text-white/35 tracking-widest mb-1">Item Status</p>
+                  <p class="font-mono text-sm text-yellow-400">{{ ret.order_item.get_item_status_display }}</p>
+                </div>
+              </div>
+
+              <!-- Per-item reason if different -->
+              {% if ret.reason != return_request.reason %}
+              <div class="mt-4">
+                <p class="mono text-xs text-white/35 tracking-widest mb-1">Reason</p>
+                <p class="font-mono text-sm text-gray-300">
+                  {{ reason_dict|default:ret.reason }}
+                </p>
+              </div>
+              {% endif %}
+            </div>
+
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+
+      <!-- Reason -->
+      <div class="bg-[#141414] border border-white/10 rounded-sm overflow-hidden">
+        <div class="px-4 sm:px-6 py-4 border-b border-white/10">
+          <h2 class="mono text-white text-sm font-bold tracking-widest">
+            RETURN REASON
+          </h2>
+        </div>
+
+        <div class="p-4 sm:p-6 space-y-5">
+
+          <div>
+            <p class="mono text-xs text-white/35 tracking-widest mb-2">
+              Reason
+            </p>
+            <p class="font-mono text-sm text-gray-200">
+              {{ display_reason }}
+            </p>
+          </div>
+
+          <div>
+            <p class="mono text-xs text-white/35 tracking-widest mb-2">
+              Customer Comment
+            </p>
+
+            {% if return_request.comment %}
+              <p class="font-mono text-sm text-gray-300 leading-6">
+                {{ return_request.comment }}
+              </p>
+            {% else %}
+              <p class="font-mono text-sm text-gray-600">
+                No comment provided.
+              </p>
+            {% endif %}
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Side -->
+    <div class="space-y-4 md:space-y-6">
+
+      <!-- Customer Info -->
+      <div class="bg-[#141414] border border-white/10 rounded-sm overflow-hidden">
+        <div class="px-4 sm:px-6 py-4 border-b border-white/10">
+          <h2 class="mono text-white text-sm font-bold tracking-widest">
+            CUSTOMER
+          </h2>
+        </div>
+
+        <div class="p-4 sm:p-6 space-y-5">
+
+          <div>
+            <p class="mono text-xs text-white/35 tracking-widest mb-2">
+              Name
+            </p>
+            <p class="font-mono text-sm text-gray-200">
+              {{ return_request.user.get_full_name|default:return_request.user.username }}
+            </p>
+          </div>
+
+          <div>
+            <p class="mono text-xs text-white/35 tracking-widest mb-2">
+              Email
+            </p>
+            <p class="font-mono text-sm text-gray-300 break-all">
+              {{ return_request.user.email }}
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Refund Summary -->
+      <!-- Refund Summary -->
+      <div class="bg-[#141414] border border-white/10 rounded-sm overflow-hidden">
+        <div class="px-4 sm:px-6 py-4 border-b border-white/10">
+          <h2 class="mono text-white text-sm font-bold tracking-widest">
+            REFUND SUMMARY
+          </h2>
+        </div>
+
+        <div class="divide-y divide-white/5">
+          {% for ret in batch_returns %}
+          <div class="p-4 sm:p-6 space-y-3">
+
+            <p class="font-mono text-xs text-white/60 truncate">
+              {{ ret.order_item.product_name }}
+            </p>
+
+            {% if ret.order_item.size or ret.order_item.color %}
+            <p class="font-mono text-[11px] text-white/25">
+              {% if ret.order_item.size %}{{ ret.order_item.size }}{% endif %}
+              {% if ret.order_item.size and ret.order_item.color %} · {% endif %}
+              {% if ret.order_item.color %}{{ ret.order_item.color }}{% endif %}
+            </p>
+            {% endif %}
+
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-xs text-gray-500">Unit Price</span>
+              <span class="font-mono text-xs text-gray-300">₹{{ ret.order_item.price|floatformat:2 }}</span>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-xs text-gray-500">Quantity</span>
+              <span class="font-mono text-xs text-gray-300">{{ ret.order_item.quantity }}</span>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-xs text-gray-500">Subtotal</span>
+              <span class="font-mono text-xs text-gray-300">₹{{ ret.order_item.subtotal|floatformat:2 }}</span>
+            </div>
+
+            {% if ret.offer_savings > 0 %}
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-xs text-gray-500">Offer Savings</span>
+              <span class="font-mono text-xs text-gray-400">−₹{{ ret.offer_savings|floatformat:2 }}</span>
+            </div>
+            {% endif %}
+
+            {% if ret.coupon_share > 0 %}
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-xs text-gray-500">Coupon Share</span>
+              <span class="font-mono text-xs text-gray-400">−₹{{ ret.coupon_share|floatformat:2 }}</span>
+            </div>
+            {% endif %}
+
+            <div class="flex items-center justify-between pt-1">
+              <span class="font-mono text-xs text-white/40">Refund</span>
+              <span class="font-mono text-sm text-green-400 font-semibold">₹{{ ret.refund_amount|floatformat:2 }}</span>
+            </div>
+
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Total -->
+        <div class="px-4 sm:px-6 py-4 border-t border-white/10 flex items-center justify-between">
+          <span class="mono text-xs text-white tracking-widest">TOTAL REFUND</span>
+          <span class="font-mono text-lg text-green-400 font-bold">₹{{ total_refund|floatformat:2 }}</span>
+        </div>
+
+      </div>
+
+      <!-- Admin Action Placeholder -->
+
+      <!-- New -->
+      <div >
+
+        <div class="p-4 sm:p-6">
+          {% if return_request.status == 'REQUESTED' %}
+
+            <div class="flex flex-col gap-3">
+              <button type="button"
+                      onclick="openApproveModal()"
+                      class="mono text-xs w-full px-4 py-3 bg-white text-black font-bold hover:bg-white/80 transition-colors">
+                Approve
+              </button>
+
+              <button type="button"
+                      onclick="openRejectModal()"
+                      class="mono text-xs w-full px-4 py-3 border border-red-500/40 text-red-400 hover:bg-red-500/10 transition-colors">
+                Reject
+              </button>
+            </div>
+
+          {% elif return_request.status == 'APPROVED' %}
+
+            <p class="font-mono text-xs text-gray-500 leading-5 mb-5">
+              This return has been approved.
+            </p>
+
+            <button type="button"
+                    onclick="openRefundModal()"
+                    class="mono text-xs w-full px-4 py-3 bg-blue-500 text-white font-bold hover:bg-blue-400 transition-colors">
+              Mark as Refunded
+            </button>
+
+          {% else %}
+            <p class="font-mono text-sm text-gray-500">
+              No action available for this status.
+            </p>
+          {% endif %}
+        </div>
+      </div>
+    
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Approve Modal -->
+<div id="approve-modal"
+     class="fixed inset-0 z-[999] hidden items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm px-4 py-8 overflow-y-auto">
+
+  <div class="w-full max-w-3xl bg-[#0e0e0e] border border-white/10 shadow-2xl my-auto">
+
+    <!-- Header -->
+    <div class="flex items-start sm:items-center justify-between gap-4 px-4 sm:px-6 py-4 sm:py-5 border-b border-white/10 bg-[#141414]">
+      <div>
+        <p class="mono text-[10px] tracking-widest text-white/30 uppercase mb-1">
+          Admin Action
+        </p>
+        <h2 class="mono text-lg sm:text-xl font-bold tracking-wide text-white">
+          Select Items to Approve
+        </h2>
+      </div>
+
+      <button type="button"
+              onclick="closeApproveModal()"
+              class="w-9 h-9 border border-white/10 text-white/40 hover:text-white hover:bg-white/5 transition-colors flex items-center justify-center text-xl shrink-0">
+        ×
+      </button>
+    </div>
+
+    <form method="POST" action="{% url 'admin_approve_returns' return_request.return_id %}">
+      {% csrf_token %}
+
+      <!-- Table Header -->
+      <div class="hidden md:grid grid-cols-[1.5fr_1fr_80px_120px_80px] gap-4 sm:gap-6 px-4 sm:px-6 py-4 border-b border-white/10">
+        <p class="mono text-[10px] tracking-widest text-white/35 uppercase">Product</p>
+        <p class="mono text-[10px] tracking-widest text-white/35 uppercase">Details</p>
+        <p class="mono text-[10px] tracking-widest text-white/35 uppercase text-center">Qty</p>
+        <p class="mono text-[10px] tracking-widest text-white/35 uppercase text-right">Refund</p>
+        <p class="mono text-[10px] tracking-widest text-white/35 uppercase text-center">Select</p>
+      </div>
+
+      <div class="max-h-[45vh] sm:max-h-[55vh] overflow-y-auto divide-y divide-white/5">
+        {% for ret in batch_returns %}
+          {% if ret.status == 'REQUESTED' %}
+          <label class="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_80px_120px_80px] gap-3 sm:gap-6 items-center px-4 sm:px-6 py-4 sm:py-5 cursor-pointer hover:bg-white/[0.02] transition-colors">
+
+            <!-- Product -->
+            <div class="flex items-center gap-4">
+              <div class="w-14 h-14 sm:w-16 sm:h-16 bg-black border border-white/10 overflow-hidden shrink-0">
+                {% with first_image=ret.order_item.variant.images.first %}
+                  {% if first_image %}
+                    <img src="{{ first_image.image.url }}"
+                         alt="{{ ret.order_item.product_name }}"
+                         class="w-full h-full object-cover">
+                  {% else %}
+                    <div class="w-full h-full flex items-center justify-center">
+                      <span class="mono text-[8px] tracking-widest text-white/20">NO IMG</span>
+                    </div>
+                  {% endif %}
+                {% endwith %}
+              </div>
+
+              <div>
+                <p class="font-mono text-sm text-white leading-snug">
+                  {{ ret.order_item.product_name }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Details -->
+            <div class="flex items-center justify-between md:block">
+              <span class="mono text-[10px] text-white/30 tracking-widest uppercase md:hidden">Details</span>
+              <p class="mono text-xs text-white/50">
+                {{ ret.order_item.size|default:"-" }}{% if ret.order_item.color %} / {{ ret.order_item.color }}{% endif %}
+              </p>
+            </div>
+
+            <!-- Qty -->
+            <div class="flex items-center justify-between md:text-center md:block">
+              <span class="mono text-[10px] text-white/30 tracking-widest uppercase md:hidden">Qty</span>
+              <p class="mono text-sm font-bold text-white">
+                {{ ret.order_item.quantity|stringformat:"02d" }}
+              </p>
+            </div>
+
+            <!-- Refund -->
+            <div class="flex items-center justify-between md:text-right md:block">
+              <span class="mono text-[10px] text-white/30 tracking-widest uppercase md:hidden">Refund</span>
+              <p class="mono text-sm font-bold text-green-400">
+                ₹{{ ret.refund_amount|floatformat:2 }}
+              </p>
+            </div>
+
+            <!-- Select -->
+            <div class="flex items-center justify-between md:text-center md:block">
+              <span class="mono text-[10px] text-white/30 tracking-widest uppercase md:hidden">Select</span>
+              <input type="checkbox"
+                     name="selected_returns"
+                     value="{{ ret.return_id }}"
+                     class="peer hidden">
+
+              <div class="md:mx-auto w-10 h-10 border border-white/20 flex items-center justify-center text-white/20 peer-checked:bg-white peer-checked:text-black peer-checked:border-white transition-colors">
+                ✓
+              </div>
+            </div>
+
+          </label>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <!-- Footer -->
+      <div class="flex flex-col md:flex-row items-center justify-end gap-3 px-4 sm:px-6 py-4 sm:py-5 border-t border-white/10 bg-[#141414]">
+        <button type="button"
+                onclick="closeApproveModal()"
+                class="w-full md:w-auto border border-white/10 bg-transparent text-white mono text-[10px] tracking-widest px-8 py-4 font-bold hover:bg-white/5 transition-colors">
+          Cancel
+        </button>
+
+        <button type="submit"
+                class="w-full md:w-auto bg-white text-black mono text-[10px] tracking-widest px-12 py-4 font-bold hover:bg-white/80 transition-colors">
+          Confirm Approval
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- Mark Refunded Modal -->
+<div id="refund-modal"
+     class="fixed inset-0 z-[999] hidden items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm px-4 py-8 overflow-y-auto">
+
+  <div class="w-full max-w-3xl bg-[#0e0e0e] border border-white/10 shadow-2xl my-auto">
+
+    <!-- Header -->
+    <div class="flex items-start sm:items-center justify-between gap-4 px-4 sm:px-6 py-4 sm:py-5 border-b border-white/10 bg-[#141414]">
+      <div>
+        <p class="mono text-[10px] tracking-widest text-white/30 uppercase mb-1">
+          Action
+        </p>
+        <h2 class="mono text-lg sm:text-xl font-bold tracking-wide text-white">
+          Select Items to Mark as Refunded
+        </h2>
+      </div>
+
+      <button type="button"
+              onclick="closeRefundModal()"
+              class="w-9 h-9 border border-white/10 text-white/40 hover:text-white hover:bg-white/5 transition-colors flex items-center justify-center text-xl shrink-0">
+        ×
+      </button>
+    </div>
+
+    <form method="POST" action="{% url 'admin_mark_refunded' return_request.return_id %}">
+      {% csrf_token %}
+
+      <!-- Table Header -->
+      <div class="hidden md:grid grid-cols-[1.5fr_1fr_80px_120px_80px] gap-4 sm:gap-6 px-4 sm:px-6 py-4 border-b border-white/10">
+        <p class="mono text-[10px] tracking-widest text-white/35 uppercase">Product</p>
+        <p class="mono text-[10px] tracking-widest text-white/35 uppercase">Details</p>
+        <p class="mono text-[10px] tracking-widest text-white/35 uppercase text-center">Qty</p>
+        <p class="mono text-[10px] tracking-widest text-white/35 uppercase text-right">Refund</p>
+        <p class="mono text-[10px] tracking-widest text-white/35 uppercase text-center">Select</p>
+      </div>
+
+      <div class="max-h-[45vh] sm:max-h-[55vh] overflow-y-auto divide-y divide-white/5">
+        {% for ret in batch_returns %}
+          {% if ret.status == 'APPROVED' %}
+          <label class="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_80px_120px_80px] gap-3 sm:gap-6 items-center px-4 sm:px-6 py-4 sm:py-5 cursor-pointer hover:bg-white/[0.02] transition-colors">
+
+            <!-- Product -->
+            <div class="flex items-center gap-4">
+              <div class="w-14 h-14 sm:w-16 sm:h-16 bg-black border border-white/10 overflow-hidden shrink-0">
+                {% with first_image=ret.order_item.variant.images.first %}
+                  {% if first_image %}
+                    <img src="{{ first_image.image.url }}"
+                         alt="{{ ret.order_item.product_name }}"
+                         class="w-full h-full object-cover">
+                  {% else %}
+                    <div class="w-full h-full flex items-center justify-center">
+                      <span class="mono text-[8px] tracking-widest text-white/20">NO IMG</span>
+                    </div>
+                  {% endif %}
+                {% endwith %}
+              </div>
+
+              <div>
+                <p class="font-mono text-sm text-white leading-snug">
+                  {{ ret.order_item.product_name }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Details -->
+            <div class="flex items-center justify-between md:block">
+              <span class="mono text-[10px] text-white/30 tracking-widest uppercase md:hidden">Details</span>
+              <p class="mono text-xs text-white/50">
+                {{ ret.order_item.size|default:"-" }}{% if ret.order_item.color %} / {{ ret.order_item.color }}{% endif %}
+              </p>
+            </div>
+
+            <!-- Qty -->
+            <div class="flex items-center justify-between md:text-center md:block">
+              <span class="mono text-[10px] text-white/30 tracking-widest uppercase md:hidden">Qty</span>
+              <p class="mono text-sm font-bold text-white">
+                {{ ret.order_item.quantity|stringformat:"02d" }}
+              </p>
+            </div>
+
+            <!-- Refund -->
+            <div class="flex items-center justify-between md:text-right md:block">
+              <span class="mono text-[10px] text-white/30 tracking-widest uppercase md:hidden">Refund</span>
+              <p class="mono text-sm font-bold text-blue-400">
+                ₹{{ ret.refund_amount|floatformat:2 }}
+              </p>
+            </div>
+
+            <!-- Select -->
+            <div class="flex items-center justify-between md:text-center md:block">
+              <span class="mono text-[10px] text-white/30 tracking-widest uppercase md:hidden">Select</span>
+              <input type="checkbox"
+                     name="selected_returns"
+                     value="{{ ret.return_id }}"
+                     class="peer hidden">
+
+              <div class="md:mx-auto w-10 h-10 border border-white/20 flex items-center justify-center text-white/20 peer-checked:bg-blue-500 peer-checked:text-white peer-checked:border-blue-500 transition-colors">
+                ✓
+              </div>
+            </div>
+
+          </label>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <!-- Footer -->
+      <div class="flex flex-col md:flex-row items-center justify-end gap-3 px-4 sm:px-6 py-4 sm:py-5 border-t border-white/10 bg-[#141414]">
+        <button type="button"
+                onclick="closeRefundModal()"
+                class="w-full md:w-auto border border-white/10 bg-transparent text-white mono text-[10px] tracking-widest px-8 py-4 font-bold hover:bg-white/5 transition-colors">
+          Cancel
+        </button>
+
+        <button type="submit"
+                class="w-full md:w-auto bg-blue-500 text-white mono text-[10px] tracking-widest px-12 py-4 font-bold hover:bg-blue-400 transition-colors">
+          Confirm Refund
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- Reject Modal -->
+<div id="reject-modal"
+     class="fixed inset-0 z-[999] hidden items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm px-4 py-8 overflow-y-auto">
+
+  <div class="w-full max-w-3xl bg-[#0e0e0e] border border-white/10 shadow-2xl my-auto">
+
+    <!-- Header -->
+    <div class="flex items-start sm:items-center justify-between gap-4 px-4 sm:px-6 py-4 sm:py-5 border-b border-white/10 bg-[#141414]">
+      <div>
+        <p class="mono text-[10px] tracking-widest text-white/30 uppercase mb-1">
+          Admin Action
+        </p>
+        <h2 class="mono text-lg sm:text-xl font-bold tracking-wide text-white">
+          Select Items to Reject
+        </h2>
+      </div>
+
+      <button type="button"
+              onclick="closeRejectModal()"
+              class="w-9 h-9 border border-white/10 text-white/40 hover:text-white hover:bg-white/5 transition-colors flex items-center justify-center text-xl shrink-0">
+        ×
+      </button>
+    </div>
+
+    <form method="POST" action="{% url 'admin_reject_returns' return_request.return_id %}">
+      {% csrf_token %}
+
+      <!-- Table Header -->
+      <div class="hidden md:grid grid-cols-[1.5fr_1fr_80px_120px_80px] gap-4 sm:gap-6 px-4 sm:px-6 py-4 border-b border-white/10">
+        <p class="mono text-[10px] tracking-widest text-white/35 uppercase">Product</p>
+        <p class="mono text-[10px] tracking-widest text-white/35 uppercase">Details</p>
+        <p class="mono text-[10px] tracking-widest text-white/35 uppercase text-center">Qty</p>
+        <p class="mono text-[10px] tracking-widest text-white/35 uppercase text-right">Refund</p>
+        <p class="mono text-[10px] tracking-widest text-white/35 uppercase text-center">Select</p>
+      </div>
+
+      <div class="max-h-[35vh] sm:max-h-[45vh] overflow-y-auto divide-y divide-white/5">
+        {% for ret in batch_returns %}
+          {% if ret.status == 'REQUESTED' %}
+          <label class="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_80px_120px_80px] gap-3 sm:gap-6 items-center px-4 sm:px-6 py-4 sm:py-5 cursor-pointer hover:bg-white/[0.02] transition-colors">
+
+            <!-- Product -->
+            <div class="flex items-center gap-4">
+              <div class="w-14 h-14 sm:w-16 sm:h-16 bg-black border border-white/10 overflow-hidden shrink-0">
+                {% with first_image=ret.order_item.variant.images.first %}
+                  {% if first_image %}
+                    <img src="{{ first_image.image.url }}"
+                         alt="{{ ret.order_item.product_name }}"
+                         class="w-full h-full object-cover">
+                  {% else %}
+                    <div class="w-full h-full flex items-center justify-center">
+                      <span class="mono text-[8px] tracking-widest text-white/20">NO IMG</span>
+                    </div>
+                  {% endif %}
+                {% endwith %}
+              </div>
+
+              <div>
+                <p class="font-mono text-sm text-white leading-snug">
+                  {{ ret.order_item.product_name }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Details -->
+            <div class="flex items-center justify-between md:block">
+              <span class="mono text-[10px] text-white/30 tracking-widest uppercase md:hidden">Details</span>
+              <p class="mono text-xs text-white/50">
+                {{ ret.order_item.size|default:"-" }}{% if ret.order_item.color %} / {{ ret.order_item.color }}{% endif %}
+              </p>
+            </div>
+
+            <!-- Qty -->
+            <div class="flex items-center justify-between md:text-center md:block">
+              <span class="mono text-[10px] text-white/30 tracking-widest uppercase md:hidden">Qty</span>
+              <p class="mono text-sm font-bold text-white">
+                {{ ret.order_item.quantity|stringformat:"02d" }}
+              </p>
+            </div>
+
+            <!-- Refund -->
+            <div class="flex items-center justify-between md:text-right md:block">
+              <span class="mono text-[10px] text-white/30 tracking-widest uppercase md:hidden">Refund</span>
+              <p class="mono text-sm font-bold text-red-400">
+                ₹{{ ret.refund_amount|floatformat:2 }}
+              </p>
+            </div>
+
+            <!-- Select -->
+            <div class="flex items-center justify-between md:text-center md:block">
+              <span class="mono text-[10px] text-white/30 tracking-widest uppercase md:hidden">Select</span>
+              <input type="checkbox"
+                     name="selected_returns"
+                     value="{{ ret.return_id }}"
+                     class="peer hidden">
+
+              <div class="md:mx-auto w-10 h-10 border border-white/20 flex items-center justify-center text-white/20 peer-checked:bg-red-500 peer-checked:text-white peer-checked:border-red-500 transition-colors">
+                ✓
+              </div>
+            </div>
+
+          </label>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <!-- Rejection note -->
+      <div class="px-4 sm:px-6 py-4 sm:py-5 border-t border-white/10">
+        <label class="mono text-[10px] tracking-widest text-white/35 uppercase mb-2 block">
+          Rejection Reason (optional)
+        </label>
+        <textarea name="rejection_note"
+                   rows="3"
+                   placeholder="Explain why this return is being rejected..."
+                   class="w-full bg-black border border-white/10 px-4 py-3 text-sm text-white placeholder-white/20 outline-none focus:border-white/30 transition-colors resize-none"></textarea>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex flex-col md:flex-row items-center justify-end gap-3 px-4 sm:px-6 py-4 sm:py-5 border-t border-white/10 bg-[#141414]">
+        <button type="button"
+                onclick="closeRejectModal()"
+                class="w-full md:w-auto border border-white/10 bg-transparent text-white mono text-[10px] tracking-widest px-8 py-4 font-bold hover:bg-white/5 transition-colors">
+          Cancel
+        </button>
+
+        <button type="submit"
+                class="w-full md:w-auto bg-red-500 text-white mono text-[10px] tracking-widest px-12 py-4 font-bold hover:bg-red-400 transition-colors">
+          Confirm Rejection
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+
+<!-- New -->
+<script>
+  function openApproveModal() {
+    const modal = document.getElementById("approve-modal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+  }
+
+  function closeApproveModal() {
+    const modal = document.getElementById("approve-modal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  }
+
+  function openRefundModal() {
+    const modal = document.getElementById("refund-modal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+  }
+
+  function closeRefundModal() {
+    const modal = document.getElementById("refund-modal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  }
+
+  function openRejectModal() {
+    const modal = document.getElementById("reject-modal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+  }
+
+  function closeRejectModal() {
+    const modal = document.getElementById("reject-modal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  }
+
+</script>
+
+{% endblock %}

@@ -4,10 +4,10 @@
 
 {% block content %}
 
-<section class="bg-white min-h-screen pt-20 pb-20 px-6 md:px-16">
+<section class="bg-white min-h-screen pt-6 md:pt-9 pb-16 md:pb-20 px-4 sm:px-6 md:px-28">
 
   <!-- Back Button -->
-  <div class="mb-8">
+  <div class="mb-6 md:mb-8">
     <a href="{% url 'user_orders' %}"
        class="inline-flex items-center gap-2 mono text-[10px] tracking-widest text-black/45 hover:text-black uppercase transition-colors">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -18,24 +18,21 @@
   </div>
 
   <!-- Page Header -->
-  <div class="flex items-center gap-4 mb-10">
-
+  <div class="flex items-center gap-4 mb-8 md:mb-10">
     <div>
-      <p class="mono text-[10px] tracking-widest text-black/35 uppercase mb-2">
-        {{ order.order_id }}
+      <p class="mono text-[10px] tracking-widest text-black/35 uppercase mb-2 break-all">
+        {{ order.display_id }}
       </p>
-
-      <h1 class="bebas text-black text-5xl md:text-5xl leading-none tracking-wide">
+      <h1 class="bebas text-black text-4xl sm:text-5xl leading-none tracking-wide">
         Order Details
       </h1>
     </div>
   </div>
 
   <!-- Items Table -->
-  <div class="border border-black/10 bg-white mb-12">
+  <div class="border border-black/10 bg-white mb-8 md:mb-12">
 
-    <!-- Table Title -->
-    <div class="bg-neutral-50 border-b border-black/10 px-5 py-4">
+    <div class="bg-neutral-50 border-b border-black/10 px-4 sm:px-5 py-4">
       <h2 class="mono text-sm font-bold text-black tracking-wide">
         Items in your order
       </h2>
@@ -43,571 +40,393 @@
 
     <!-- Desktop Header -->
     <div class="hidden md:grid grid-cols-[1.5fr_1fr_90px_130px] gap-6 px-5 py-4 border-b border-black/10">
-      <p class="mono text-[10px] tracking-widest text-black/45 uppercase">
-        Product
-      </p>
-
-      <p class="mono text-[10px] tracking-widest text-black/45 uppercase">
-        Details
-      </p>
-
-      <p class="mono text-[10px] tracking-widest text-black/45 uppercase text-center">
-        Qty
-      </p>
-
-      <p class="mono text-[10px] tracking-widest text-black/45 uppercase text-right">
-        Price
-      </p>
+      <p class="mono text-[10px] tracking-widest text-black/45 uppercase">Product</p>
+      <p class="mono text-[10px] tracking-widest text-black/45 uppercase">Details</p>
+      <p class="mono text-[10px] tracking-widest text-black/45 uppercase text-center">Qty</p>
+      <p class="mono text-[10px] tracking-widest text-black/45 uppercase text-right">Price</p>
     </div>
 
-    <!-- Items -->
     {% for item in order.items.all %}
-        <div class="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_90px_130px] gap-6 items-center px-5 py-5 border-b border-black/10 last:border-b-0 transition-colors
-        {% if item.item_status == 'CANCELLED' %}
-        bg-red-50/50 opacity-70
-        {% elif item.item_status == 'RETURN_REQUESTED' %}
-        bg-blue-50/50
-        {% elif item.item_status == 'RETURNED' %}
-        bg-green-50/50 opacity-80
-        {% else %}
-        hover:bg-neutral-50
-        {% endif %}
-        ">
+    <div class="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_90px_130px] gap-3 md:gap-6 items-center px-4 sm:px-5 py-4 sm:py-5 border-b border-black/10 last:border-b-0 transition-colors
+      {% if item.item_status == 'CANCELLED' %} bg-red-50/50 opacity-70
+      {% elif item.item_status == 'RETURN_REQUESTED' %} bg-blue-50/50
+      {% elif item.item_status == 'RETURN_APPROVED' %} bg-emerald-50/50
+      {% elif item.item_status == 'RETURN_REJECTED' %} bg-red-50/50
+      {% elif item.item_status == 'RETURNED' %} bg-green-50/50 opacity-80
+      {% else %} hover:bg-neutral-50
+      {% endif %}">
+
       <!-- Product -->
       <div class="flex items-center gap-4">
-        <div class="w-20 h-20 bg-neutral-100 border border-black/10 overflow-hidden shrink-0">
+        <div class="w-16 h-16 sm:w-20 sm:h-20 bg-neutral-100 border border-black/10 overflow-hidden shrink-0">
           {% if item.variant and item.variant.images.first %}
             <img src="{{ item.variant.images.first.image.url }}"
                  alt="{{ item.product_name }}"
                  class="w-full h-full object-cover">
           {% else %}
             <div class="w-full h-full flex items-center justify-center">
-              <span class="mono text-[8px] tracking-widest text-black/25">
-                NO IMG
-              </span>
+              <span class="mono text-[8px] tracking-widest text-black/25">NO IMG</span>
             </div>
           {% endif %}
         </div>
 
-        <div>
+        <div class="min-w-0">
           <div class="flex items-center gap-2 flex-wrap">
             <p class="text-sm font-semibold text-black leading-snug">
-                {{ item.product_name }}
+              {{ item.product_name }}
             </p>
 
             {% if item.item_status == "CANCELLED" %}
-            <span class="mono text-[8px] tracking-widest px-2 py-1 text-red-600 font-bold">
-                CANCELLED
-            </span>
-
+              <span class="mono text-[8px] tracking-widest px-2 py-1 text-red-600 font-bold">CANCELLED</span>
             {% elif item.item_status == "RETURN_REQUESTED" %}
-            <span class="mono text-[8px] tracking-widest px-2 py-1 text-blue-600 font-bold">
-                RETURN REQUESTED
-            </span>
-
+              <span class="mono text-[8px] tracking-widest px-2 py-1 text-blue-600 font-bold">RETURN REQUESTED</span>
+            {% elif item.item_status == "RETURN_APPROVED" %}
+              <span class="mono text-[8px] tracking-widest px-2 py-1 text-emerald-600 font-bold">RETURN APPROVED</span>
+            {% elif item.item_status == "RETURN_REJECTED" %}
+              <span class="mono text-[8px] tracking-widest px-2 py-1 text-red-600 font-bold">RETURN REJECTED</span>
             {% elif item.item_status == "RETURNED" %}
-            <span class="mono text-[8px] tracking-widest px-2 py-1 text-green-600 font-bold">
-                RETURNED
-            </span>
+              <span class="mono text-[8px] tracking-widest px-2 py-1 text-green-600 font-bold">REFUNDED</span>
             {% endif %}
-            </div>
+          </div>
 
           {% if item.variant and item.variant.sku %}
-            <p class="mono text-[9px] tracking-widest text-black/35 mt-1">
-              SKU: {{ item.variant.sku }}
-            </p>
+            <p class="mono text-[9px] tracking-widest text-black/35 mt-1">SKU: {{ item.variant.sku }}</p>
           {% endif %}
+
+          <!-- Mobile: qty/details/price collapsed inline under product -->
+          <p class="mono text-[10px] tracking-widest text-black/45 mt-2 md:hidden">
+            {{ item.size|default:"-" }}{% if item.color %} / {{ item.color }}{% endif %}
+            &nbsp;·&nbsp; Qty {{ item.quantity|stringformat:"02d" }}
+          </p>
         </div>
       </div>
 
-      <!-- Details -->
-      <div>
-        <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden mb-1">
-          Details
-        </p>
-
+      <!-- Details (desktop only, mobile shown above) -->
+      <div class="hidden md:block">
         <p class="mono text-xs text-black/60">
           {% if item.size %}{{ item.size }}{% else %}-{% endif %}
           {% if item.color %} / {{ item.color }}{% endif %}
         </p>
       </div>
 
-      <!-- Qty -->
-      <div class="md:text-center">
-        <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden mb-1">
-          Qty
-        </p>
-
+      <!-- Qty (desktop only) -->
+      <div class="hidden md:block md:text-center">
         <p class="mono text-sm text-black font-bold">
           {{ item.quantity|stringformat:"02d" }}
         </p>
       </div>
 
       <!-- Price -->
-      <div class="md:text-right">
-        <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden mb-1">
-          Price
-        </p>
-
+      <div class="flex items-center justify-between md:block md:text-right pl-20 sm:pl-24 md:pl-0 -mt-2 md:mt-0">
+        <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden">Price</p>
         <p class="mono text-sm font-bold
-        {% if item.item_status == 'CANCELLED' %}
-        text-red-600 line-through
-        {% elif item.item_status == 'RETURN_REQUESTED' %}
-        text-blue-600
-        {% elif item.item_status == 'RETURNED' %}
-        text-green-600 line-through
-        {% else %}
-        text-black
-        {% endif %}
-        ">
-        ₹{{ item.subtotal|floatformat:2 }}
+          {% if item.item_status == 'CANCELLED' %} text-red-600 line-through
+          {% elif item.item_status == 'RETURN_REQUESTED' %} text-blue-600
+          {% elif item.item_status == 'RETURN_APPROVED' %} text-emerald-600
+          {% elif item.item_status == 'RETURN_REJECTED' %} text-red-600
+          {% elif item.item_status == 'RETURNED' %} text-green-600 line-through
+          {% else %} text-black
+          {% endif %}">
+          ₹{{ item.subtotal|floatformat:2 }}
         </p>
       </div>
 
     </div>
     {% empty %}
     <div class="px-5 py-16 text-center">
-      <p class="mono text-[10px] tracking-widest text-black/35 uppercase">
-        No items found
-      </p>
+      <p class="mono text-[10px] tracking-widest text-black/35 uppercase">No items found</p>
     </div>
     {% endfor %}
 
   </div>
 
   <!-- Order Tracking -->
-<!-- Order Tracking -->
-<div class="border border-black/10 bg-white mb-12">
+  <div class="border border-black/10 bg-white mb-8 md:mb-12">
 
-  <div class="bg-neutral-50 border-b border-black/10 px-5 py-4">
-    <h2 class="mono text-sm font-bold text-black tracking-wide">
-      Order Tracking
-    </h2>
-  </div>
-
-  <div class="px-5 py-8">
-
-    {% if order.order_status == "CANCELLED" %}
-
-      <!-- Cancelled Tracking -->
-      <div class="relative mb-10">
-
-        <div class="absolute left-[22%] right-[22%] top-5 h-px bg-red-500/30"></div>
-
-        <div class="relative grid grid-cols-2 gap-4">
-
-          <!-- Placed -->
-          <div class="text-center">
-            <div class="mx-auto w-10 h-10 rounded-full border border-black bg-black text-white flex items-center justify-center relative z-10">
-              ✓
-            </div>
-
-            <p class="mono text-[10px] text-black mt-4 font-bold tracking-widest">
-              Order Placed
-            </p>
-
-            <p class="mono text-[9px] text-black/35 mt-2">
-              {{ order.created_at|date:"M d, Y" }}
-            </p>
-          </div>
-
-          <!-- Cancelled -->
-          <div class="text-center">
-            <div class="mx-auto w-10 h-10 rounded-full border border-red-500 bg-red-500 text-white flex items-center justify-center relative z-10">
-              ×
-            </div>
-
-            <p class="mono text-[10px] text-red-600 mt-4 font-bold tracking-widest">
-              Order Cancelled
-            </p>
-
-            {% for history in status_history %}
-              {% if history.status == "CANCELLED" %}
-                <p class="mono text-[9px] text-black/35 mt-2">
-                  {{ history.created_at|date:"M d, Y" }}
-                </p>
-              {% endif %}
-            {% endfor %}
-          </div>
-
-        </div>
-      </div>
-
-    {% else %}
-
-      <!-- Normal Tracking -->
-      <div class="relative mb-10">
-
-        <div class="absolute left-0 right-0 top-5 h-px bg-black/15"></div>
-
-        <div class="relative grid grid-cols-4 gap-4">
-
-          <!-- Placed / Pending -->
-          <div class="text-center">
-            <div class="mx-auto w-10 h-10 rounded-full border border-black bg-black text-white flex items-center justify-center relative z-10">
-              ✓
-            </div>
-
-            <p class="mono text-[10px] text-black mt-4 font-bold tracking-widest">
-              Placed
-            </p>
-          </div>
-
-          <!-- Shipped -->
-          <div class="text-center">
-            <div class="mx-auto w-10 h-10 rounded-full border relative z-10 flex items-center justify-center
-              {% if order.order_status == 'SHIPPED' or order.order_status == 'OUT_FOR_DELIVERY' or order.order_status == 'DELIVERED' %}
-                border-black bg-black text-white
-              {% else %}
-                border-black/20 bg-white text-black/30
-              {% endif %}">
-              📦
-            </div>
-
-            <p class="mono text-[10px] text-black mt-4 font-bold tracking-widest">
-              Shipped
-            </p>
-          </div>
-
-          <!-- Out For Delivery -->
-          <div class="text-center">
-            <div class="mx-auto w-10 h-10 rounded-full border relative z-10 flex items-center justify-center
-              {% if order.order_status == 'OUT_FOR_DELIVERY' or order.order_status == 'DELIVERED' %}
-                border-black bg-black text-white
-              {% else %}
-                border-black/20 bg-white text-black/30
-              {% endif %}">
-              🚚
-            </div>
-
-            <p class="mono text-[10px] text-black mt-4 font-bold tracking-widest">
-              Out For Delivery
-            </p>
-          </div>
-
-          <!-- Delivered -->
-          <div class="text-center">
-            <div class="mx-auto w-10 h-10 rounded-full border relative z-10 flex items-center justify-center
-              {% if order.order_status == 'DELIVERED' %}
-                border-black bg-black text-white
-              {% else %}
-                border-black/20 bg-white text-black/30
-              {% endif %}">
-              📍
-            </div>
-
-            <p class="mono text-[10px] text-black mt-4 font-bold tracking-widest">
-              Delivered
-            </p>
-          </div>
-
-        </div>
-      </div>
-
-    {% endif %}
-
-    <!-- Tracking History -->
-    <div class="border-t border-black/10 pt-6">
-      <p class="mono text-[10px] tracking-widest text-black/35 uppercase mb-5">
-        Tracking History
-      </p>
-
-      <div class="space-y-4">
-        {% for history in status_history %}
-          <div class="flex items-start justify-between gap-6 border-b border-black/5 pb-4 last:border-b-0">
-
-            <div>
-              <p class="mono text-sm font-bold
-                {% if history.status == 'CANCELLED' %}
-                  text-red-600
-                {% else %}
-                  text-black
-                {% endif %}
-              ">
-                {% if history.status == "PENDING" %}
-                  Pending
-                {% elif history.status == "PLACED" %}
-                  Placed
-                {% elif history.status == "CONFIRMED" %}
-                  Confirmed
-                {% elif history.status == "SHIPPED" %}
-                  Shipped
-                {% elif history.status == "OUT_FOR_DELIVERY" %}
-                  Out For Delivery
-                {% elif history.status == "DELIVERED" %}
-                  Delivered
-                {% elif history.status == "CANCELLED" %}
-                  Order Cancelled
-                {% else %}
-                  {{ history.status }}
-                {% endif %}
-              </p>
-
-              {% if history.note %}
-                <p class="text-sm text-black/45 mt-2 leading-relaxed">
-                  {{ history.note }}
-                </p>
-              {% endif %}
-            </div>
-
-            <div class="text-right shrink-0">
-              <p class="mono text-xs text-black/60">
-                {{ history.created_at|date:"M d, Y" }}
-              </p>
-
-              <p class="mono text-[11px] text-black/35 mt-1">
-                {{ history.created_at|time:"h:i A" }}
-              </p>
-            </div>
-
-          </div>
-        {% empty %}
-          <p class="mono text-[10px] tracking-widest text-black/35 uppercase">
-            No tracking history found
-          </p>
-        {% endfor %}
-      </div>
+    <div class="bg-neutral-50 border-b border-black/10 px-4 sm:px-5 py-4">
+      <h2 class="mono text-sm font-bold text-black tracking-wide">Order Tracking</h2>
     </div>
 
-  </div>
-</div>
+    <div class="px-4 sm:px-5 py-6 sm:py-8">
 
-  <!-- Details Grid -->
-  <div class="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-10">
+      {% if order.order_status == "CANCELLED" %}
+
+        <!-- Cancelled Tracking -->
+        <div class="relative mb-10">
+          <div class="hidden sm:block absolute left-[22%] right-[22%] top-5 h-px bg-red-500/30"></div>
+          <div class="relative grid grid-cols-2 gap-4">
+
+            <div class="text-center">
+              <div class="mx-auto w-10 h-10 rounded-full border border-black bg-black text-white flex items-center justify-center relative z-10">✓</div>
+              <p class="mono text-[10px] text-black mt-4 font-bold tracking-widest">Order Placed</p>
+              <p class="mono text-[9px] text-black/35 mt-2">{{ order.created_at|date:"M d, Y" }}</p>
+            </div>
+
+            <div class="text-center">
+              <div class="mx-auto w-10 h-10 rounded-full border border-red-500 bg-red-500 text-white flex items-center justify-center relative z-10">×</div>
+              <p class="mono text-[10px] text-red-600 mt-4 font-bold tracking-widest">Order Cancelled</p>
+              {% for history in status_history %}
+                {% if history.status == "CANCELLED" %}
+                  <p class="mono text-[9px] text-black/35 mt-2">{{ history.created_at|date:"M d, Y" }}</p>
+                {% endif %}
+              {% endfor %}
+            </div>
+
+          </div>
+        </div>
+
+      {% else %}
+
+        <!-- Normal Tracking: vertical on mobile, horizontal stepper on md+ -->
+        <div class="relative mb-10">
+
+          <!-- horizontal connector line, desktop only -->
+          <div class="hidden md:block absolute left-0 right-0 top-5 h-px bg-black/15"></div>
+
+          <div class="relative flex flex-col gap-6 md:grid md:grid-cols-4 md:gap-4">
+
+            <!-- vertical connector line, mobile only -->
+            <div class="md:hidden absolute left-5 top-5 bottom-5 w-px bg-black/15"></div>
+
+            <!-- Placed -->
+            <div class="relative flex items-center gap-4 md:flex-col md:text-center md:gap-0">
+              <div class="w-10 h-10 shrink-0 rounded-full border border-black bg-black text-white flex items-center justify-center relative z-10">✓</div>
+              <p class="mono text-[11px] md:text-[10px] text-black md:mt-4 font-bold tracking-widest">Placed</p>
+            </div>
+
+            <!-- Shipped -->
+            <div class="relative flex items-center gap-4 md:flex-col md:text-center md:gap-0">
+              <div class="w-10 h-10 shrink-0 rounded-full border relative z-10 flex items-center justify-center
+                {% if order.order_status == 'SHIPPED' or order.order_status == 'OUT_FOR_DELIVERY' or order.order_status == 'DELIVERED' %}
+                  border-black bg-black text-white
+                {% else %}
+                  border-black/20 bg-white text-black/30
+                {% endif %}">📦</div>
+              <p class="mono text-[11px] md:text-[10px] text-black md:mt-4 font-bold tracking-widest">Shipped</p>
+            </div>
+
+            <!-- Out For Delivery -->
+            <div class="relative flex items-center gap-4 md:flex-col md:text-center md:gap-0">
+              <div class="w-10 h-10 shrink-0 rounded-full border relative z-10 flex items-center justify-center
+                {% if order.order_status == 'OUT_FOR_DELIVERY' or order.order_status == 'DELIVERED' %}
+                  border-black bg-black text-white
+                {% else %}
+                  border-black/20 bg-white text-black/30
+                {% endif %}">🚚</div>
+              <p class="mono text-[11px] md:text-[10px] text-black md:mt-4 font-bold tracking-widest">Out For Delivery</p>
+            </div>
+
+            <!-- Delivered -->
+            <div class="relative flex items-center gap-4 md:flex-col md:text-center md:gap-0">
+              <div class="w-10 h-10 shrink-0 rounded-full border relative z-10 flex items-center justify-center
+                {% if order.order_status == 'DELIVERED' %}
+                  border-black bg-black text-white
+                {% else %}
+                  border-black/20 bg-white text-black/30
+                {% endif %}">📍</div>
+              <p class="mono text-[11px] md:text-[10px] text-black md:mt-4 font-bold tracking-widest">Delivered</p>
+            </div>
+
+          </div>
+        </div>
+
+      {% endif %}
+
+      <!-- Tracking History -->
+      <div class="border-t border-black/10 pt-6">
+        <p class="mono text-[10px] tracking-widest text-black/35 uppercase mb-5">Tracking History</p>
+
+        <div class="space-y-4">
+          {% for history in status_history %}
+            <div class="flex flex-col sm:flex-row items-start sm:items-start justify-between gap-2 sm:gap-6 border-b border-black/5 pb-4 last:border-b-0">
+              <div>
+                {% if history.note %}
+                  <p class="text-sm text-black/45 leading-relaxed">{{ history.note }}</p>
+                {% endif %}
+              </div>
+
+              <div class="sm:text-right shrink-0">
+                <p class="mono text-xs text-black/60">{{ history.created_at|date:"M d, Y" }}</p>
+                <p class="mono text-[11px] text-black/35 mt-1">{{ history.created_at|time:"h:i A" }}</p>
+              </div>
+            </div>
+          {% empty %}
+            <p class="mono text-[10px] tracking-widest text-black/35 uppercase">No tracking history found</p>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Details Grid: on mobile, Price Summary (order-1) shows before Order Info/Address (order-2) -->
+  <div class="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-8 lg:gap-10">
 
     <!-- Left Side -->
-    <div class="space-y-8">
+    <div class="space-y-6 sm:space-y-8 order-2 lg:order-1">
 
       <!-- Order Info -->
-      <div class="border border-black/10 bg-white p-6">
-
+      <div class="border border-black/10 bg-white p-5 sm:p-6">
         <div class="flex items-center gap-3 mb-6">
           <div class="w-1 h-8 bg-black"></div>
-          <h2 class="mono text-sm font-bold tracking-widest text-black">
-            Order Details
-          </h2>
+          <h2 class="mono text-sm font-bold tracking-widest text-black">Order Details</h2>
         </div>
 
         <div class="space-y-4">
-
-          <div class="flex justify-between gap-6">
-            <p class="mono text-[10px] tracking-widest text-black/45 uppercase">
-              Status
-            </p>
-
+          <div class="flex justify-between gap-4">
+            <p class="mono text-[10px] tracking-widest text-black/45 uppercase">Status</p>
             <div>
               {% if order.order_status == "DELIVERED" %}
-                <span class="mono text-[9px] tracking-widest px-3 py-1 border border-green-500/30 bg-green-500/10 text-green-600 font-bold">
-                  DELIVERED
-                </span>
-
+                <span class="mono text-[9px] tracking-widest px-3 py-1 border border-green-500/30 bg-green-500/10 text-green-600 font-bold">DELIVERED</span>
               {% elif order.order_status == "CANCELLED" %}
-                <span class="mono text-[9px] tracking-widest px-3 py-1 border border-red-500/30 bg-red-500/10 text-red-600 font-bold">
-                  CANCELLED
-                </span>
-
+                <span class="mono text-[9px] tracking-widest px-3 py-1 border border-red-500/30 bg-red-500/10 text-red-600 font-bold">CANCELLED</span>
               {% elif order.order_status == "SHIPPED" %}
-                <span class="mono text-[9px] tracking-widest px-3 py-1 border border-blue-500/30 bg-blue-500/10 text-blue-600 font-bold">
-                  SHIPPED
-                </span>
-
+                <span class="mono text-[9px] tracking-widest px-3 py-1 border border-blue-500/30 bg-blue-500/10 text-blue-600 font-bold">SHIPPED</span>
               {% elif order.order_status == "OUT_FOR_DELIVERY" %}
-                <span class="mono text-[9px] tracking-widest px-3 py-1 border border-sky-500/30 bg-sky-500/10 text-sky-600 font-bold">
-                  OUT FOR DELIVERY
-                </span>
-
+                <span class="mono text-[9px] tracking-widest px-3 py-1 border border-sky-500/30 bg-sky-500/10 text-sky-600 font-bold">OUT FOR DELIVERY</span>
               {% else %}
-                <span class="mono text-[9px] tracking-widest px-3 py-1 border border-yellow-500/30 bg-yellow-500/10 text-yellow-600 font-bold">
-                  {{ order.get_order_status_display|upper }}
-                </span>
+                <span class="mono text-[9px] tracking-widest px-3 py-1 border border-yellow-500/30 bg-yellow-500/10 text-yellow-600 font-bold">{{ order.get_order_status_display|upper }}</span>
               {% endif %}
             </div>
           </div>
 
-          <div class="flex justify-between gap-6 border-t border-black/10 pt-4">
-            <p class="mono text-[10px] tracking-widest text-black/45 uppercase">
-              Order ID
-            </p>
+          {% if is_pending_payment %}
+            <p class="mono text-[9px] tracking-widest text-yellow-600 text-right -mt-2">Awaiting payment confirmation</p>
+          {% endif %}
 
-            <p class="mono text-xs text-black font-bold">
-              {{ order.order_id }}
-            </p>
+          <div class="flex justify-between gap-4 border-t border-black/10 pt-4">
+            <p class="mono text-[10px] tracking-widest text-black/45 uppercase shrink-0">Order ID</p>
+            <p class="mono text-xs text-black font-bold text-right break-all">{{ order.display_id }}</p>
           </div>
 
-          <div class="flex justify-between gap-6 border-t border-black/10 pt-4">
-            <p class="mono text-[10px] tracking-widest text-black/45 uppercase">
-              Purchase Date
-            </p>
-
-            <p class="mono text-xs text-black/60">
-              {{ order.created_at|date:"Y.m.d" }} · {{ order.created_at|time:"h:i A" }}
-            </p>
+          <div class="flex justify-between gap-4 border-t border-black/10 pt-4">
+            <p class="mono text-[10px] tracking-widest text-black/45 uppercase shrink-0">Purchase Date</p>
+            <p class="mono text-xs text-black/60 text-right">{{ order.created_at|date:"Y.m.d" }} · {{ order.created_at|time:"h:i A" }}</p>
           </div>
 
-          <div class="flex justify-between gap-6 border-t border-black/10 pt-4">
-            <p class="mono text-[10px] tracking-widest text-black/45 uppercase">
-              Payment
-            </p>
-
-            <p class="mono text-xs text-black/60">
-              {{ order.get_payment_method_display }} / {{ order.get_payment_status_display }}
-            </p>
+          <div class="flex justify-between gap-4 border-t border-black/10 pt-4">
+            <p class="mono text-[10px] tracking-widest text-black/45 uppercase shrink-0">Payment</p>
+            <p class="mono text-xs text-black/60 text-right">{{ order.get_payment_method_display }} / {{ order.get_payment_status_display }}</p>
           </div>
-
         </div>
       </div>
 
       <!-- Delivery Address -->
-      <div class="border border-black/10 bg-neutral-50 p-6">
-
+      <div class="border border-black/10 bg-neutral-50 p-5 sm:p-6">
         <div class="flex items-center gap-3 mb-5">
           <div class="w-1 h-8 bg-black"></div>
-          <h2 class="mono text-sm font-bold tracking-widest text-black">
-            Delivery Address
-          </h2>
+          <h2 class="mono text-sm font-bold tracking-widest text-black">Delivery Address</h2>
         </div>
 
         {% if order.address %}
-          <p class="text-sm font-semibold text-black mb-1">
-            {{ order.address.name }}
-          </p>
-
-          <p class="mono text-[10px] tracking-widest text-black/45 mb-5">
-            +91 {{ order.address.phone }}
-          </p>
-
+          <p class="text-sm font-semibold text-black mb-1">{{ order.address.name }}</p>
+          <p class="mono text-[10px] tracking-widest text-black/45 mb-5">+91 {{ order.address.phone }}</p>
           <p class="text-sm text-black/60 leading-relaxed">
             {{ order.address.line1 }}<br>
-            {{ order.address.city }},
-            {{ order.address.get_state_display }} -
-            {{ order.address.postal_code }}<br>
+            {{ order.address.city }}, {{ order.address.get_state_display }} - {{ order.address.postal_code }}<br>
             India
           </p>
         {% else %}
-          <p class="mono text-[10px] tracking-widest text-black/35 uppercase">
-            No address found
-          </p>
+          <p class="mono text-[10px] tracking-widest text-black/35 uppercase">No address found</p>
         {% endif %}
-
       </div>
 
     </div>
 
     <!-- Right Side Price Summary -->
-    <aside class="lg:sticky lg:top-24 h-fit">
+    <aside class="lg:sticky lg:top-24 h-fit order-1 lg:order-2">
 
-      <div class="border border-black/10 bg-white p-6">
-
+      <div class="border border-black/10 bg-white p-5 sm:p-6">
         <div class="flex items-center gap-3 mb-7">
           <div class="w-1 h-8 bg-black"></div>
-          <h2 class="mono text-sm font-bold tracking-widest text-black">
-            Price Summary
-          </h2>
+          <h2 class="mono text-sm font-bold tracking-widest text-black">Price Summary</h2>
         </div>
 
         <div class="space-y-4">
 
           <div class="flex justify-between gap-6">
-            <p class="text-sm text-black/55">
-              Subtotal
-            </p>
-
-            <p class="mono text-sm font-bold text-black">
-              ₹{{ active_subtotal|floatformat:2 }}
-            </p>
+            <p class="text-sm text-black/55">Subtotal <span class="text-black/35 text-xs">(GST incl.)</span></p>
+            <p class="mono text-sm font-bold text-black">₹{{ active_subtotal|floatformat:2 }}</p>
           </div>
 
           <div class="flex justify-between gap-6">
-            <p class="text-sm text-black/55">
-              Delivery Fee
-            </p>
-
+            <p class="text-sm text-black/55">Delivery Fee</p>
             <p class="mono text-sm font-bold text-black">
-              {% if display_delivery_fee > 0 %}
-                ₹{{ display_delivery_fee|floatformat:2 }}
-                {% else %}
-                Free
-              {% endif %}
+              {% if display_delivery_fee > 0 %}₹{{ display_delivery_fee|floatformat:2 }}{% else %}Free{% endif %}
             </p>
           </div>
 
+          {% if order.coupon %}
           <div class="flex justify-between gap-6">
-            <p class="text-sm text-black/55">
-              Discount
-            </p>
-
-            <p class="mono text-sm font-bold text-green-600">
-              -₹{{ display_discount_amount|floatformat:2 }}
-            </p>
+            <span class="text-sm text-black/55">Coupon Discount-{{ order.coupon.code }}</span>
+            <span class="mono text-sm text-green-700">-₹{{ coupon_discount|floatformat:2 }}</span>
           </div>
+          {% endif %}
 
           {% if cancelled_subtotal > 0 %}
-            <div class="flex justify-between gap-6">
-                <p class="text-sm text-red-600">
-                Cancelled Items
-                </p>
+          <div class="flex justify-between gap-6">
+            <p class="text-sm text-red-600">Cancelled Items</p>
+            <p class="mono text-sm font-bold text-red-600 line-through">₹{{ cancelled_subtotal|floatformat:2 }}</p>
+          </div>
+          {% endif %}
 
-                <p class="mono text-sm font-bold text-red-600 line-through">
-                ₹{{ cancelled_subtotal|floatformat:2 }}
-                </p>
-            </div>
-            {% endif %}
+          {% if returned_subtotal > 0 %}
+          <div class="flex justify-between gap-6">
+            <p class="text-sm text-green-600">Refunded Items</p>
+            <p class="mono text-sm font-bold text-green-600 line-through">₹{{ returned_subtotal|floatformat:2 }}</p>
+          </div>
+          {% endif %}
 
           <div class="flex justify-between gap-6 border-b border-black/10 pb-5">
-            <p class="text-sm text-black/55">
-              GST and Taxes
-            </p>
-
-            <p class="mono text-sm font-bold text-black">
-              ₹{{ display_tax_amount|floatformat:2 }}
-            </p>
+            <p class="text-sm text-black/55">GST ({{ display_gst_rate|floatformat:0 }}% incl.)</p>
+            <p class="mono text-sm font-bold text-black">₹{{ display_gst_amount|floatformat:2 }}</p>
           </div>
 
           <div class="pt-2 flex items-end justify-between gap-6">
-            <p class="mono text-[10px] tracking-widest text-black/45 uppercase">
-              Total
-            </p>
-
-            <p class="mono text-3xl font-bold text-black">
-              ₹{{ display_total_amount|floatformat:2 }}
-            </p>
+            <p class="mono text-[10px] tracking-widest text-black/45 uppercase">Total</p>
+            <p class="mono text-2xl sm:text-3xl font-bold text-black">₹{{ display_total_amount|floatformat:2 }}</p>
           </div>
 
         </div>
-
       </div>
 
       <!-- Action Buttons -->
-      <!-- Action Buttons -->
-<div class="grid grid-cols-1 gap-3 mt-5">
+      <div class="grid grid-cols-1 gap-3 mt-5">
 
-   <a href="{% url 'download_invoice' order.order_id %}"
-    class="w-full block text-center border border-black/15 bg-white text-black mono text-[10px] tracking-widest py-4 font-bold hover:bg-neutral-100 transition-colors">
-    Download Invoice
-   </a>
+        {% if is_pending_payment %}
+          <a href="{% url 'retry_payment' order.order_id %}"
+             class="w-full block text-center bg-black text-white mono text-[10px] tracking-widest py-4 font-bold hover:bg-black/80 transition-colors">
+            Retry Payment
+          </a>
+        {% else %}
+          <a href="{% url 'download_invoice' order.order_id %}"
+             class="w-full block text-center border border-black/15 bg-white text-black mono text-[10px] tracking-widest py-4 font-bold hover:bg-neutral-100 transition-colors">
+            Download Invoice
+          </a>
 
-  <button type="button"
-          class="w-full border border-black/15 bg-white text-black mono text-[10px] tracking-widest py-4 font-bold hover:bg-neutral-100 transition-colors">
-    Write a Review
-  </button>
+          <button type="button"
+                  class="w-full border border-black/15 bg-white text-black mono text-[10px] tracking-widest py-4 font-bold hover:bg-neutral-100 transition-colors">
+            Write a Review
+          </button>
 
-  {% if can_cancel %}
-    <button type="button"
-            onclick="openCancelItemsModal()"
-            class="w-full border border-red-500/30 bg-red-50 text-red-600 mono text-[10px] tracking-widest py-4 font-bold hover:bg-red-100 transition-colors">
-        Cancel Order
-    </button>
-    {% endif %}
+          {% if can_cancel %}
+            <button type="button"
+                    onclick="openCancelItemsModal()"
+                    class="w-full border border-red-500/30 bg-red-50 text-red-600 mono text-[10px] tracking-widest py-4 font-bold hover:bg-red-100 transition-colors">
+              Cancel Order
+            </button>
+          {% endif %}
 
- {% if can_request_return %}
-  <button type="button"
-          onclick="openReturnItemsModal()"
-          class="w-full bg-black text-white mono text-[10px] tracking-widest py-4 font-bold hover:bg-black/80 transition-colors">
-    Request a Return
-  </button>
-{% endif %}
+          {% if can_request_return %}
+            <button type="button"
+                    onclick="openReturnItemsModal()"
+                    class="w-full border border-blue-500/30 bg-blue-50 text-blue-600 mono text-[10px] tracking-widest py-4 font-bold hover:bg-blue-100 transition-colors">
+              Request a Return
+            </button>
+          {% endif %}
+        {% endif %}
 
-</div>
+      </div>
 
     </aside>
 
@@ -618,34 +437,28 @@
 
 <!-- Cancel Items Modal -->
 <div id="cancel-items-modal"
-     class="fixed inset-0 z-[999] hidden items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+     class="fixed inset-0 z-[999] hidden items-center justify-center bg-black/40 backdrop-blur-sm px-3 sm:px-4">
 
-  <div class="w-full max-w-5xl bg-white border border-black/10 text-black shadow-2xl">
+  <div class="w-full max-w-5xl max-h-[90vh] flex flex-col bg-white border border-black/10 text-black shadow-2xl">
 
     <!-- Header -->
-    <div class="flex items-center justify-between px-6 py-5 border-b border-black/10 bg-neutral-50">
+    <div class="flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 border-b border-black/10 bg-neutral-50 shrink-0">
       <div>
-        <p class="mono text-[10px] tracking-widest text-black/35 uppercase mb-1">
-          Cancel Order
-        </p>
-
-        <h2 class="mono text-xl font-bold tracking-wide text-black">
-          Select Items to Cancel
-        </h2>
+        <p class="mono text-[10px] tracking-widest text-black/35 uppercase mb-1">Cancel Order</p>
+        <h2 class="mono text-lg sm:text-xl font-bold tracking-wide text-black">Select Items to Cancel</h2>
       </div>
-
       <button type="button"
               onclick="closeCancelItemsModal()"
-              class="w-9 h-9 border border-black/10 text-black/50 hover:text-black hover:bg-neutral-100 transition-colors flex items-center justify-center text-xl">
+              class="w-9 h-9 shrink-0 border border-black/10 text-black/50 hover:text-black hover:bg-neutral-100 transition-colors flex items-center justify-center text-xl">
         ×
       </button>
     </div>
 
-    <form method="POST" action="{% url 'user_cancel_order_select' order.order_id %}">
+    <form method="POST" action="{% url 'user_cancel_order_select' order.order_id %}" class="flex flex-col flex-1 min-h-0">
       {% csrf_token %}
 
-      <!-- Table Header -->
-      <div class="hidden md:grid grid-cols-[1.5fr_1fr_80px_120px_80px] gap-6 px-6 py-4 border-b border-black/10">
+      <!-- Desktop Header -->
+      <div class="hidden md:grid grid-cols-[1.5fr_1fr_80px_120px_80px] gap-6 px-6 py-4 border-b border-black/10 shrink-0">
         <p class="mono text-[10px] tracking-widest text-black/45 uppercase">Product</p>
         <p class="mono text-[10px] tracking-widest text-black/45 uppercase">Details</p>
         <p class="mono text-[10px] tracking-widest text-black/45 uppercase text-center">Qty</p>
@@ -653,333 +466,71 @@
         <p class="mono text-[10px] tracking-widest text-black/45 uppercase text-center">Select</p>
       </div>
 
-     <div class="max-h-[65vh] overflow-y-auto">
+      <div class="overflow-y-auto flex-1">
         {% for item in order.items.all %}
-            {% if item.item_status == "ACTIVE" %}
-            <label class="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_80px_120px_80px] gap-6 items-center px-6 py-5 border-b border-black/10 cursor-pointer hover:bg-neutral-50 transition-colors">
+          {% if item.item_status == "ACTIVE" %}
+          <label class="grid grid-cols-[1fr_44px] md:grid-cols-[1.5fr_1fr_80px_120px_80px] gap-3 sm:gap-6 items-center px-4 sm:px-6 py-4 sm:py-5 border-b border-black/10 cursor-pointer hover:bg-neutral-50 transition-colors">
 
-                <!-- Product -->
-                <div class="flex items-center gap-4">
-                <div class="w-20 h-20 bg-neutral-100 border border-black/10 overflow-hidden shrink-0">
-                    {% if item.variant and item.variant.images.first %}
-                    <img src="{{ item.variant.images.first.image.url }}"
-                        alt="{{ item.product_name }}"
-                        class="w-full h-full object-cover">
-                    {% else %}
-                    <div class="w-full h-full flex items-center justify-center">
-                        <span class="mono text-[8px] tracking-widest text-black/25">
-                        NO IMG
-                        </span>
-                    </div>
-                    {% endif %}
-                </div>
-
-                <div>
-                    <p class="text-sm font-semibold text-black leading-snug">
-                    {{ item.product_name }}
-                    </p>
-
-                    {% if item.variant and item.variant.sku %}
-                    <p class="mono text-[9px] tracking-widest text-black/35 mt-1">
-                        SKU: {{ item.variant.sku }}
-                    </p>
-                    {% endif %}
-                </div>
-                </div>
-
-                <!-- Details -->
-                <div>
-                <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden mb-1">
-                    Details
-                </p>
-
-                <p class="mono text-xs text-black/60">
-                    {{ item.size|default:"-" }}{% if item.color %} / {{ item.color }}{% endif %}
-                </p>
-                </div>
-
-                <!-- Qty -->
-                <div class="md:text-center">
-                <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden mb-1">
-                    Qty
-                </p>
-
-                <p class="mono text-sm font-bold text-black">
-                    {{ item.quantity|stringformat:"02d" }}
-                </p>
-                </div>
-
-                <!-- Price -->
-                <div class="md:text-right">
-                <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden mb-1">
-                    Price
-                </p>
-
-                <p class="mono text-sm font-bold text-black">
-                    ₹{{ item.subtotal|floatformat:2 }}
-                </p>
-                </div>
-
-                <!-- Select -->
-                <div class="md:text-center">
-                <input type="checkbox"
-                        name="selected_items"
-                        value="{{ item.id }}"
-                        class="peer hidden">
-
-                <div class="mx-auto w-11 h-11 rounded-full border border-black/20 flex items-center justify-center text-black/25 peer-checked:bg-black peer-checked:text-white peer-checked:border-black transition-colors">
-                    ✓
-                </div>
-                </div>
-
-            </label>
-            {% endif %}
-        {% endfor %}
-        </div>
-
-            <!-- Footer -->
-            <div class="flex flex-col md:flex-row items-center justify-end gap-3 px-6 py-5 border-t border-black/10 bg-neutral-50">
-                <button type="button"
-                        onclick="closeCancelItemsModal()"
-                        class="w-full md:w-auto border border-black/15 bg-white text-black mono text-[10px] tracking-widest px-8 py-4 font-bold hover:bg-neutral-100 transition-colors">
-                Cancel
-                </button>
-
-                <button type="submit"
-                        class="w-full md:w-auto bg-black text-white mono text-[10px] tracking-widest px-12 py-4 font-bold hover:bg-black/80 transition-colors">
-                Confirm
-                </button>
-            </div>
-
-            </form>
-        </div>
-        </div>
-
-<!-- Order Cancelled Success Modal -->
-<div id="cancel-success-modal"
-     class="fixed inset-0 z-[1000] hidden items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-
-  <div class="w-full max-w-3xl bg-white border border-black/10 text-black shadow-2xl">
-
-    <div class="px-6 md:px-10 py-10 text-center">
-
-      <!-- Icon -->
-      <div class="mx-auto mb-7 w-28 h-28 border border-black/15 flex items-center justify-center">
-        <div class="w-20 h-20 border border-black/15 flex items-center justify-center">
-          <div class="w-11 h-11 rounded-full border-4 border-green-500 flex items-center justify-center">
-            <svg class="w-6 h-6 text-green-500"
-                 fill="none"
-                 stroke="currentColor"
-                 stroke-width="3"
-                 viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <!-- Title -->
-      <h2 class="bebas text-black text-5xl leading-none tracking-wide mb-8">
-        Order Cancelled
-      </h2>
-
-      <!-- Cancelled Items -->
-      <div class="border border-black/10 bg-white mb-8 text-left">
-
-        {% for item in cancelled_success_items %}
-          <div class="flex items-center justify-between gap-6 px-5 py-5 border-b border-black/10 last:border-b-0">
-
-            <div class="flex items-center gap-4">
-              <div class="w-20 h-20 bg-neutral-100 border border-black/10 overflow-hidden shrink-0">
+            <!-- Product -->
+            <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+              <div class="w-14 h-14 sm:w-20 sm:h-20 bg-neutral-100 border border-black/10 overflow-hidden shrink-0">
                 {% if item.variant and item.variant.images.first %}
-                  <img src="{{ item.variant.images.first.image.url }}"
-                       alt="{{ item.product_name }}"
-                       class="w-full h-full object-cover">
+                  <img src="{{ item.variant.images.first.image.url }}" alt="{{ item.product_name }}" class="w-full h-full object-cover">
                 {% else %}
                   <div class="w-full h-full flex items-center justify-center">
-                    <span class="mono text-[8px] tracking-widest text-black/25">
-                      NO IMG
-                    </span>
+                    <span class="mono text-[8px] tracking-widest text-black/25">NO IMG</span>
                   </div>
                 {% endif %}
               </div>
 
-              <div>
-                <p class="text-black text-sm md:text-base font-semibold leading-snug">
-                  {{ item.product_name }}
-                </p>
-
-                <p class="mono text-[9px] tracking-widest text-black/35 mt-2 uppercase">
-                  Size: {{ item.size|default:"-" }}
-                  {% if item.color %} / Color: {{ item.color }}{% endif %}
-                  / Qty: {{ item.quantity }}
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-black leading-snug truncate">{{ item.product_name }}</p>
+                {% if item.variant and item.variant.sku %}
+                  <p class="mono text-[9px] tracking-widest text-black/35 mt-1">SKU: {{ item.variant.sku }}</p>
+                {% endif %}
+                <p class="mono text-[10px] tracking-widest text-black/45 mt-1 md:hidden">
+                  {{ item.size|default:"-" }}{% if item.color %} / {{ item.color }}{% endif %} · Qty {{ item.quantity|stringformat:"02d" }} · ₹{{ item.subtotal|floatformat:2 }}
                 </p>
               </div>
             </div>
 
-            <p class="mono text-lg font-bold text-black shrink-0">
-              ₹{{ item.subtotal|floatformat:2 }}
-            </p>
+            <!-- Details (desktop) -->
+            <div class="hidden md:block">
+              <p class="mono text-xs text-black/60">{{ item.size|default:"-" }}{% if item.color %} / {{ item.color }}{% endif %}</p>
+            </div>
 
-          </div>
-        {% endfor %}
+            <!-- Qty (desktop) -->
+            <div class="hidden md:block md:text-center">
+              <p class="mono text-sm font-bold text-black">{{ item.quantity|stringformat:"02d" }}</p>
+            </div>
 
-      </div>
+            <!-- Price (desktop) -->
+            <div class="hidden md:block md:text-right">
+              <p class="mono text-sm font-bold text-black">₹{{ item.subtotal|floatformat:2 }}</p>
+            </div>
 
-      <!-- Message -->
-      <p class="mono text-xs md:text-sm tracking-widest text-black/45 leading-loose max-w-xl mx-auto mb-8">
-        A refund has been initiated to your original payment method.
-        You will receive a confirmation shortly.
-      </p>
-
-      <!-- Back to Orders -->
-      <a href="{% url 'user_orders' %}"
-         class="inline-flex items-center justify-center bg-black text-white mono text-xs font-bold tracking-[0.25em] px-14 py-4 hover:bg-black/80 transition-colors">
-        BACK TO ORDERS
-      </a>
-
-      <div class="mt-8 border-t border-black/10 pt-5 text-left">
-        <p class="mono text-[10px] tracking-widest text-black/40 uppercase">
-          {{ order.order_id }}
-        </p>
-      </div>
-
-    </div>
-
-  </div>
-</div>
-
-<!-- Return Items Modal -->
-<div id="return-items-modal"
-     class="fixed inset-0 z-[999] hidden items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-
-  <div class="w-full max-w-5xl bg-white border border-black/10 text-black shadow-2xl">
-
-    <!-- Header -->
-    <div class="flex items-center justify-between px-6 py-5 border-b border-black/10 bg-neutral-50">
-      <div>
-        <p class="mono text-[10px] tracking-widest text-black/35 uppercase mb-1">
-          Request Return
-        </p>
-
-        <h2 class="mono text-xl font-bold tracking-wide text-black">
-          Select Items to Return
-        </h2>
-      </div>
-
-      <button type="button"
-              onclick="closeReturnItemsModal()"
-              class="w-9 h-9 border border-black/10 text-black/50 hover:text-black hover:bg-neutral-100 transition-colors flex items-center justify-center text-xl">
-        ×
-      </button>
-    </div>
-
-    <form method="POST" action="{% url 'user_return_order_select' order.order_id %}">
-      {% csrf_token %}
-
-      <!-- Table Header -->
-      <div class="hidden md:grid grid-cols-[1.5fr_1fr_80px_120px_80px] gap-6 px-6 py-4 border-b border-black/10">
-        <p class="mono text-[10px] tracking-widest text-black/45 uppercase">Product</p>
-        <p class="mono text-[10px] tracking-widest text-black/45 uppercase">Details</p>
-        <p class="mono text-[10px] tracking-widest text-black/45 uppercase text-center">Qty</p>
-        <p class="mono text-[10px] tracking-widest text-black/45 uppercase text-right">Price</p>
-        <p class="mono text-[10px] tracking-widest text-black/45 uppercase text-center">Select</p>
-      </div>
-
-      <div class="max-h-[65vh] overflow-y-auto">
-        {% for item in order.items.all %}
-          {% if item.item_status == "ACTIVE" %}
-            <label class="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_80px_120px_80px] gap-6 items-center px-6 py-5 border-b border-black/10 cursor-pointer hover:bg-neutral-50 transition-colors">
-
-              <!-- Product -->
-              <div class="flex items-center gap-4">
-                <div class="w-20 h-20 bg-neutral-100 border border-black/10 overflow-hidden shrink-0">
-                  {% if item.variant and item.variant.images.first %}
-                    <img src="{{ item.variant.images.first.image.url }}"
-                         alt="{{ item.product_name }}"
-                         class="w-full h-full object-cover">
-                  {% else %}
-                    <div class="w-full h-full flex items-center justify-center">
-                      <span class="mono text-[8px] tracking-widest text-black/25">
-                        NO IMG
-                      </span>
-                    </div>
-                  {% endif %}
-                </div>
-
-                <div>
-                  <p class="text-sm font-semibold text-black leading-snug">
-                    {{ item.product_name }}
-                  </p>
-
-                  {% if item.variant and item.variant.sku %}
-                    <p class="mono text-[9px] tracking-widest text-black/35 mt-1">
-                      SKU: {{ item.variant.sku }}
-                    </p>
-                  {% endif %}
-                </div>
+            <!-- Select -->
+            <div class="text-center justify-self-end md:justify-self-auto">
+              <input type="checkbox" name="selected_items" value="{{ item.id }}" class="peer hidden">
+              <div class="mx-auto w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-black/20 flex items-center justify-center text-black/25 peer-checked:bg-black peer-checked:text-white peer-checked:border-black transition-colors">
+                ✓
               </div>
+            </div>
 
-              <!-- Details -->
-              <div>
-                <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden mb-1">
-                  Details
-                </p>
-
-                <p class="mono text-xs text-black/60">
-                  {{ item.size|default:"-" }}{% if item.color %} / {{ item.color }}{% endif %}
-                </p>
-              </div>
-
-              <!-- Qty -->
-              <div class="md:text-center">
-                <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden mb-1">
-                  Qty
-                </p>
-
-                <p class="mono text-sm font-bold text-black">
-                  {{ item.quantity|stringformat:"02d" }}
-                </p>
-              </div>
-
-              <!-- Price -->
-              <div class="md:text-right">
-                <p class="mono text-[10px] tracking-widest text-black/35 uppercase md:hidden mb-1">
-                  Price
-                </p>
-
-                <p class="mono text-sm font-bold text-black">
-                  ₹{{ item.subtotal|floatformat:2 }}
-                </p>
-              </div>
-
-              <!-- Select -->
-              <div class="md:text-center">
-                <input type="checkbox"
-                       name="selected_items"
-                       value="{{ item.id }}"
-                       class="peer hidden">
-
-                <div class="mx-auto w-11 h-11 rounded-full border border-black/20 flex items-center justify-center text-black/25 peer-checked:bg-black peer-checked:text-white peer-checked:border-black transition-colors">
-                  ✓
-                </div>
-              </div>
-
-            </label>
+          </label>
           {% endif %}
         {% endfor %}
       </div>
 
       <!-- Footer -->
-      <div class="flex flex-col md:flex-row items-center justify-end gap-3 px-6 py-5 border-t border-black/10 bg-neutral-50">
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 px-4 sm:px-6 py-4 sm:py-5 border-t border-black/10 bg-neutral-50 shrink-0">
         <button type="button"
-                onclick="closeReturnItemsModal()"
-                class="w-full md:w-auto border border-black/15 bg-white text-black mono text-[10px] tracking-widest px-8 py-4 font-bold hover:bg-neutral-100 transition-colors">
+                onclick="closeCancelItemsModal()"
+                class="w-full sm:w-auto border border-black/15 bg-white text-black mono text-[10px] tracking-widest px-8 py-4 font-bold hover:bg-neutral-100 transition-colors">
           Cancel
         </button>
-
         <button type="submit"
-                class="w-full md:w-auto bg-black text-white mono text-[10px] tracking-widest px-12 py-4 font-bold hover:bg-black/80 transition-colors">
+                class="w-full sm:w-auto bg-black text-white mono text-[10px] tracking-widest px-12 py-4 font-bold hover:bg-black/80 transition-colors">
           Confirm
         </button>
       </div>
@@ -988,98 +539,220 @@
   </div>
 </div>
 
+<!-- Order Cancelled Success Modal -->
+<div id="cancel-success-modal"
+     class="fixed inset-0 z-[1000] hidden items-center justify-center bg-black/50 backdrop-blur-sm px-3 sm:px-4">
 
-<!-- Return Request Success Modal -->
-<div id="return-success-modal"
-     class="fixed inset-0 z-[1000] hidden items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+  <div class="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white border border-black/10 text-black shadow-2xl">
 
-  <div class="w-full max-w-3xl bg-white border border-black/10 text-black shadow-2xl">
+    <div class="px-5 sm:px-10 py-8 sm:py-10 text-center">
 
-    <div class="px-6 md:px-10 py-10 text-center">
-
-      <!-- Icon -->
-      <div class="mx-auto mb-7 w-28 h-28 border border-black/15 flex items-center justify-center">
-        <div class="w-20 h-20 border border-black/15 flex items-center justify-center">
-          <div class="w-11 h-11 rounded-full border-4 border-green-500 flex items-center justify-center">
-            <svg class="w-6 h-6 text-green-500"
-                 fill="none"
-                 stroke="currentColor"
-                 stroke-width="3"
-                 viewBox="0 0 24 24">
+      <div class="mx-auto mb-6 sm:mb-7 w-20 h-20 sm:w-28 sm:h-28 border border-black/15 flex items-center justify-center">
+        <div class="w-14 h-14 sm:w-20 sm:h-20 border border-black/15 flex items-center justify-center">
+          <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-full border-4 border-green-500 flex items-center justify-center">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-green-500" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
             </svg>
           </div>
         </div>
       </div>
 
-      <h2 class="bebas text-black text-5xl leading-none tracking-wide mb-8">
-        Return Request Received
-      </h2>
+      <h2 class="bebas text-black text-3xl sm:text-5xl leading-none tracking-wide mb-6 sm:mb-8">Order Cancelled</h2>
 
-      <!-- Returned Items -->
-      <div class="border border-black/10 bg-white mb-8 text-left">
-
-        {% for item in return_success_items %}
-          <div class="flex items-center justify-between gap-6 px-5 py-5 border-b border-black/10 last:border-b-0">
-
-            <div class="flex items-center gap-4">
-              <div class="w-20 h-20 bg-neutral-100 border border-black/10 overflow-hidden shrink-0">
+      <div class="border border-black/10 bg-white mb-6 sm:mb-8 text-left">
+        {% for item in cancelled_success_items %}
+          <div class="flex items-center justify-between gap-4 sm:gap-6 px-4 sm:px-5 py-4 sm:py-5 border-b border-black/10 last:border-b-0">
+            <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+              <div class="w-14 h-14 sm:w-20 sm:h-20 bg-neutral-100 border border-black/10 overflow-hidden shrink-0">
                 {% if item.variant and item.variant.images.first %}
-                  <img src="{{ item.variant.images.first.image.url }}"
-                       alt="{{ item.product_name }}"
-                       class="w-full h-full object-cover">
+                  <img src="{{ item.variant.images.first.image.url }}" alt="{{ item.product_name }}" class="w-full h-full object-cover">
                 {% else %}
                   <div class="w-full h-full flex items-center justify-center">
-                    <span class="mono text-[8px] tracking-widest text-black/25">
-                      NO IMG
-                    </span>
+                    <span class="mono text-[8px] tracking-widest text-black/25">NO IMG</span>
                   </div>
                 {% endif %}
               </div>
-
-              <div>
-                <p class="text-black text-sm md:text-base font-semibold leading-snug">
-                  {{ item.product_name }}
-                </p>
-
+              <div class="min-w-0">
+                <p class="text-black text-sm md:text-base font-semibold leading-snug truncate">{{ item.product_name }}</p>
                 <p class="mono text-[9px] tracking-widest text-black/35 mt-2 uppercase">
-                  Size: {{ item.size|default:"-" }}
-                  {% if item.color %} / Color: {{ item.color }}{% endif %}
-                  / Qty: {{ item.quantity }}
+                  Size: {{ item.size|default:"-" }}{% if item.color %} / Color: {{ item.color }}{% endif %} / Qty: {{ item.quantity }}
+                </p>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <p class="mono text-xs md:text-sm tracking-widest text-black/45 leading-loose max-w-xl mx-auto mb-6 sm:mb-8">
+        A refund has been initiated to your original payment method.
+      </p>
+
+      <a href="{% url 'user_orders' %}"
+         class="inline-flex w-full sm:w-auto items-center justify-center bg-black text-white mono text-xs font-bold tracking-[0.25em] px-14 py-4 hover:bg-black/80 transition-colors">
+        BACK TO ORDERS
+      </a>
+
+      <div class="mt-6 sm:mt-8 border-t border-black/10 pt-5 text-left">
+        <p class="mono text-[10px] tracking-widest text-black/40 uppercase break-all">{{ order.order_id }}</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Return Items Modal -->
+<div id="return-items-modal"
+     class="fixed inset-0 z-[999] hidden items-center justify-center bg-black/40 backdrop-blur-sm px-3 sm:px-4">
+
+  <div class="w-full max-w-5xl max-h-[90vh] flex flex-col bg-white border border-black/10 text-black shadow-2xl">
+
+    <div class="flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 border-b border-black/10 bg-neutral-50 shrink-0">
+      <div>
+        <p class="mono text-[10px] tracking-widest text-black/35 uppercase mb-1">Request Return</p>
+        <h2 class="mono text-lg sm:text-xl font-bold tracking-wide text-black">Select Items to Return</h2>
+      </div>
+      <button type="button"
+              onclick="closeReturnItemsModal()"
+              class="w-9 h-9 shrink-0 border border-black/10 text-black/50 hover:text-black hover:bg-neutral-100 transition-colors flex items-center justify-center text-xl">
+        ×
+      </button>
+    </div>
+
+    <form method="POST" action="{% url 'user_return_order_select' order.order_id %}" class="flex flex-col flex-1 min-h-0">
+      {% csrf_token %}
+
+      <div class="hidden md:grid grid-cols-[1.5fr_1fr_80px_120px_80px] gap-6 px-6 py-4 border-b border-black/10 shrink-0">
+        <p class="mono text-[10px] tracking-widest text-black/45 uppercase">Product</p>
+        <p class="mono text-[10px] tracking-widest text-black/45 uppercase">Details</p>
+        <p class="mono text-[10px] tracking-widest text-black/45 uppercase text-center">Qty</p>
+        <p class="mono text-[10px] tracking-widest text-black/45 uppercase text-right">Price</p>
+        <p class="mono text-[10px] tracking-widest text-black/45 uppercase text-center">Select</p>
+      </div>
+
+      <div class="overflow-y-auto flex-1">
+        {% for item in order.items.all %}
+          {% if item.item_status == "ACTIVE" %}
+          <label class="grid grid-cols-[1fr_44px] md:grid-cols-[1.5fr_1fr_80px_120px_80px] gap-3 sm:gap-6 items-center px-4 sm:px-6 py-4 sm:py-5 border-b border-black/10 cursor-pointer hover:bg-neutral-50 transition-colors">
+
+            <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+              <div class="w-14 h-14 sm:w-20 sm:h-20 bg-neutral-100 border border-black/10 overflow-hidden shrink-0">
+                {% if item.variant and item.variant.images.first %}
+                  <img src="{{ item.variant.images.first.image.url }}" alt="{{ item.product_name }}" class="w-full h-full object-cover">
+                {% else %}
+                  <div class="w-full h-full flex items-center justify-center">
+                    <span class="mono text-[8px] tracking-widest text-black/25">NO IMG</span>
+                  </div>
+                {% endif %}
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-black leading-snug truncate">{{ item.product_name }}</p>
+                {% if item.variant and item.variant.sku %}
+                  <p class="mono text-[9px] tracking-widest text-black/35 mt-1">SKU: {{ item.variant.sku }}</p>
+                {% endif %}
+                <p class="mono text-[10px] tracking-widest text-black/45 mt-1 md:hidden">
+                  {{ item.size|default:"-" }}{% if item.color %} / {{ item.color }}{% endif %} · Qty {{ item.quantity|stringformat:"02d" }} · ₹{{ item.subtotal|floatformat:2 }}
                 </p>
               </div>
             </div>
 
-            <p class="mono text-lg font-bold text-black shrink-0">
-              ₹{{ item.subtotal|floatformat:2 }}
-            </p>
+            <div class="hidden md:block">
+              <p class="mono text-xs text-black/60">{{ item.size|default:"-" }}{% if item.color %} / {{ item.color }}{% endif %}</p>
+            </div>
 
-          </div>
+            <div class="hidden md:block md:text-center">
+              <p class="mono text-sm font-bold text-black">{{ item.quantity|stringformat:"02d" }}</p>
+            </div>
+
+            <div class="hidden md:block md:text-right">
+              <p class="mono text-sm font-bold text-black">₹{{ item.subtotal|floatformat:2 }}</p>
+            </div>
+
+            <div class="text-center justify-self-end md:justify-self-auto">
+              <input type="checkbox" name="selected_items" value="{{ item.id }}" class="peer hidden">
+              <div class="mx-auto w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-black/20 flex items-center justify-center text-black/25 peer-checked:bg-black peer-checked:text-white peer-checked:border-black transition-colors">
+                ✓
+              </div>
+            </div>
+
+          </label>
+          {% endif %}
         {% endfor %}
-
       </div>
 
-      <p class="mono text-xs md:text-sm tracking-widest text-black/45 leading-loose max-w-xl mx-auto mb-8">
-        Your return request has been received. Your refund will be processed after the item is inspected and approved.
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 px-4 sm:px-6 py-4 sm:py-5 border-t border-black/10 bg-neutral-50 shrink-0">
+        <button type="button"
+                onclick="closeReturnItemsModal()"
+                class="w-full sm:w-auto border border-black/15 bg-white text-black mono text-[10px] tracking-widest px-8 py-4 font-bold hover:bg-neutral-100 transition-colors">
+          Cancel
+        </button>
+        <button type="submit"
+                class="w-full sm:w-auto bg-black text-white mono text-[10px] tracking-widest px-12 py-4 font-bold hover:bg-black/80 transition-colors">
+          Confirm
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- Return Request Success Modal -->
+<div id="return-success-modal"
+     class="fixed inset-0 z-[1000] hidden items-center justify-center bg-black/50 backdrop-blur-sm px-3 sm:px-4">
+
+  <div class="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white border border-black/10 text-black shadow-2xl">
+
+    <div class="px-5 sm:px-10 py-8 sm:py-10 text-center">
+
+      <div class="mx-auto mb-6 sm:mb-7 w-20 h-20 sm:w-28 sm:h-28 border border-black/15 flex items-center justify-center">
+        <div class="w-14 h-14 sm:w-20 sm:h-20 border border-black/15 flex items-center justify-center">
+          <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-full border-4 border-green-500 flex items-center justify-center">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-green-500" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <h2 class="bebas text-black text-3xl sm:text-5xl leading-none tracking-wide mb-6 sm:mb-8">Return Request Sent</h2>
+
+      <div class="border border-black/10 bg-white mb-6 sm:mb-8 text-left">
+        {% for item in return_success_items %}
+          <div class="flex items-center justify-between gap-4 sm:gap-6 px-4 sm:px-5 py-4 sm:py-5 border-b border-black/10 last:border-b-0">
+            <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+              <div class="w-14 h-14 sm:w-20 sm:h-20 bg-neutral-100 border border-black/10 overflow-hidden shrink-0">
+                {% if item.variant and item.variant.images.first %}
+                  <img src="{{ item.variant.images.first.image.url }}" alt="{{ item.product_name }}" class="w-full h-full object-cover">
+                {% else %}
+                  <div class="w-full h-full flex items-center justify-center">
+                    <span class="mono text-[8px] tracking-widest text-black/25">NO IMG</span>
+                  </div>
+                {% endif %}
+              </div>
+              <div class="min-w-0">
+                <p class="text-black text-sm md:text-base font-semibold leading-snug truncate">{{ item.product_name }}</p>
+                <p class="mono text-[9px] tracking-widest text-black/35 mt-2 uppercase">
+                  Size: {{ item.size|default:"-" }}{% if item.color %} / Color: {{ item.color }}{% endif %} / Qty: {{ item.quantity }}
+                </p>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <p class="mono text-xs md:text-sm tracking-widest text-black/45 leading-loose max-w-xl mx-auto mb-6 sm:mb-8">
+        Your return request has been sent. Your refund will be processed after the item is inspected and approved.
       </p>
 
       <a href="{% url 'user_orders' %}"
-         class="inline-flex items-center justify-center bg-black text-white mono text-xs font-bold tracking-[0.25em] px-14 py-4 hover:bg-black/80 transition-colors">
+         class="inline-flex w-full sm:w-auto items-center justify-center bg-black text-white mono text-xs font-bold tracking-[0.25em] px-14 py-4 hover:bg-black/80 transition-colors">
         BACK TO ORDERS
       </a>
 
-      <div class="mt-8 border-t border-black/10 pt-5 text-left">
-        <p class="mono text-[10px] tracking-widest text-black/40 uppercase">
-          {{ order.order_id }}
-        </p>
-
-        <p class="mono text-[10px] tracking-widest text-black/40 uppercase mt-2">
-          Status: Pending Review
-        </p>
+      <div class="mt-6 sm:mt-8 border-t border-black/10 pt-5 text-left">
+        <p class="mono text-[10px] tracking-widest text-black/40 uppercase break-all">{{ order.display_id }}</p>
       </div>
 
     </div>
-
   </div>
 </div>
 
@@ -1090,7 +763,6 @@
   function openCancelItemsModal() {
     const modal = document.getElementById('cancel-items-modal');
     if (!modal) return;
-
     modal.classList.remove('hidden');
     modal.classList.add('flex');
     document.body.classList.add('overflow-hidden');
@@ -1099,7 +771,6 @@
   function closeCancelItemsModal() {
     const modal = document.getElementById('cancel-items-modal');
     if (!modal) return;
-
     modal.classList.add('hidden');
     modal.classList.remove('flex');
     document.body.classList.remove('overflow-hidden');
@@ -1107,42 +778,8 @@
 
   document.addEventListener("DOMContentLoaded", function () {
     const shouldShowCancelSuccess = "{{ show_cancel_success_modal|yesno:'true,false' }}";
-
     if (shouldShowCancelSuccess === "true") {
-        const modal = document.getElementById("cancel-success-modal");
-
-        if (modal) {
-        modal.classList.remove("hidden");
-        modal.classList.add("flex");
-        document.body.classList.add("overflow-hidden");
-        }
-    }
-    });
-
-  function openReturnItemsModal() {
-    const modal = document.getElementById('return-items-modal');
-    if (!modal) return;
-
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    document.body.classList.add('overflow-hidden');
-  }
-
-  function closeReturnItemsModal() {
-    const modal = document.getElementById('return-items-modal');
-    if (!modal) return;
-
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-    document.body.classList.remove('overflow-hidden');
-  }
-
-  document.addEventListener("DOMContentLoaded", function () {
-    const shouldShowReturnSuccess = "{{ show_return_success_modal|yesno:'true,false' }}";
-
-    if (shouldShowReturnSuccess === "true") {
-      const modal = document.getElementById("return-success-modal");
-
+      const modal = document.getElementById("cancel-success-modal");
       if (modal) {
         modal.classList.remove("hidden");
         modal.classList.add("flex");
@@ -1151,5 +788,32 @@
     }
   });
 
+  function openReturnItemsModal() {
+    const modal = document.getElementById('return-items-modal');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.classList.add('overflow-hidden');
+  }
+
+  function closeReturnItemsModal() {
+    const modal = document.getElementById('return-items-modal');
+    if (!modal) return;
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.body.classList.remove('overflow-hidden');
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const shouldShowReturnSuccess = "{{ show_return_success_modal|yesno:'true,false' }}";
+    if (shouldShowReturnSuccess === "true") {
+      const modal = document.getElementById("return-success-modal");
+      if (modal) {
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+        document.body.classList.add("overflow-hidden");
+      }
+    }
+  });
 </script>
 {% endblock %}
