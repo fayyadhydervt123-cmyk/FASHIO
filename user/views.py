@@ -16,6 +16,7 @@ from django.contrib.auth import (
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password
 from django.core.mail import send_mail
+import phonenumbers
 from django.core.paginator import Paginator
 from django.db.models import Prefetch, Sum
 from django.shortcuts import get_object_or_404, redirect, render
@@ -203,14 +204,13 @@ def user_forgot_password(request):
 
             subject = "FASHIO - Verify Your Email"
 
-            message = f"""
-            Hi,
+            message = f"""Hi,
 
             Welcome to FASHIO 
 
             To continue, please use the OTP below to verify your email:
 
-            🔐 OTP: {otp}
+            OTP: {otp}
 
             This OTP is valid for 5 minutes.
 
@@ -382,14 +382,13 @@ def user_resend_otp(request):  # Handles 2 different cases
 
         subject = "FASHIO - Verify Your Email"
 
-        message = f"""
-        Hi,
-
+        message = f"""Hi,
+        
         Welcome to FASHIO 
 
         To continue, please use the OTP below to verify your email:
 
-        🔐 OTP: {otp}
+        OTP: {otp}
 
         This OTP is valid for 5 minutes.
 
@@ -418,12 +417,11 @@ def user_resend_otp(request):  # Handles 2 different cases
         request.session["email_edit_otp_created_at"] = str(timezone.now())
 
         subject = "FASHIO - Verify Your New Email"
-        message = f"""
-        Hi,
+        message = f"""Hi,
 
         Your new OTP for email change:
 
-        🔐 OTP: {otp}
+        OTP: {otp}
 
         This OTP is valid for 5 minutes.
 
@@ -462,14 +460,13 @@ def user_resend_otp(request):  # Handles 2 different cases
 
         subject = "FASHIO - Verify Your Email"
 
-        message = f"""
-        Hi,
+        message = f"""Hi,
 
         Welcome to FASHIO 
 
         To continue, please use the OTP below to verify your email:
 
-        🔐 OTP: {otp}
+        OTP: {otp}
 
         This OTP is valid for 5 minutes.
 
@@ -561,14 +558,13 @@ def user_signup(request):
             # Send email
             subject = "FASHIO - Verify Your Email"
 
-            message = f"""
-            Hi,
+            message = f"""Hi,
 
             Welcome to FASHIO 
 
             To continue, please use the OTP below to verify your email:
 
-            🔐 OTP: {otp}
+            OTP: {otp}
 
             This OTP is valid for 5 minutes.
 
@@ -749,15 +745,24 @@ def user_add_address(request):
 
         if not re.match(r"^[A-Za-z ]{3,}$", name):
             error = "Enter valid name (min 3 letters)"
-        elif not re.match(r"^\d{10}$", phone):
-            error = "Enter valid 10-digit phone number"
-        elif len(line1) < 5:
+        else:
+            try:
+                parsed_phone = phonenumbers.parse(phone, "IN")
+                if not phonenumbers.is_valid_number(parsed_phone):
+                    raise phonenumbers.NumberParseException(0, "Invalid number")
+                if phonenumbers.number_type(parsed_phone) != phonenumbers.PhoneNumberType.MOBILE:
+                    raise phonenumbers.NumberParseException(0, "Not a mobile number")
+                phone = phonenumbers.format_number(parsed_phone, phonenumbers.PhoneNumberFormat.E164)
+            except phonenumbers.NumberParseException:
+                error = "Enter a valid Indian mobile number"
+
+        if not error and len(line1) < 5:
             error = "Address must be at least 5 characters"
-        elif not re.match(r"^[A-Za-z ]+$", city):
+        elif not error and not re.match(r"^[A-Za-z ]+$", city):
             error = "Enter valid city"
-        elif not re.match(r"^\d{6}$", postal_code):
+        elif not error and not re.match(r"^\d{6}$", postal_code):
             error = "Enter valid postal code"
-        elif not state:
+        elif not error and not state:
             error = "Please select a state"
 
         if error:
@@ -769,7 +774,7 @@ def user_add_address(request):
                 {
                     "user": request.user,
                     "addresses": addresses,
-                    "latest_address": addresses.order_by("-created_at").first(),  # ← add this
+                    "latest_address": addresses.order_by("-created_at").first(),
                     "open_modal": "new-address",
                     "new_address_data": request.POST,
                 },
@@ -809,15 +814,24 @@ def user_edit_address(request, id):
 
         if not re.match(r"^[A-Za-z ]{3,}$", name):
             error = "Enter valid name (min 3 letters)"
-        elif not re.match(r"^\d{10}$", phone):
-            error = "Enter valid 10-digit phone number"
-        elif len(line1) < 5:
+        else:
+            try:
+                parsed_phone = phonenumbers.parse(phone, "IN")
+                if not phonenumbers.is_valid_number(parsed_phone):
+                    raise phonenumbers.NumberParseException(0, "Invalid number")
+                if phonenumbers.number_type(parsed_phone) != phonenumbers.PhoneNumberType.MOBILE:
+                    raise phonenumbers.NumberParseException(0, "Not a mobile number")
+                phone = phonenumbers.format_number(parsed_phone, phonenumbers.PhoneNumberFormat.E164)
+            except phonenumbers.NumberParseException:
+                error = "Enter a valid Indian mobile number"
+
+        if not error and len(line1) < 5:
             error = "Address must be at least 5 characters"
-        elif not re.match(r"^[A-Za-z ]+$", city):
+        elif not error and not re.match(r"^[A-Za-z ]+$", city):
             error = "Enter valid city"
-        elif not re.match(r"^\d{6}$", postal_code):
+        elif not error and not re.match(r"^\d{6}$", postal_code):
             error = "Enter valid postal code"
-        elif not state:
+        elif not error and not state:
             error = "Please select a state"
 
         if error:
@@ -829,7 +843,7 @@ def user_edit_address(request, id):
                 {
                     "user": request.user,
                     "addresses": addresses,
-                    "latest_address": addresses.order_by("-created_at").first(),  # ← add this
+                    "latest_address": addresses.order_by("-created_at").first(),
                     "open_modal": "edit-address",
                     "edit_address_data": request.POST,
                     "edit_address_id": id,
@@ -880,9 +894,22 @@ def user_edit_profile(request):
             return render(request, "user_panel/edit_profile.html", {"user": user})
 
         # Phone validation
-        if not re.match(r"^\d{10}$", phone):
-            messages.error(request, "Enter a valid 10-digit phone number")
+        if not phone:
+            messages.error(request, "Phone number is required")
             return render(request, "user_panel/edit_profile.html", {"user": user})
+
+        try:
+            parsed_phone = phonenumbers.parse(phone, "IN")
+            if not phonenumbers.is_valid_number(parsed_phone):
+                raise phonenumbers.NumberParseException(0, "Invalid number")
+            if phonenumbers.number_type(parsed_phone) != phonenumbers.PhoneNumberType.MOBILE:
+                raise phonenumbers.NumberParseException(0, "Not a mobile number")
+        except phonenumbers.NumberParseException:
+            messages.error(request, "Enter a valid mobile number")
+            return render(request, "user_panel/edit_profile.html", {"user": user})
+
+        # Store in consistent E.164 format, e.g. +919876543210
+        phone = phonenumbers.format_number(parsed_phone, phonenumbers.PhoneNumberFormat.E164)
 
         # Profile image validation
         if request.FILES.get("image"):
@@ -895,11 +922,6 @@ def user_edit_profile(request):
                 messages.error(request, "Image must be under 2MB")
                 return render(request, "user_panel/edit_profile.html", {"user": user})
             user.image = image
-
-        # Phone validation
-        if not re.match(r"^\d{10}$", phone):
-            messages.error(request, "Enter a valid 10-digit phone number")
-            return render(request, "user_panel/edit_profile.html", {"user": user})
 
         # Phone duplicate check
         if User.objects.filter(phone=phone).exclude(pk=user.pk).exists():
@@ -994,14 +1016,13 @@ def user_edit_email(request):
 
         # Send OTP to NEW email
         subject = "FASHIO - Verify Your New Email"
-        message = f"""
-        Hi,
+        message = f"""Hi,
 
         You requested an email change on FASHIO.
 
         Please use the OTP below to verify your new email:
 
-        🔐 OTP: {otp}
+        OTP: {otp}
 
         This OTP is valid for 5 minutes.
 

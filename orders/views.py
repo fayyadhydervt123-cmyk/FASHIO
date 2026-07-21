@@ -2240,6 +2240,8 @@ def apply_coupon(request):
     }
     request.session.modified = True
 
+
+
     messages.success(request, f'Coupon "{coupon.code}" applied. You saved ₹{discount}.')
 
     return redirect(next_url)
@@ -2258,3 +2260,10 @@ def remove_coupon(request):
         return redirect(next_url)
 
     return redirect("cart_page")
+
+
+def get_most_used_coupon(request):
+
+    coupon_obj = Coupon.objects.filter(Max('times_used'))
+
+    print(coupon_obj.times_used)

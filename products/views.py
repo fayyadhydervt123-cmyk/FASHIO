@@ -513,6 +513,13 @@ def toggle_product_block(request):
     if request.method == "POST":
         product_id = request.POST.get("product_id", "").strip()
 
+        # cart_obj = Cart.objects.all()
+
+        # if product_id in cart_obj:
+        #     messages.error(request, "Product is in User's cart")
+        #     return redirect("products")
+
+
         if not product_id:
             messages.error(request, "Invalid request: product ID is missing.")
             return redirect("products")
@@ -1413,6 +1420,8 @@ def add_to_cart(request):
         defaults={"product": variant.product, "quantity": quantity},
     )
 
+    
+
     if not created:
         new_quantity = cart_item.quantity + quantity
 
@@ -1436,6 +1445,7 @@ def add_to_cart(request):
 
     # Notification count should increase for BOTH new cart item and existing cart item
     current_notification_count = request.session.get("cart_notification_count", 0)
+
 
     request.session["cart_notification_count"] = current_notification_count + 1
     request.session.modified = True

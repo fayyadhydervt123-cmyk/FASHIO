@@ -218,6 +218,7 @@ class Cart(models.Model):
         ProductVariant, on_delete=models.CASCADE, related_name="cart_items"
     )
 
+
     quantity = models.PositiveIntegerField(default=1)
 
     created_at = models.DateTimeField(auto_now_add=True)

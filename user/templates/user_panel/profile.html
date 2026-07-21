@@ -1089,7 +1089,7 @@
         <div class="label-tiny">EMAIL ADDRESS</div>
         <div class="value-text">{{ user.email }}</div>
         <div class="label-tiny">PHONE</div>
-        <div class="value-text" style="margin-bottom:0;">{{ user.phone }}</div>
+        <div class="value-text" style="margin-bottom:0;">{% if user.phone %}{{ user.phone }}{% else %}{% endif %}</div>
         </div>
 
         <hr class="sidebar-divider"/>

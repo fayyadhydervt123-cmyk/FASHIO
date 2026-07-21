@@ -373,8 +373,10 @@
       <div class="mb-6">
         <label class="mono text-xs text-white/50 tracking-widest block mb-2">Coupon Code</label>
         <input type="text" name="code" required
-               placeholder="e.g. FASHIO20"
-               class="w-full bg-[#141414] border border-white/15 px-4 py-3 text-sm text-white outline-none focus:border-white/30 uppercase">
+              value="{{ form_data.code|default:'' }}"
+              placeholder="e.g. FASHIO20"
+              class="w-full bg-[#141414] border border-white/15 px-4 py-3 text-sm text-white outline-none focus:border-white/30 uppercase">
+        {% if form_errors.code %}<p class="mono text-xs text-red-400 mt-2">{{ form_errors.code }}</p>{% endif %}
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
@@ -383,39 +385,48 @@
           <select name="discount_type" required onchange="handleDiscountTypeChange(this, 'add')"
                   class="w-full bg-[#141414] border border-white/15 px-4 py-3 text-sm text-white outline-none focus:border-white/30">
             <option value="">Select Discount Type</option>
-            <option value="PERCENTAGE">Percentage (%)</option>
-            <option value="FLAT">Flat Amount (₹)</option>
+            <option value="PERCENTAGE" {% if form_data.discount_type == 'PERCENTAGE' %}selected{% endif %}>Percentage (%)</option>
+            <option value="FLAT" {% if form_data.discount_type == 'FLAT' %}selected{% endif %}>Flat Amount (₹)</option>
           </select>
+          {% if form_errors.discount_type %}<p class="mono text-xs text-red-400 mt-2">{{ form_errors.discount_type }}</p>{% endif %}
         </div>
 
         <div>
           <label class="mono text-xs text-white/50 tracking-widest block mb-2">Discount Value</label>
           <input type="number" step="0.01" name="discount_value" required
-                 placeholder="e.g. 20 or 200"
-                 class="w-full bg-[#141414] border border-white/15 px-4 py-3 text-sm text-white outline-none focus:border-white/30">
+                value="{{ form_data.discount_value|default:'' }}"
+                placeholder="e.g. 20 or 200"
+                class="w-full bg-[#141414] border border-white/15 px-4 py-3 text-sm text-white outline-none focus:border-white/30">
+          {% if form_errors.discount_value %}<p class="mono text-xs text-red-400 mt-2">{{ form_errors.discount_value }}</p>{% endif %}
         </div>
       </div>
 
-      <div id="add_max_discount_wrap" class="mb-6 hidden">
+      <div id="add_max_discount_wrap" class="mb-6 {% if form_data.discount_type != 'PERCENTAGE' %}hidden{% endif %}">
         <label class="mono text-xs text-white/50 tracking-widest block mb-2">Max Discount Amount (₹)</label>
         <input type="number" step="0.01" name="max_discount_amount"
-               placeholder="e.g. 500 (leave blank for no cap)"
-               class="w-full bg-[#141414] border border-white/15 px-4 py-3 text-sm text-white outline-none focus:border-white/30">
+              value="{{ form_data.max_discount_amount|default:'' }}"
+              placeholder="e.g. 500 (leave blank for no cap)"
+              class="w-full bg-[#141414] border border-white/15 px-4 py-3 text-sm text-white outline-none focus:border-white/30">
+        {% if form_errors.max_discount_amount %}<p class="mono text-xs text-red-400 mt-2">{{ form_errors.max_discount_amount }}</p>{% endif %}
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
         <div>
           <label class="mono text-xs text-white/50 tracking-widest block mb-2">Minimum Purchase Amount</label>
           <input type="number" step="0.01" name="min_order_value"
-                 placeholder="e.g. 500"
-                 class="w-full bg-[#141414] border border-white/15 px-4 py-3 text-sm text-white outline-none focus:border-white/30">
+                value="{{ form_data.min_order_value|default:'' }}"
+                placeholder="e.g. 500"
+                class="w-full bg-[#141414] border border-white/15 px-4 py-3 text-sm text-white outline-none focus:border-white/30">
+          {% if form_errors.min_order_value %}<p class="mono text-xs text-red-400 mt-2">{{ form_errors.min_order_value }}</p>{% endif %}
         </div>
 
         <div>
           <label class="mono text-xs text-white/50 tracking-widest block mb-2">Usage Limit</label>
           <input type="number" name="usage_limit_global"
-                 placeholder="Leave blank for unlimited"
-                 class="w-full bg-[#141414] border border-white/15 px-4 py-3 text-sm text-white outline-none focus:border-white/30">
+                value="{{ form_data.usage_limit_global|default:'' }}"
+                placeholder="Leave blank for unlimited"
+                class="w-full bg-[#141414] border border-white/15 px-4 py-3 text-sm text-white outline-none focus:border-white/30">
+          {% if form_errors.usage_limit_global %}<p class="mono text-xs text-red-400 mt-2">{{ form_errors.usage_limit_global }}</p>{% endif %}
         </div>
       </div>
 
@@ -423,36 +434,37 @@
         <div>
           <label class="mono text-xs text-white/50 tracking-widest block mb-2">Start Date</label>
           <input type="date" name="start_date" required
-                 class="box-border w-full bg-[#141414] border border-white/15 px-4 py-3 text-sm text-white outline-none focus:border-white/30">
+                value="{{ form_data.start_date|default:'' }}"
+                class="box-border w-full bg-[#141414] border border-white/15 px-4 py-3 text-sm text-white outline-none focus:border-white/30">
+          {% if form_errors.start_date %}<p class="mono text-xs text-red-400 mt-2">{{ form_errors.start_date }}</p>{% endif %}
         </div>
 
         <div>
           <label class="mono text-xs text-white/50 tracking-widest block mb-2">End Date</label>
           <input type="date" name="end_date" required
-                 class="box-border w-full bg-[#141414] border border-white/15 px-4 py-3 text-sm text-white outline-none focus:border-white/30">
+                value="{{ form_data.end_date|default:'' }}"
+                class="box-border w-full bg-[#141414] border border-white/15 px-4 py-3 text-sm text-white outline-none focus:border-white/30">
+          {% if form_errors.end_date %}<p class="mono text-xs text-red-400 mt-2">{{ form_errors.end_date }}</p>{% endif %}
         </div>
       </div>
 
       <div class="flex items-center justify-between mb-8">
         <label class="mono text-xs text-white/50 tracking-widest">Status</label>
         <label class="relative inline-flex items-center cursor-pointer">
-          <input type="checkbox" name="is_active" checked class="sr-only peer">
+          <input type="checkbox" name="is_active" {% if form_data %}{% if form_data.is_active == 'on' %}checked{% endif %}{% else %}checked{% endif %} class="sr-only peer">
           <div class="w-11 h-6 bg-[#242424] peer-checked:bg-white rounded-full transition-colors"></div>
           <div class="absolute left-1 top-1 w-4 h-4 bg-white peer-checked:bg-black rounded-full transition-transform peer-checked:translate-x-5"></div>
         </label>
       </div>
 
       <div class="flex flex-col gap-3">
-        <button type="submit"
-                class="mono text-sm py-3 bg-white text-black font-bold hover:bg-white/80 transition-colors">
+        <button type="submit" class="mono text-sm py-3 bg-white text-black font-bold hover:bg-white/80 transition-colors">
           Add Coupon
         </button>
-        <button type="button" onclick="closeModal('addCouponModal')"
-                class="mono text-sm py-3 border border-white/20 text-white hover:border-white/40 transition-colors">
+        <button type="button" onclick="closeModal('addCouponModal')" class="mono text-sm py-3 border border-white/20 text-white hover:border-white/40 transition-colors">
           Cancel
         </button>
       </div>
-
     </form>
   </div>
 </div>
@@ -631,6 +643,52 @@
     document.getElementById('deleteCouponText').textContent = `Are you sure you want to delete "${couponCode}"?`;
     openModal('deleteCouponModal');
   }
+</script>
+
+<script>
+{% if open_modal == 'add-coupon' %}
+  document.addEventListener('DOMContentLoaded', function () {
+    handleDiscountTypeChange(document.querySelector('#addCouponModal select[name="discount_type"]'), 'add');
+    openModal('addCouponModal');
+  });
+{% elif open_modal == 'edit-coupon' %}
+  document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('editCouponForm').action = "{% url 'edit_coupon' edit_coupon_id %}";
+
+    document.getElementById('edit_code').value = "{{ form_data.code|default:''|escapejs }}";
+    document.getElementById('edit_discount_type').value = "{{ form_data.discount_type|default:''|escapejs }}";
+    document.getElementById('edit_discount_value').value = "{{ form_data.discount_value|default:''|escapejs }}";
+    document.getElementById('edit_max_discount_amount').value = "{{ form_data.max_discount_amount|default:''|escapejs }}";
+    document.getElementById('edit_min_order_value').value = "{{ form_data.min_order_value|default:''|escapejs }}";
+    document.getElementById('edit_usage_limit_global').value = "{{ form_data.usage_limit_global|default:''|escapejs }}";
+    document.getElementById('edit_start_date').value = "{{ form_data.start_date|default:''|escapejs }}";
+    document.getElementById('edit_end_date').value = "{{ form_data.end_date|default:''|escapejs }}";
+    document.getElementById('edit_is_active').checked = {% if form_data.is_active == 'on' %}true{% else %}false{% endif %};
+
+    handleDiscountTypeChange(document.getElementById('edit_discount_type'), 'edit');
+
+    {% if form_errors %}
+    const editErrors = {{ form_errors_json|safe }};
+    const fieldMap = {
+      code: 'edit_code', discount_type: 'edit_discount_type', discount_value: 'edit_discount_value',
+      max_discount_amount: 'edit_max_discount_amount', min_order_value: 'edit_min_order_value',
+      usage_limit_global: 'edit_usage_limit_global', start_date: 'edit_start_date', end_date: 'edit_end_date'
+    };
+    Object.keys(editErrors).forEach(function (field) {
+      const inputId = fieldMap[field];
+      if (!inputId) return;
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const p = document.createElement('p');
+      p.className = 'mono text-xs text-red-400 mt-2';
+      p.textContent = editErrors[field];
+      input.parentElement.appendChild(p);
+    });
+    {% endif %}
+
+    openModal('editCouponModal');
+  });
+{% endif %}
 </script>
 
 {% endblock %}

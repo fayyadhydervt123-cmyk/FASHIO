@@ -5,11 +5,11 @@ from django.contrib.auth.decorators import user_passes_test
 from django.views.decorators.cache import never_cache
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.utils import timezone
 from decimal import Decimal, InvalidOperation
 from datetime import date
 from .models import Offer, Coupon
 from products.models import Product, Category, SubCategory
+import json
 
 
 def is_admin(user):
@@ -317,20 +317,24 @@ def coupon_list(request):
     else:
         coupons = coupons.order_by("-created_at")
 
-    # Stats (counted before status-filtering so cards stay stable)
     all_coupons = list(Coupon.objects.all())
     total_coupons = len(all_coupons)
     active_count = sum(1 for c in all_coupons if c.computed_status == "ACTIVE")
     expired_count = sum(1 for c in all_coupons if c.computed_status == "EXPIRED")
     upcoming_count = sum(1 for c in all_coupons if c.computed_status == "UPCOMING")
 
-    # Status filter applied after computed_status is available (Python-side, since it's a property not a DB field)
     if status_filter:
         coupons = [c for c in coupons if c.computed_status == status_filter]
 
     paginator = Paginator(coupons, 10)
     page_number = request.GET.get('page')
     coupons_page = paginator.get_page(page_number)
+
+    # Restore failed form submission (if any) so the modal can reopen pre-filled
+    open_modal = request.session.pop('open_modal', None)
+    form_errors = request.session.pop('coupon_form_errors', {})
+    form_data = request.session.pop('coupon_form_data', {})
+    edit_coupon_id = request.session.pop('edit_coupon_id', None)
 
     return render(request, 'coupons/coupons.html', {
         'coupons': coupons_page,
@@ -343,6 +347,11 @@ def coupon_list(request):
         'active_count': active_count,
         'expired_count': expired_count,
         'upcoming_count': upcoming_count,
+
+        'open_modal': open_modal,
+        'form_errors': form_errors,
+        'form_data': form_data,
+        'edit_coupon_id': edit_coupon_id,
     })
 
 
@@ -408,6 +417,19 @@ def _validate_coupon_form(request, exclude_id=None):
         except InvalidOperation:
             errors['min_order_value'] = 'Enter a valid number.'
 
+    # FLAT discount must not exceed or equal the minimum purchase amount
+    if (
+        discount_type == 'FLAT'
+        and discount_value_val is not None
+        and 'discount_value' not in errors
+        and min_order_value_val is not None
+    ):
+        if min_order_value_val <= discount_value_val:
+            errors['min_order_value'] = (
+                f'Minimum purchase amount (₹{min_order_value_val}) must be greater than '
+                f'the flat discount amount (₹{discount_value_val}).'
+            )
+
     usage_limit_global_val = None
     if usage_limit_global:
         try:
@@ -471,6 +493,9 @@ def add_coupon(request):
         if errors:
             for field, msg in errors.items():
                 messages.error(request, msg)
+            request.session['coupon_form_errors'] = errors
+            request.session['coupon_form_data'] = request.POST.dict()
+            request.session['open_modal'] = 'add-coupon'
             return redirect('coupon_list')
 
         Coupon.objects.create(
@@ -502,6 +527,10 @@ def edit_coupon(request, coupon_id):
         if errors:
             for field, msg in errors.items():
                 messages.error(request, msg)
+            request.session['coupon_form_errors'] = errors
+            request.session['coupon_form_data'] = request.POST.dict()
+            request.session['open_modal'] = 'edit-coupon'
+            request.session['edit_coupon_id'] = coupon_id
             return redirect('coupon_list')
 
         coupon.code = cleaned['code']

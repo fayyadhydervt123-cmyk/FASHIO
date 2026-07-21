@@ -233,19 +233,6 @@
         <form method="POST" enctype="multipart/form-data" id="profileForm">
             {% csrf_token %}
 
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="mb-4 px-4 py-3 text-[11px] tracking-[0.08em]
-                            {% if message.tags == 'error' %}
-                                bg-red-900/30 border border-red-600 text-red-400
-                            {% else %}
-                                bg-green-900/30 border border-green-600 text-green-400
-                            {% endif %}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-
             <div class="flex flex-col items-center pt-10 pb-6">
                 <div class="relative">
                     <div class="w-[110px] h-[110px] bg-[#f0f0f0] overflow-hidden relative">
@@ -316,7 +303,7 @@
 
                 <div>
                 <label class="block text-[11px] tracking-[0.08em] text-black mb-2">Phone</label>
-                <input type="tel" name="phone" value="{{ user.phone }}" pattern="\d{10,15}" required
+                <input type="tel" name="phone" value="{% if user.phone %}{{ user.phone }}{% else %}{% endif %}" pattern="\d{10,15}" required
                     class="form-input"/>
                 </div>
             </div>
