@@ -38,3 +38,4 @@ weasyprint==68.1
 webencodings==0.5.1
 zopfli==0.4.2
 gunicorn==26.0.0
+
