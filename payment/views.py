@@ -69,12 +69,6 @@ def razorpay_payment_success(request):
     if order.payment_status == "PAID":
         return redirect("order_success", order_id=order.order_id)
 
-    request.session["pending_razorpay_order"] = {
-        "razorpay_order_id": razorpay_order["id"],
-        "order_id": str(order.order_id),
-        "source": source,
-    }
-
     with transaction.atomic():
         order = Order.objects.select_for_update().get(pk=order.pk)
 
