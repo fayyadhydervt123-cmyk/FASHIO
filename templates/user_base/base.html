@@ -32,23 +32,43 @@
 
   <div class="flex items-center gap-2.5 shrink-0">
 
-    <a href="{% url 'user_loggedin_dashboard' %}" 
-      class="mono text-black text-base font-bold tracking-widest">
-      FASHIO
-    </a>
+    {% if user.is_authenticated %}
+      <a href="{% url 'user_loggedin_dashboard' %}" 
+        class="mono text-black text-base font-bold tracking-widest">
+        FASHIO
+      </a>
+    {% else %}
+      <a href="{% url 'user_landing_dashboard' %}" 
+        class="mono text-black text-base font-bold tracking-widest">
+        FASHIO
+      </a>
+    {% endif %}
+    
   </div>
 
   <div class="hidden md:flex items-center gap-8">
 
-  <a href="{% url 'user_loggedin_dashboard' %}"
-     class="mono text-xs tracking-widest transition-colors
-     {% if request.resolver_match.url_name == 'user_loggedin_dashboard' %}
-       text-black border-b border-black pb-0.5
-     {% else %}
-       text-black/50 hover:text-black
-     {% endif %}">
-    HOME
-  </a>
+  {% if user.is_authenticated %}
+    <a href="{% url 'user_loggedin_dashboard' %}"
+      class="mono text-xs tracking-widest transition-colors
+      {% if request.resolver_match.url_name == 'user_loggedin_dashboard' %}
+        text-black border-b border-black pb-0.5
+      {% else %}
+        text-black/50 hover:text-black
+      {% endif %}">
+      HOME
+    </a>
+  {% else %}
+    <a href="{% url 'user_landing_dashboard' %}"
+      class="mono text-xs tracking-widest transition-colors
+      {% if request.resolver_match.url_name == 'user_landing_dashboard' %}
+        text-black border-b border-black pb-0.5
+      {% else %}
+        text-black/50 hover:text-black
+      {% endif %}">
+      HOME
+    </a>
+  {% endif %}
 
   <a href="{% url 'product_list' %}"
      class="mono text-xs tracking-widest transition-colors
@@ -66,13 +86,17 @@
        text-black border-b border-black pb-0.5
      {% else %}
        text-black/50 hover:text-black
-     {% endif %}"
-     class="mono text-xs tracking-widest text-black/50 hover:text-black transition-colors">
+     {% endif %}">
     ABOUT
   </a>
 
-  <a href="#"
-     class="mono text-xs tracking-widest text-black/50 hover:text-black transition-colors">
+  <a href="{% url 'contact' %}"
+     class="mono text-xs tracking-widest transition-colors
+     {% if request.resolver_match.url_name == 'contact' or request.resolver_match.url_name == 'contact' %}
+       text-black border-b border-black pb-0.5
+     {% else %}
+       text-black/50 hover:text-black
+     {% endif %}">
     CONTACT
   </a>
 
@@ -80,73 +104,85 @@
 
   <div class="flex items-center gap-4">
 
-  <!-- Wishlist Icon -->
-  <a href="{% url 'wishlist_page' %}"
-     class="relative p-1 text-black/50 hover:text-black transition-colors"
-     title="Wishlist">
-    <svg class="w-5 h-5"
-         fill="none"
-         stroke="currentColor"
-         stroke-width="1.7"
-         viewBox="0 0 24 24">
-      <path stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733C11.285 4.876 9.623 3.75 7.688 3.75 5.099 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>
-    </svg>
+  {% if user.is_authenticated %}
 
-    <span id="wishlist-notification-badge"
-        class="{% if request.session.wishlist_notification_count %}
-                 flex
-               {% else %}
-                 hidden
-               {% endif %}
-               absolute -top-1 -right-1 min-w-4 h-4 px-1 items-center justify-center rounded-full bg-black text-white mono text-[9px]">
-    {% if request.session.wishlist_notification_count %}
-      {{ request.session.wishlist_notification_count }}
-    {% endif %}
-  </span>
-  </a>
+    <!-- Wishlist Icon -->
+    <a href="{% url 'wishlist_page' %}"
+      class="relative p-1 text-black/50 hover:text-black transition-colors"
+      title="Wishlist">
+      <svg class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          viewBox="0 0 24 24">
+        <path stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733C11.285 4.876 9.623 3.75 7.688 3.75 5.099 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>
+      </svg>
 
-  <!-- Cart Icon -->
- <a href="{% url 'cart_page' %}"
-   class="relative p-1 text-black/50 hover:text-black transition-colors"
-   title="Cart">
+      <span id="wishlist-notification-badge"
+          class="{% if request.session.wishlist_notification_count %}
+                  flex
+                {% else %}
+                  hidden
+                {% endif %}
+                absolute -top-1 -right-1 min-w-4 h-4 px-1 items-center justify-center rounded-full bg-black text-white mono text-[9px]">
+      {% if request.session.wishlist_notification_count %}
+        {{ request.session.wishlist_notification_count }}
+      {% endif %}
+    </span>
+    </a>
 
-  <svg class="w-5 h-5"
-       fill="none"
-       stroke="currentColor"
-       stroke-width="1.7"
-       viewBox="0 0 24 24">
-    <path stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12A1.125 1.125 0 0119.75 21.75H4.25a1.125 1.125 0 01-1.119-1.243l1.263-12A1.125 1.125 0 015.513 7.5h12.974a1.125 1.125 0 011.119 1.007z"/>
-  </svg>
+    <!-- Cart Icon -->
+    <a href="{% url 'cart_page' %}"
+      class="relative p-1 text-black/50 hover:text-black transition-colors"
+      title="Cart">
 
-  <span id="cart-notification-badge"
-        class="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-black text-white mono text-[9px] items-center justify-center rounded-full
-        {% if request.session.cart_notification_count %}
-          flex
-        {% else %}
-          hidden
-        {% endif %}">
-    {{ request.session.cart_notification_count }}
-  </span>
-</a>
+      <svg class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          viewBox="0 0 24 24">
+        <path stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12A1.125 1.125 0 0119.75 21.75H4.25a1.125 1.125 0 01-1.119-1.243l1.263-12A1.125 1.125 0 015.513 7.5h12.974a1.125 1.125 0 011.119 1.007z"/>
+      </svg>
 
-  <!-- Profile Icon -->
-  <a href="{% url 'user_profile' %}"
-     class="p-1 text-black/50 hover:text-black transition-colors"
-     title="Profile">
-    <svg class="w-5 h-5"
-         fill="none"
-         stroke="currentColor"
-         stroke-width="1.5"
-         viewBox="0 0 24 24">
-      <path stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
-    </svg>
-  </a>
+      <span id="cart-notification-badge"
+            class="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-black text-white mono text-[9px] items-center justify-center rounded-full
+            {% if request.session.cart_notification_count %}
+              flex
+            {% else %}
+              hidden
+            {% endif %}">
+        {{ request.session.cart_notification_count }}
+      </span>
+    </a>
+
+    <!-- Profile Icon -->
+    <a href="{% url 'user_profile' %}"
+      class="p-1 text-black/50 hover:text-black transition-colors"
+      title="Profile">
+      <svg class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          viewBox="0 0 24 24">
+        <path stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+      </svg>
+    </a>
+
+  {% else %}
+
+    <a href="{% url 'user_login' %}">
+      <button class="cta-btn mono text-xs tracking-widest px-5 py-2 bg-white text-black font-bold hover:bg-gray-200 transition-colors rounded-sm">
+        LOGIN
+      </button>
+    </a>
+  
+  {% endif %}
 
 </div>
 </nav>
@@ -205,4 +241,3 @@
 
 
 </html>
-

@@ -1024,7 +1024,6 @@ def toggle_variant_status(request):
 
 
 @never_cache
-@login_required(login_url="user_login")
 def product_list(request):
     query = request.GET.get("q", "").strip()
     category = request.GET.get("category", "").strip()
@@ -1184,9 +1183,12 @@ def product_list(request):
     if category:
         selected_category_obj = Category.objects.filter(id=category, is_blocked=False).first()
 
-    wishlist_variant_ids = list(
-        Wishlist.objects.filter(user=request.user).values_list("variant_id", flat=True)
-    )
+    if request.user.is_authenticated:
+        wishlist_variant_ids = list(
+            Wishlist.objects.filter(user=request.user).values_list("variant_id", flat=True)
+        )
+    else:
+        wishlist_variant_ids = []
 
     return render(
         request,
@@ -1207,7 +1209,6 @@ def product_list(request):
 
 
 @never_cache
-@login_required(login_url="user_login")
 def product_detail(request, product_id):
     active_variants_prefetch = Prefetch(
         "variants",
@@ -1479,7 +1480,6 @@ def add_to_cart(request):
 
 
 @never_cache
-@login_required(login_url="user_login")
 def cart_page(request):
     request.session["cart_notification_count"] = 0
     request.session.modified = True
@@ -1747,7 +1747,6 @@ def buy_now(request):
 
 
 @never_cache
-@login_required(login_url="user_login")
 def wishlist_page(request):
     request.session["wishlist_notification_count"] = 0
     request.session.modified = True

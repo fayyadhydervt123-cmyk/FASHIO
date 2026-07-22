@@ -1,0 +1,273 @@
+{% extends 'user_base/base.html' %}
+
+{% block title %}FASHIO | Contact{% endblock %}
+
+{% block extra_css %}
+  <style>
+    body { font-family: 'DM Sans', sans-serif; background: #fff; color: #000; }
+    .mono  { font-family: 'Share Tech Mono', monospace; }
+    .bebas { font-family: 'Bebas Neue', sans-serif; }
+
+    @keyframes marquee {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .marquee-track { animation: marquee 14s linear infinite; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .h-anim-1 { animation: fadeUp .8s cubic-bezier(.16,1,.3,1) .2s both; }
+    .h-anim-2 { animation: fadeUp .9s cubic-bezier(.16,1,.3,1) .45s both; }
+    .h-anim-3 { animation: fadeUp .8s ease .7s both; }
+
+    .reveal {
+      opacity: 0; transform: translateY(28px);
+      transition: opacity .7s ease, transform .7s cubic-bezier(.16,1,.3,1);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-d1 { transition-delay: .1s; }
+    .reveal-d2 { transition-delay: .2s; }
+    .reveal-d3 { transition-delay: .3s; }
+
+    nav { transition: background .3s, border-color .3s; }
+
+    /* Form fields */
+    .contact-input {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      transition: border-color .2s, background .2s;
+    }
+    .contact-input::placeholder { color: rgba(255,255,255,0.25); }
+    .contact-input:focus {
+      outline: none;
+      border-color: rgba(255,255,255,0.5);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .cta-btn { position: relative; overflow: hidden; }
+    .cta-btn::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.1) 50%, transparent 100%);
+      background-size: 200% 100%;
+      opacity: 0; transition: opacity .2s;
+    }
+    .cta-btn:hover::after { opacity: 1; animation: shimmer .6s ease; }
+    @keyframes shimmer {
+      0%   { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ══════════════════════════════════════════
+     HERO — GET IN TOUCH
+══════════════════════════════════════════ -->
+<section class="relative bg-black px-8 md:px-16 py-24 md:py-32 text-center border-b border-white/5">
+  <h1 class="h-anim-1 bebas text-white text-5xl md:text-7xl lg:text-8xl leading-[0.95]">
+    GET IN TOUCH WITH <span class="text-red-500">FASHIO</span>
+  </h1>
+
+  <div class="h-anim-2 flex items-center justify-center gap-3 my-8">
+    <div class="w-16 h-0.5 bg-red-500"></div>
+  </div>
+
+  <p class="h-anim-3 mono text-white/50 text-[11px] md:text-xs tracking-[.3em] uppercase">
+    Built for inquiries. Designed for clarity.
+  </p>
+</section>
+
+<!-- ══════════════════════════════════════════
+     CONTACT INFO + FORM
+══════════════════════════════════════════ -->
+<section class="bg-black">
+  <div class="grid md:grid-cols-2">
+
+    <!-- Contact Information -->
+    <div class="reveal px-8 md:px-16 py-20 md:py-24 flex flex-col justify-center">
+      <h2 class="bebas text-white text-4xl md:text-5xl mb-6 leading-none">CONTACT INFORMATION</h2>
+      <p class="text-white/40 text-sm md:text-base leading-relaxed max-w-md mb-12">
+        Our team is here to assist with orders, collaborations, and general inquiries. Expect a response within 24 hours.
+      </p>
+
+      <div class="space-y-10">
+        <div>
+          <p class="mono text-red-500 text-[10px] tracking-widest mb-2">EMAIL</p>
+          <p class="text-white text-lg">contact@fashio.fayyad.online</p>
+        </div>
+
+        <div>
+          <p class="mono text-red-500 text-[10px] tracking-widest mb-2">PHONE</p>
+          <p class="text-white text-lg">+44 0000 000000</p>
+        </div>
+
+        <div>
+          <p class="mono text-red-500 text-[10px] tracking-widest mb-2">BUSINESS HOURS</p>
+          <p class="text-white text-lg">MON — FRI / 09:00 AM — 10:00 PM</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Form -->
+    <div class="reveal reveal-d2 bg-[#0a0a0a] px-8 md:px-16 py-20 md:py-24 border-t md:border-t-0 md:border-l border-white/5">
+      <form method="post" action="{% url 'contact' %}" class="space-y-8">
+        {% csrf_token %}
+
+        <div class="grid sm:grid-cols-2 gap-8">
+          <div>
+            <label for="full_name" class="mono text-white text-[11px] tracking-widest mb-2 block">Full Name</label>
+            <input type="text" id="full_name" name="full_name" required
+                   class="contact-input w-full px-4 py-3 text-sm"/>
+          </div>
+          <div>
+            <label for="email" class="mono text-white text-[11px] tracking-widest mb-2 block">Email Address</label>
+            <input type="email" id="email" name="email" required
+                   class="contact-input w-full px-4 py-3 text-sm"/>
+          </div>
+        </div>
+
+        <div class="grid sm:grid-cols-2 gap-8">
+          <div>
+            <label for="order_number" class="mono text-white text-[11px] tracking-widest mb-2 block">Order Number (optional)</label>
+            <input type="text" id="order_number" name="order_number"
+                   class="contact-input w-full px-4 py-3 text-sm"/>
+          </div>
+          <div>
+            <label for="subject" class="mono text-white text-[11px] tracking-widest mb-2 block">Subject</label>
+            <input type="text" id="subject" name="subject" required
+                   class="contact-input w-full px-4 py-3 text-sm"/>
+          </div>
+        </div>
+
+        <div>
+          <label for="message" class="mono text-white text-[11px] tracking-widest mb-2 block">Message</label>
+          <textarea id="message" name="message" rows="6" required
+                    class="contact-input w-full px-4 py-3 text-sm resize-none"></textarea>
+        </div>
+
+        <button type="submit"
+                class="cta-btn w-full mono text-xs tracking-widest py-5 bg-white text-black font-bold hover:bg-gray-200 active:scale-[0.99] transition-all">
+          SEND INQUIRY
+        </button>
+      </form>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     MARQUEE TICKER
+══════════════════════════════════════════ -->
+<div class="bg-white overflow-hidden py-4">
+  <div class="flex whitespace-nowrap marquee-track">
+    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED DROP//</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">NO RESTOCK //</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED DROP//</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">NO RESTOCK //</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED DROP//</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">NO RESTOCK //</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED DROP//</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">NO RESTOCK //</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED DROP//</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">NO RESTOCK //</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED DROP//</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">NO RESTOCK //</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED DROP//</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">NO RESTOCK //</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">LIMITED DROP//</span>
+    <span class="mono text-black text-sm tracking-widest mr-12">NO RESTOCK //</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════ -->
+<footer class="relative bg-white border-t border-black/10 px-8 md:px-12 pt-14 pb-8">
+  <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-black/5 to-transparent pointer-events-none"></div>
+  <div class="flex flex-col md:flex-row justify-between gap-10 md:gap-12 mb-12">
+
+    <!-- Brand column -->
+    <div class="max-w-xs">
+      <div class="flex items-center gap-2.5 mb-4">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect x="6" y="6" width="9" height="2.5" fill="black"/>
+          <rect x="6" y="6" width="2.5" height="15" fill="black"/>
+          <rect x="6" y="13" width="7" height="2.5" fill="black"/>
+        </svg>
+        <span class="mono text-black text-base font-bold tracking-widest">FASHIO</span>
+      </div>
+      <p class="mono text-black/30 text-[10px] tracking-wider leading-loose">Premium essentials built for those who refuse to blend in. Every piece, intentionally crafted.</p>
+    </div>
+
+    <!-- Help + Shop row on mobile -->
+    <div class="grid grid-cols-2 gap-8 md:contents">
+
+      <!-- Help links -->
+      <div>
+        <p class="mono text-black/40 text-[10px] tracking-widest mb-5">HELP</p>
+        <ul class="space-y-3">
+          <li><a href="{% url 'about' %}" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">ABOUT US</a></li>
+          <li><a href="{% url 'contact' %}" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">CONTACT</a></li>
+          <li><a href="{% url 'about' %}" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">PRIVACY POLICY</a></li>
+          <li><a href="{% url 'about' %}" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">TERMS OF SERVICE</a></li>
+        </ul>
+      </div>
+
+      <!-- Shop links -->
+      <div>
+        <p class="mono text-black/40 text-[10px] tracking-widest mb-5">SHOP</p>
+        <ul class="space-y-3">
+          {% for category in categories %} 
+          <li><a href="{% url 'product_list' %}?category={{ category.id }}" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors uppercase">{{ category.name }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Social -->
+    <div>
+      <p class="mono text-black/40 text-[10px] tracking-widest mb-5">SOCIAL</p>
+      <div class="flex items-center gap-5">
+        <a href="#" class="text-black/40 hover:text-black transition-colors">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+        <a href="#" class="text-black/40 hover:text-black transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+            <circle cx="12" cy="12" r="4"/>
+            <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/>
+          </svg>
+        </a>
+        <a href="#" class="text-black/40 hover:text-black transition-colors">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.87a8.18 8.18 0 004.78 1.52V6.93a4.85 4.85 0 01-1.01-.24z"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="border-t border-black/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+    <p class="mono text-black/20 text-[10px] tracking-wider text-center">© 2024 FASHIO. ALL RIGHTS RESERVED. BUILT DIFFERENT.</p>
+  </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  /* Scroll-triggered reveal */
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+{% endblock %}

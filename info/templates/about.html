@@ -305,9 +305,9 @@
       <p class="mono text-black/40 text-[10px] tracking-widest mb-5">HELP</p>
       <ul class="space-y-3">
         <li><a href="{% url 'about' %}" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">ABOUT US</a></li>
-        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">CONTACT</a></li>
-        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">PRIVACY POLICY</a></li>
-        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">TERMS OF SERVICE</a></li>
+        <li><a href="{% url 'contact' %}" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">CONTACT</a></li>
+        <li><a href="{% url 'about' %}" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">PRIVACY POLICY</a></li>
+        <li><a href="{% url 'about' %}" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">TERMS OF SERVICE</a></li>
       </ul>
     </div>
 
@@ -315,10 +315,9 @@
     <div>
       <p class="mono text-black/40 text-[10px] tracking-widest mb-5">SHOP</p>
       <ul class="space-y-3">
-        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">T-SHIRTS</a></li>
-        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">SHIRTS</a></li>
-        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">BOTTOMS</a></li>
-        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">ACCESSORIES</a></li>
+        {% for category in categories %}
+        <li><a href="{% url 'product_list' %}?category={{ category.id }}" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors uppercase">{{ category.name }}</a></li>
+        {% endfor %}
       </ul>
     </div>
     </div>

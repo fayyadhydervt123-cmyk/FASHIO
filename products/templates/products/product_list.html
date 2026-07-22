@@ -1187,7 +1187,7 @@ function updateWishlistBadge(count) {
         }
       })
       .catch(() => {
-        showCartToast('Could not add product.');
+        showCartToast('Could not add product. Please Login');
       });
     });
   }
@@ -1281,7 +1281,7 @@ document.querySelectorAll('.wishlist-card-form').forEach(form => {
       }
     })
     .catch(() => {
-      showWishlistToast('Could not add to wishlist');
+      showWishlistToast('Could not add to wishlist, Please Login');
     })
     .finally(() => {
       if (button) {

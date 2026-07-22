@@ -111,25 +111,20 @@
 <!-- ══════════════════════════════════════════
      NAVBAR
 ══════════════════════════════════════════ -->
-<nav id="navbar" class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-black/10 flex items-center justify-between px-6 h-14">  <div class="flex items-center gap-2.5 shrink-0">
+<nav id="navbar" class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-black/10 flex items-center justify-between px-6 h-14">  
+  <div class="flex items-center gap-2.5 shrink-0">
     <span class="mono text-black text-base font-bold tracking-widest">FASHIO</span>
   </div>
 
   <div class="hidden md:flex items-center gap-8">
     <!-- Active link changed from red to white underline -->
-    <a href="#" class="mono text-xs tracking-widest text-black border-b border-black pb-0.5">HOME</a>
-    <a href="#" class="mono text-xs tracking-widest text-black/50 hover:text-black transition-colors">SHOP</a>
-    <a href="#" class="mono text-xs tracking-widest text-black/50 hover:text-black transition-colors">ABOUT</a>
-    <a href="#" class="mono text-xs tracking-widest text-black/50 hover:text-black transition-colors">CONTACT</a>
+    <a href="{% url 'user_landing_dashboard' %}" class="mono text-xs tracking-widest text-black border-b border-black pb-0.5">HOME</a>
+    <a href="{% url 'product_list' %}" class="mono text-xs tracking-widest text-black/50 hover:text-black transition-colors">SHOP</a>
+    <a href="{% url 'about' %}" class="mono text-xs tracking-widest text-black/50 hover:text-black transition-colors">ABOUT</a>
+    <a href="{% url 'contact' %}" class="mono text-xs tracking-widest text-black/50 hover:text-black transition-colors">CONTACT</a>
   </div>
 
   <div class="flex items-center gap-3">
-    <div class="relative hidden sm:block">
-      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-black/50" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-      </svg>
-      <input type="text" placeholder="Search" class="mono bg-[#00000] border border-white/10 text-black text-xs pl-8 pr-3 py-2 w-36 outline-none  transition-colors placeholder-black/40 rounded-sm"/>
-    </div>
     <a href="{% url 'user_login' %}">
       <button class="cta-btn mono text-xs tracking-widest px-5 py-2 bg-white text-black font-bold hover:bg-gray-200 transition-colors rounded-sm">
         LOGIN
@@ -429,7 +424,7 @@
       <p class="mono text-black/40 text-[10px] tracking-widest mb-5">HELP</p>
       <ul class="space-y-3">
         <li><a href="{% url 'about' %}" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">ABOUT US</a></li>
-        <li><a href="#" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">CONTACT</a></li>
+        <li><a href="{% url 'contact' %}" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">CONTACT</a></li>
         <li><a href="{% url 'about' %}" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">PRIVACY POLICY</a></li>
         <li><a href="{% url 'about' %}" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">TERMS OF SERVICE</a></li>
       </ul>
@@ -440,7 +435,7 @@
       <p class="mono text-black/40 text-[10px] tracking-widest mb-5">SHOP</p>
       <ul class="space-y-3">
         {% for category in categories %}
-          <li><a href="{% url 'product_list' %}?category={{ category.id }}" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors">{{ category.name }}</a></li>
+          <li><a href="{% url 'product_list' %}?category={{ category.id }}" class="mono text-black/40 text-[10px] tracking-widest hover:text-black transition-colors uppercase">{{ category.name }}</a></li>
         {% endfor %}
       </ul>
     </div>
@@ -473,12 +468,6 @@
   </div>
 </footer>
 
-{% comment %} <!-- Page transition overlay -->
-<div id="page-transition" class="fixed inset-0 z-[9999] bg-black pointer-events-none origin-bottom scale-y-0" style="transition: transform .6s cubic-bezier(.76,0,.24,1);">
-  <div class="w-full h-full flex items-center justify-center">
-    <span class="bebas text-white text-4xl tracking-widest opacity-0" id="page-transition-text" style="transition: opacity .3s ease .25s;">FASHIO</span>
-  </div>
-</div> {% endcomment %}
 
 <script>
   /* Nav darkens on scroll */
