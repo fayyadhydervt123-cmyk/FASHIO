@@ -4,6 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>{% block title %}FASHIO{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%22 y=%2272%22 font-family=%22Georgia, 'Times New Roman', serif%22 font-size=%2290%22 font-weight=%22900%22 font-style=%22italic%22 fill=%22black%22 text-anchor=%22middle%22 transform=%22skewX(-8)%22 transform-origin=%2250 50%22>F</text></svg>">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
@@ -34,12 +35,12 @@
 
     {% if user.is_authenticated %}
       <a href="{% url 'user_loggedin_dashboard' %}" 
-        class="mono text-black text-base font-bold tracking-widest">
+        class="font-serif italic font-black text-black text-xl tracking-tight" style="transform: skewX(-8deg); display: inline-block;">
         FASHIO
       </a>
     {% else %}
       <a href="{% url 'user_landing_dashboard' %}" 
-        class="mono text-black text-base font-bold tracking-widest">
+        class="font-serif italic font-black text-black text-xl tracking-tight" style="transform: skewX(-8deg); display: inline-block;">
         FASHIO
       </a>
     {% endif %}
