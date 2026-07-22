@@ -126,7 +126,7 @@ class Address(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="addresses")
 
     name = models.CharField(max_length=255)
-    phone = models.CharField(max_length=10)
+    phone = models.CharField(max_length=15)
 
     line1 = models.TextField()
     city = models.CharField(max_length=100)
